@@ -1,0 +1,72 @@
+{% load org_tags %}
+{% load static %}
+
+<div class="ui top attached inverted borderless menu t-header-menu">
+  <a class="item" id="t-header-item-sidebar">
+    <i class="sidebar icon"></i>
+  </a>
+  <a class="item" href="{% url 'home' %}">
+    <div class="ui inverted small header">
+      <img class="ui image" src="{% static 'img/logo.png' %}">
+      Tarifador VoIP
+    </div>
+  </a>
+  <div class="right menu">
+    {% if user.is_superuser %}
+      <a class="item" href="{% url 'organization_list' %}">
+        <div class="content">
+          <div class="header">
+            <i class="globe icon"></i> Organizações
+          </div>
+        </div>
+      </a>
+      <a class="item" href="{% url 'admin:index' %}">
+        <div class="content">
+          <div class="header">
+            <i class="cogs icon"></i> Admin
+          </div>
+        </div>
+      </a>
+    {% else %}
+      <a class="item" href="{% url 'centers:list' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="briefcase icon"></i> Clientes
+          </div>
+        </div>
+      </a>
+    {% endif %}
+    <div class="ui button floating item top right pointing dropdown" id="t-header-user-dropdown" role="listbox" aria-expanded="false" tabindex="0">
+      <i class="user outline icon"></i>
+      {% if user.get_full_name %}
+        {{ user.get_full_name }}
+      {% else %}
+        {{ user.username }}
+      {% endif %}
+      <div class="menu transition left">
+        <div class="header">
+          <a class="ui header" href="{% url 'profile_update' %}">
+            <i class="user outline icon"></i>
+            <div class="content">
+              {{ user.profile }}
+            </div>
+          </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <a class="item" href="{% url 'account_change_password' %}" role="option">
+          <i class="lock icon"></i>
+          <span class="text">Alterar Senha</span>
+        </a>
+
+        <div class="divider"></div>
+
+        <a class="item" href="{% url 'account_logout' %}" role="option">
+          <i class="sign-out icon"></i>
+          <span class="text">Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

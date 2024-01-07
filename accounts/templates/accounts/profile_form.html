@@ -1,0 +1,46 @@
+{% extends "organizations/base.html" %}
+{% load static from staticfiles %}
+{% load debug %}
+
+{% block title %}Usuários - Editar{% endblock %}
+
+{% block breadcrumb %}
+{% if organization %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="{% url 'organization_detail' organization.slug %}">
+    <h2 class="ui inverted header">Usuários</h2>
+  </a>
+{% endif %}
+<i class="right chevron icon divider"></i>
+<a class="section">
+  <h2 class="ui inverted header">Editar</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<div class="t-content">
+  <div class="ui container">
+    {% include "utils/form-error-messages.html" %}
+
+    <form class="ui form" method="post">
+      {% csrf_token %}
+
+      <h4 class="ui dividing header">Informações do Usuário</h4>
+      <div class="two fields">
+        {% include "utils/form-field.html" with field=form.username explain='Obrigatório. 150 caracteres ou menos. Letras, números e @/./+/-/_ apenas.'%}
+        {% include "utils/form-field.html" with field=form.email %}
+      </div>
+
+      <h4 class="ui dividing header">Informações Pessoais</h4>
+      {#% include "utils/form-field.html" with field=form.avatar %#}
+      <div class="three fields">
+        {% include "utils/form-field.html" with field=form.first_name %}
+        {% include "utils/form-field.html" with field=form.last_name %}
+        {% include "utils/form-field.html" with field=form.phone %}
+      </div>
+
+      <button class="ui blue right floated button" type="submit">Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

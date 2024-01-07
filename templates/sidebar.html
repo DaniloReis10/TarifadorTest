@@ -1,0 +1,207 @@
+{% load org_tags %}
+{% load static %}
+
+<div class="ui vertical accordion ui inverted menu">
+  <a class="item" href="{% url 'home' %}">
+    <div class="ui inverted header">
+      <img class="ui image" src="{% static 'img/logo.png' %}">
+      Tarifador VoIP
+    </div>
+  </a>
+  {% if user.is_superuser %}
+    <a class="item" href="{% url 'organization_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="globe icon"></i> Organizações
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'adm_phonecall_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="phone square icon"></i> Chamadas
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'extension_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="list alternate outline icon"></i> Faixas de Ramais
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'organization_list' %}#ramal-solicitation">
+      <div class="content">
+        <div class="header">
+          <i class="sticky note icon"></i> Solicitações de Ramais
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'adm_service_pricetable_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="tasks icon"></i> Serviços Básicos
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'adm_call_pricetable_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="table icon"></i> Serviços de Comunicação
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'admin:index' %}">
+      <div class="content">
+        <div class="header">
+          <i class="cogs icon"></i> Admin
+        </div>
+      </div>
+    </a>
+    {% for organization in organizations %}
+      <div class="item">
+        <div class="title">
+          <i class="dropdown icon"></i>
+          <div class="header">
+            <i class="globe icon"></i> {{ organization.name }}
+          </div>
+        </div>
+        <div class="content">
+          <a class="item" href="{% url 'organization_detail' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="chart pie icon"></i> Detalhes
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'centers:list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="briefcase icon"></i> Clientes
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'organization_detail' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="users icon"></i> Lista de Usuários
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'phonecalls:org_phonecall_list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="list alternate outline icon"></i> Relatório Detalhado
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'phonecalls:org_phonecall_list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="paste icon"></i> Relatório Resumido
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'extensions:org_extension_list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="list alternate outline icon"></i> Faixas de Ramais
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'charges:service_pricetable_list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="tasks icon"></i> Serviços Básicos
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'charges:call_pricetable_list' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="table icon"></i> Serviços de Comunicação
+              </div>
+            </div>
+          </a>
+          <a class="item" href="{% url 'organization_edit' organization.slug %}">
+            <div class="content">
+              <div class="header">
+                <i class="edit outline icon"></i> Editar
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    {% if organization|is_admin:user %}
+      <a class="item" href="{% url 'organization_detail' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="globe icon"></i> {{ organization.name }}
+          </div>
+        </div>
+      </a>
+    {% endif %}
+    <a class="item" href="{% url 'centers:list' organization.slug %}">
+      <div class="content">
+        <div class="header">
+          <i class="briefcase icon"></i> Clientes
+        </div>
+      </div>
+    </a>
+    {% if organization|is_admin:user %}
+      <a class="item" href="{% url 'organization_detail' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="users icon"></i> Lista de Usuários
+          </div>
+        </div>
+      </a>
+      <a class="item" href="{% url 'phonecalls:org_phonecall_list' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="list alternate outline icon"></i> Relatório Detalhado
+          </div>
+        </div>
+      </a>
+      <a class="item" href="{% url 'phonecalls:org_phonecall_list' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="paste icon"></i> Relatório Resumido
+          </div>
+        </div>
+      </a>
+      <a class="item" href="{% url 'extensions:org_extension_list' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="list alternate outline icon"></i> Faixas de Ramais
+          </div>
+        </div>
+      </a>
+    {% endif %}
+    <a class="item" href="{% url 'charges:service_pricetable_list' organization.slug %}">
+      <div class="content">
+        <div class="header">
+          <i class="tasks icon"></i> Serviços Básicos
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'charges:call_pricetable_list' organization.slug %}">
+      <div class="content">
+        <div class="header">
+          <i class="table icon"></i> Serviços de Comunicação
+        </div>
+      </div>
+    </a>
+    {% if organization|is_admin:user %}
+      <a class="item" href="{% url 'organization_edit' organization.slug %}">
+        <div class="content">
+          <div class="header">
+            <i class="edit outline icon"></i> Editar
+          </div>
+        </div>
+      </a>
+    {% endif %}
+  {% endif %}
+</div>

@@ -1,0 +1,77 @@
+<!doctype html>
+{% load static  %}
+
+<html lang="pt">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <title>{% block title %}{% endblock %} - Tarifador VoIP</title>
+
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" />
+
+    <link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/semantic.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'node_modules/semantic-ui-calendar/dist/calendar.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+  {% block body %}
+    <div icon="labeled" class="ui overlay left wide sidebar">
+      {% include "sidebar.html" %}
+    </div>
+    <div class="pusher">
+      {% block header %}
+        {% include "header.html" %}
+      {% endblock %}
+
+      <div class="t-block-content">
+        {% block content %}{% endblock %}
+      </div>
+
+      {% block footer %}
+        {% include "footer.html" %}
+      {% endblock %}
+    </div>
+  {% endblock %}
+
+  <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
+  <script src="{% static 'semantic/dist/semantic.min.js' %}"></script>
+  <script src="{% static 'node_modules/semantic-ui-calendar/dist/calendar.min.js' %}"></script>
+  <script>
+    $(document).ready(() => {
+      $('#t-header-item-sidebar')
+        .click(() => {
+          $('.ui.sidebar')
+            .sidebar('setting', 'transition', 'overlay')
+            .sidebar('toggle')
+        })
+
+      $('#t-header-user-dropdown')
+        .dropdown()
+
+      $('.ui.accordion')
+        .accordion()
+
+      $('.message .close')
+        .on('click', function() {
+          $(this)
+            .closest('.message')
+            .transition('fade')
+        })
+      $('.explain')
+        .popup({
+          inline     : true,
+          hoverable  : true,
+          position   : 'top left',
+          delay: {
+            show: 300,
+            hide: 300
+          }
+        })
+    })
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

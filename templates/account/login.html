@@ -1,0 +1,71 @@
+{% extends "account/base.html" %}
+
+{% load account %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+
+{% if next %}
+  <div class="ui warning floating message">
+    <h5 class="ui header">
+      <i class="exclamation circle icon" aria-hidden="true"></i>
+      <div class="content">
+        <div class="sub header">
+          {% if user.is_authenticated %}
+            Sua conta não tem acesso a esta página. Para prosseguir,
+            por favor, faça o login com uma conta que tenha acesso.
+          {% else %}
+            Por favor, faça o login para ver esta página.
+          {% endif %}
+        </div>
+      </div>
+    </h5>
+  </div>
+{% endif %}
+
+{% if form.errors %}
+  <div class="ui error floating message">
+    <i class="close icon"></i>
+    <h5 class="ui header">
+      <i class="exclamation circle icon" aria-hidden="true"></i>
+      <div class="content">
+        <div class="sub header">
+          Seu nome de usuário e senha não correspondem. Por favor, tente novamente.
+        </div>
+      </div>
+    </h5>
+  </div>
+{% endif %}
+
+<form class="ui large form" method="post" action="{% url 'account_login' %}">
+  {% csrf_token %}
+
+  <div class="ui stacked segment">
+    <div class="field">
+      <div class="ui left icon input">
+        <i class="user icon"></i>
+        {{ form.login }}
+      </div>
+    </div>
+    <div class="field">
+      <div class="ui left icon input">
+        <i class="lock icon"></i>
+        {{ form.password }}
+      </div>
+    </div>
+    {% include "utils/form-field.html" with field=form.remember %}
+
+    {% if redirect_field_value %}
+      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+    <button class="ui fluid large submit button" type="submit">{% trans "Sign In" %}</button>
+  </div>
+</form>
+
+<div class="ui message">
+  <p><a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% for field, errors in form.errors.items %}
+  <div class="ui error floating message">
+    <i class="close icon"></i>
+    <h5 class="ui header">
+      <i class="exclamation circle icon" aria-hidden="true"></i>
+      <div class="content">
+        {% comment %} {{ field }} {% endcomment %}
+        <div class="sub header">
+          <ul class="list">
+            {% for error in errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </h5>
+  </div>
+{% endfor %}

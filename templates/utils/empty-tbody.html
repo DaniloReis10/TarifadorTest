@@ -1,0 +1,45 @@
+{% if search %}
+  <tr>
+    <td colspan="9">
+      <div class="ui grid">
+        <div class="centered two column row">
+          <div class="center aligned column">
+            <h2 class="ui header"><i aria-hidden="true" class="search icon"></i>
+              <div class="content">Sua pesquisa "{{ search }}" não encontrou nenhum registro correspondente</div>
+            </h2>
+          </div>
+        </div>
+        <div class="centered two column row">
+          <div class="column">
+            <div role="list" class="ui list">
+              <div role="listitem" class="item">
+                <div class="content">
+                  <div class="header">Sugestões:</div>
+                  <ul>
+                    <li role="listitem">Certifique-se de que todas as palavras estejam escritas corretamente</li>
+                    <li role="listitem">Tente palavras-chave diferentes</li>
+                    <li role="listitem">Tente palavras-chave mais genéricas</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+{% else %}
+  <tr>
+    <td colspan="9">
+      <div class="ui grid">
+        <div class="centered two column row">
+          <div class="center aligned column">
+            <h2 class="ui header">
+              <div class="content">Nenhum registro encontrado</div>
+            </h2>
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+{% endif %}

@@ -1,0 +1,60 @@
+@page {
+    size: "A4";
+    margin-left: 1.5cm;
+    margin-right: 1.5cm;
+    margin-top: 2.5cm;
+    margin-bottom: 1cm;
+}
+
+.header {
+  padding: 20px;
+  text-align: center;
+}
+
+img {
+  height: 140px;
+  width: 420px;
+}
+
+.table {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.table td, .table th {
+  padding: 5px;
+}
+
+.table tr:nth-child(even){ background-color: #f2f2f2; }
+
+.table th {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  text-align: left;
+  background-color: #ddd;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.column {
+  float: left;
+  width: 49%;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.footer {
+  text-align: center;
+  padding: 10px;
+}

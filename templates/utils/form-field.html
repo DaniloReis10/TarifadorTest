@@ -1,0 +1,50 @@
+{% load formtags %}
+
+{% if field.field.widget.input_type == 'checkbox' %}
+  <div class="{% if field.field.required %}required{% endif %} inline field {% if field.errors %}error{% endif %}">
+    <div class="ui checkbox">
+      {{ field }}
+      <label>
+        <span style="float: left;">{{ field.label }}</span>
+        {% if explain %}
+          <div class="ui icon explain" data-content="{{explain}}" style="{{extra}} float: left; margin-left:5px;">
+            <i class="exclamation circle icon"></i>
+          </div>
+        {% endif %}
+      </label>
+    </div>
+  </div>
+{% elif field.field.widget.input_type == 'select' %}
+  <div class="{% if field.field.required %}required{% endif %} field {% if field.errors %}error{% endif %}">
+    <label>
+      <span style="float: left;">{{ field.label }}</span>
+      {% if explain %}
+        <div class="ui icon explain" data-content="{{explain}}" style="{{extra}} float: left; margin-left:5px;">
+          <i class="exclamation circle icon"></i>
+        </div>
+      {% endif %}
+    </label>
+    {{ field|addclass:"ui search dropdown" }}
+  </div>
+{% elif inline %}
+  <div class="{% if field.field.required %}required{% endif %} field {% if field.errors %}error{% endif %}">
+    <div class="ui left icon input">
+      <i class="{{ icon }} icon"></i> {{ field }}
+    </div>
+  </div>
+{% else %}
+  <div class="{% if field.field.required %}required{% endif %} field {% if field.errors %}error{% endif %}">
+    <label>
+      <span style="float: left;">{{ field.label }}</span>
+      {% if explain %}
+        <div class="ui icon explain" data-content="{{explain}}" style="float: left; margin-left:5px;">
+          <i class="exclamation circle icon"></i>
+        </div>
+      {% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+      <small>{{ field.help_text|safe }}</small>
+    {% endif %}
+  </div>
+{% endif %}

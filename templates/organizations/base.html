@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block content %}
+<div class="ui secondary secondary-menu menu t-menu">
+  <div class="item">
+    <div class="ui massive breadcrumb">
+      {% if user.is_superuser %}
+        <a class="section" href="{% url 'organization_list' %}">
+          <h2 class="ui inverted header">Organizações</h2>
+        </a>
+      {% endif %}
+      {% if organization %}
+        {% if user.is_superuser %}
+          <i class="right chevron icon divider"></i>
+          <a class="section" href="{% url 'organization_detail' organization.pk %}">
+            <h2 class="ui inverted header">{{ organization.name }}</h2>
+          </a>
+        {% else %}
+          <a class="section" href="{% if organization|is_admin:user %}{% url 'organization_detail' organization.slug %}{% endif %}">
+            <h2 class="ui inverted header">{{ organization.name }}</h2>
+          </a>
+        {% endif %}
+      {% endif %}
+      {% block breadcrumb %}{% endblock %}
+    </div>
+  </div>
+</div>
+<div class="t-content">
+  <div class="ui internally celled grid">
+    <div class="row">
+      <div class="thirteen wide column">
+        {% block org-content %}{% endblock %}
+      </div>
+      <div class="three wide column">
+        {% include "organizations/sidemenu.html" with organization=organization %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

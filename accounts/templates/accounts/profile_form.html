@@ -1,5 +1,5 @@
 {% extends "organizations/base.html" %}
-{% load static from staticfiles %}
+{% load static %}
 {% load debug %}
 
 {% block title %}Usuários - Editar{% endblock %}
@@ -7,7 +7,7 @@
 {% block breadcrumb %}
 {% if organization %}
   <i class="right chevron icon divider"></i>
-  <a class="section" href="{% url 'organization_detail' organization.slug %}">
+  <a class="section" href="{% url 'organization_detail' organization.pk %}">
     <h2 class="ui inverted header">Usuários</h2>
   </a>
 {% endif %}

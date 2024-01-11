@@ -1,0 +1,19 @@
+{% load datetime_format %}
+
+<tr>
+  <td class="collapsing">
+    {% if type == 'LOCAL' %}
+      Local Fixo-Fixo Extragrupo
+    {% elif type == 'VC1' or type == 'VC2' or type == 'VC3' %}
+      Local Fixo-Móvel ({{ type }})
+    {% elif type == 'DDD' %}
+      LDN-fixo/fixo-D1/D2/D3/D4
+    {% else %}
+      Longa Distância Internacional
+    {% endif %}
+  </td>
+  <td class="center aligned">R$ {{ data.price|default:0|floatformat:2 }}</td>
+  <td class="center aligned">{{ data.qtdcall|default:0 }}</td>
+  <td class="center aligned">{{ data.qtdminutes|default:0|timeformat }}</td>
+  <td class="center aligned">R$ {{ data.costcharged|default:0|floatformat:2 }}</td>
+</tr>

@@ -1,0 +1,96 @@
+{% extends "organizations/base.html" %}
+
+{% load org_tags %}
+{% load static  %}
+
+{% block title %}{{ organization.name }} - Clientes{% endblock %}
+
+{% block breadcrumb %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="{% url 'centers:list' organization.slug %}">
+    <h2 class="ui inverted header">Clientes</h2>
+  </a>
+{% endblock %}
+
+{% block org-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="item t-search-item">
+    <div class="ui transparent left icon input">
+      <input name="search" placeholder="Buscar por nome ..." type="text" value="{{ request.GET.search }}">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="item">
+    <button class="ui blue circular inverted button" type="submit">Buscar</button>
+  </div>
+</form>
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Cliente</th>
+      <th>Serviços Básicos</th>
+      <th>Tabela de Valores</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for company in company_list %}
+      <tr>
+        <td>
+          <a href="{% url 'phonecalls:list' organization.slug company.slug %}">
+            {{ company.name }}
+          </a>
+        </td>
+        <td> <!-- TODO link para detalhe do serviço básico -->
+          {{ company.service_pricetable }}
+        </td>
+        <td> <!-- TODO link para detalhe da tabela de valores -->
+          {{ company.call_pricetable }}
+        </td>
+        <td>{{ company.created|date:"d/m/Y" }} às {{ company.created|time:"H:i" }}</td>
+        <td>{{ company.modified|date:"d/m/Y" }} às {{ company.modified|time:"H:i" }}</td>
+        <td class="collapsing">
+          <div class="ui small buttons">
+            {% comment %} INFO faltou espaço
+            <a class="ui basic blue button" href="{% url 'phonecalls:list' organization.slug company.slug %}">
+              <i class="phone icon"></i> Chamadas
+            </a>
+            {% endcomment %}
+            <a class="ui basic blue button" href="{% url 'extensions:company_extension_list' organization.slug company.slug %}">
+              <i class="list alternate outline icon"></i> Ramais
+            </a>
+            {% if user.is_superuser or organization|is_admin:user %}
+              <a class="ui basic blue button" href="{% url 'centers:update' organization.slug company.slug %}">
+                <i class="edit outline icon"></i> Editar
+              </a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="4">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with page_obj=page_obj paginator=paginator %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}

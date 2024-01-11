@@ -1,0 +1,34 @@
+<form class="ui mini modal" id="t-report-modal" action="{% url action organization.slug company.slug %}" method="get">
+  <input name="calltype" type="hidden" value="{{ request.GET.calltype }}">
+  <input name="date_gt" type="hidden" value="{{ request.GET.date_gt }}">
+  <input name="date_lt" type="hidden" value="{{ request.GET.date_lt }}">
+  <input name="pabx" type="hidden" value="{{ request.GET.pabx }}">
+  <input name="ramal" type="hidden" value="{{ request.GET.ramal }}">
+  <input name="service" type="hidden" value="{{ request.GET.service }}">
+
+  <div class="header">
+    Exportar
+  </div>
+  <div class="content">
+    <div class="inline fields">
+      {% if showcsv|default:True is True %}
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input class="hidden" type="radio" name="format" value="csv" tabindex="0">
+            <label>CSV</label>
+          </div>
+        </div>
+      {% endif %}
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input class="hidden" type="radio" name="format" value="pdf" tabindex="0">
+          <label>PDF</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">Cancelar</div>
+    <button class="ui ok green button" type="submit">Exportar</button>
+  </div>
+</form>

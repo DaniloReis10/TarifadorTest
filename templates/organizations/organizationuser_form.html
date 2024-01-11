@@ -1,0 +1,35 @@
+{% extends 'organizations/base.html' %}
+
+{% block title %}{{ organization.name }} - Novo Usuário{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'organization_detail' organization.slug %}">
+  <h2 class="ui inverted header">Usuários</h2>
+</a>
+<i class="right chevron icon divider"></i>
+<a class="section">
+  <h2 class="ui inverted header">Novo</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+
+    <h4 class="ui dividing header">Informações do Usuário</h4>
+    {% include "utils/form-field.html" with field=form.email %}
+
+    <h4 class="ui dividing header">Informações da Organização</h4>
+    {% include "utils/form-field.html" with field=form.is_admin explain='Marcar se o usuário for administrador da organização' extra='width:220px;' %}
+    {% if user.is_superuser %}
+      {% include "utils/form-field.html" with field=form.is_owner explain='Marcar se o usuário for proprietário da organização' extra='width:220px;' %}
+    {% endif %}
+    {% include "utils/form-field.html" with field=form.company extra='width:220px;' %}
+    <button class="ui blue right floated button" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

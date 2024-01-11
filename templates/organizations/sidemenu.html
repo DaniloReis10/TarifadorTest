@@ -1,0 +1,82 @@
+{% load org_tags %}
+{% load static  %}
+
+{% if organization %}
+  <div class="ui vertical following fluid accordion text menu">
+    <div class="item active">
+      <a class="active title"><i class="dropdown icon"></i> <b>Clientes</b></a>
+      <div class="active content menu">
+        <a class="item" href="{% url 'centers:list' organization.slug %}">
+          <i class="briefcase icon"></i> Lista de Clientes
+        </a>
+        {% if organization|is_admin:user or user.is_superuser %}
+          <a class="item" href="{% url 'centers:create' organization.slug %}">
+            <i class="plus icon"></i> Novo Cliente
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% if organization|is_admin:user or user.is_superuser %}
+      <div class="item active">
+        <a class="active title"><i class="dropdown icon"></i> <b>Usuários</b></a>
+        <div class="active content menu">
+          <a class="item" href="{% url 'organization_detail' organization.pk %}">
+            <i class="users icon"></i> Lista de Usuários
+          </a>
+          <a class="item" href="{% url 'organization_user_add' organization.pk %}">
+            <i class="user plus icon"></i> Novo Usuário
+          </a>
+        </div>
+      </div>
+      <div class="item active">
+        <a class="active title"><i class="dropdown icon"></i> <b>Relatórios</b></a>
+        <div class="active content menu">
+          <a class="item" href="{% url 'phonecalls:org_phonecall_list' organization.slug %}">
+            <i class="list alternate outline icon"></i> Relatório Detalhado
+          </a>
+          <a class="item" href="{% url 'phonecalls:org_phonecall_resume' organization.slug %}">
+            <i class="paste icon"></i> Relatório Resumido
+          </a>
+          <a class="item" href="{% url 'phonecalls:org_phonecall_ust' organization.slug %}">
+            <i class="file alternate outline icon"></i> Relatório UST
+          </a>
+        </div>
+      </div>
+      <div class="item active">
+        <a class="active title"><i class="dropdown icon"></i> <b>Ramais</b></a>
+        <div class="active content menu">
+          <a class="item" href="{% url 'extensions:org_extension_list' organization.slug %}">
+            <i class="list alternate outline icon"></i> Lista de Ramais
+          </a>
+          <a class="item" href="{% url 'extensions:org_solicitation_list' organization.slug %}">
+            <i class="sticky note icon"></i> Solicitações de Ramais
+          </a>
+          <a class="item" href="{% url 'extensions:org_solicitation_create' organization.slug %}">
+            <i class="plus icon"></i> Nova Solicitação de Ramais
+          </a>
+        </div>
+      </div>
+    {% endif %}
+    <div class="item active">
+      <a class="active title"><i class="dropdown icon"></i> <b>Valores</b></a>
+      <div class="active content menu">
+        <a class="item" href="{% url 'charges:service_pricetable_list' organization.slug %}">
+          <i class="tasks icon"></i> Serviços Básicos
+        </a>
+        <a class="item" href="{% url 'charges:call_pricetable_list' organization.slug %}">
+          <i class="table icon"></i> Serviços de Comunicação
+        </a>
+      </div>
+    </div>
+    {% if organization|is_admin:user or user.is_superuser %}
+      <div class="item active">
+        <a class="active title"><i class="dropdown icon"></i> <b>{{ organization }}</b></a>
+        <div class="active content menu">
+          <a class="item" href="{% url 'organization_edit' organization.pk %}">
+            <i class="settings icon"></i> Configurações
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

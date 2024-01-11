@@ -1,0 +1,80 @@
+<div class="ui vertical following fluid accordion text menu">
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Organizações</b></a>
+    <div class="active content menu">
+      <a class="item" href="{% url 'organization_list' %}">
+        <i class="globe icon"></i> Lista de Organizações
+      </a>
+      <a class="item" href="{% url 'organization_add' %}">
+        <i class="plus icon"></i> Nova Organização
+      </a>
+    </div>
+  </div>
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Chamadas</b></a>
+    <div class="active content menu">
+      <a class="item" href="{% url 'adm_phonecall_list' %}">
+        <i class="phone square icon"></i> Lista de Chamadas
+      </a>
+    </div>
+  </div>
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Relatórios</b></a>
+    <div class="active content menu">
+      <a class="item" href="{% url 'adm_phonecall_resume' %}">
+        <i class="paste icon"></i> Relatório Resumido
+      </a>
+      <a class="item" href="{% url 'adm_phonecall_ust' %}">
+        <i class="file alternate outline icon"></i> Relatório UST
+      </a>
+    </div>
+  </div>
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Valores</b></a>
+    <div class="active content menu">
+      <a class="item" href="{% url 'adm_service_pricetable_list' %}">
+        <i class="tasks icon"></i> Serviços Básicos
+      </a>
+      <a class="item" href="{% url 'adm_service_pricetable_create' %}">
+        <i class="plus icon"></i> Novo Serviço Básico
+      </a>
+      <a class="item" href="{% url 'adm_call_pricetable_list' %}">
+        <i class="table icon"></i> Serviços de Comunicação
+      </a>
+      <a class="item" href="{% url 'adm_call_pricetable_create' %}">
+        <i class="plus icon"></i> Novo Serviço de Comunicação
+      </a>
+    </div>
+  </div>
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Ramais</b></a>
+    <div class="active content menu">
+      <a class="item" href="{% url 'extension_list' %}">
+        <i class="list alternate outline icon"></i> Faixas de Ramais
+      </a>
+      <a class="item" href="{% url 'extension_create' %}">
+        <i class="plus icon"></i> Nova Faixa de Ramais
+      </a>
+      <a class="item" href="{% url 'organization_list' %}#ramal-solicitation">
+        <i class="sticky note icon"></i> Solicitações de Ramais
+      </a>
+    </div>
+  </div>
+  <div class="item active">
+    <a class="active title"><i class="dropdown icon"></i> <b>Admin</b></a>
+    <div class="active content menu">
+      <a class="item" target="_blank" href="{% url 'admin:auth_user_changelist' %}">
+        <i class="users icon"></i> Usuários
+      </a>
+      <a class="item" target="_blank" href="{% url 'admin:organizations_organizationuser_changelist' %}">
+        <i class="globe icon"></i> Usuários da Organização
+      </a>
+      <a class="item" target="_blank" href="{% url 'admin:centers_companyuser_changelist' %}">
+        <i class="briefcase icon"></i> Usuários da Empresa
+      </a>
+      <a class="item" target="_blank" href="{% url 'admin:index' %}">
+        <i class="cogs icon"></i> Configurações
+      </a>
+    </div>
+  </div>
+</div>

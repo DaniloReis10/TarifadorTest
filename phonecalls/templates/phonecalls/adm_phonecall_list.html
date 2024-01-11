@@ -1,0 +1,442 @@
+{% extends 'adm/base.html' %}
+
+{% load static from staticfiles %}
+{% load datetime_format %}
+{% load phonecall_tags %}
+
+{% block title %}Admin - Chamadas{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'adm_phonecall_list' %}">
+  <h2 class="ui inverted header">Lista de Chamadas</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <input name="date_gt" type="hidden" value="{{ request.GET.date_gt }}">
+  <input name="date_lt" type="hidden" value="{{ request.GET.date_lt }}">
+
+  <div class="item t-search-item">
+    <div class="ui transparent left icon input">
+      <input name="search" placeholder="Buscar por ramal, número discado ..." type="text" value="{{ request.GET.search }}">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="item">
+    <button class="ui blue circular inverted button" type="submit">Buscar</button>
+  </div>
+  <div class="right menu">
+    <div class="item" id="t-report">
+      <button class="ui green circular inverted button">
+        <i class="file alternate outline icon" aria-hidden="true"></i>
+        Exportar
+      </button>
+    </div>
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+<div class="ui bottom attached segment t-filter-bar" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <input name="search" type="hidden" value="{{ request.GET.search }}">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="six fields">
+      <div class="field">
+        <label>Organizações</label>
+        <div class="ui selection search dropdown">
+          <input id="filter-org" type="hidden" name="organization" value="{{ request.GET.organization }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in org_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Cliente</label>
+        <div class="ui selection search dropdown" id="company-dropdown">
+          <input id="filter-company" type="hidden" name="company" value="{{ request.GET.company }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in company_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Centro de Custo</label>
+        <div class="ui selection search dropdown" id="center-dropdown">
+          <input id="filter-center" type="hidden" name="center" value="{{ request.GET.center }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in center_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Setor</label>
+        <div class="ui selection search dropdown" id="sector-dropdown">
+          <input id="filter-sector" type="hidden" name="sector" value="{{ request.GET.sector }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in sector_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>DDD - Estado</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="ddd" value="{{ request.GET.ddd }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in ddd_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Número de Resultados</label>
+        <div class="ui input left icon">
+          <input name="page_size" type="number" min="10" max="100" value="{{ request.GET.page_size|default:20 }}">
+        </div>
+      </div>
+    </div>
+    <div class="six fields">
+      <div class="field">
+        <label>De</label>
+        <div class="ui input">
+          <input name="chargednumber" placeholder="Numero Cobrado" type="text" value="{{ request.GET.chargednumber }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Para</label>
+        <div class="ui input">
+          <input name="dialednumber" placeholder="Numero Discado" type="text" value="{{ request.GET.dialednumber }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Chamada Originadas/Recebidas</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="bound" value="{{ request.GET.bound|default:2 }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="1">Originadas</div>
+            <div class="item" data-value="2">Originadas Cobradas</div>
+            <div class="item" data-value="3">Recebidas</div>
+            <div class="item" data-value="4">Todas</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Chamada Internas</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="internal" value="{{ request.GET.internal }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            <div class="item" data-value="true">Sim</div>
+            <div class="item" data-value="false">Não</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Chamada Desconhecida</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="unknown" value="{{ request.GET.unknown }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            <div class="item" data-value="true">Sim</div>
+            <div class="item" data-value="false">Não</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Chamada Não Identificada</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="unidentified" value="{{ request.GET.unidentified }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            <div class="item" data-value="true">Sim</div>
+            <div class="item" data-value="false">Não</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="five fields">
+      <div class="field">
+        <label>Data Inicial</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Data Final</label>
+        <div class="ui calendar" id="rangeend">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de Chamada</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="calltype" value="{{ request.GET.calltype }}">
+          <i class="dropdown icon"></i>
+          <div class="default text">Tipo de Ligação</div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in calltype_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de Serviço</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="service" value="{{ request.GET.service }}">
+          <i class="dropdown icon"></i>
+          <div class="default text">Tipo de Serviço</div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in service_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Classificação PABX</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="pabx" value="{{ request.GET.pabx }}">
+          <i class="dropdown icon"></i>
+          <div class="default text">Tipo de Classificação PABX</div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in pabx_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Ramal</th>
+      <th>Número Cobrado</th>
+      <th>Número Discado</th>
+      <th>Tipo de Chamada</th>
+      <th>Tipo de Serviço</th>
+      <th>Classificação PABX</th>
+      <th>Data/Hora Início</th>
+      <th>Data/Hora Fim</th>
+      <th>Duração</th>
+      <th>Tempo Faturado</th>
+      <th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for phonecall in phonecall_list %}
+      <tr>
+        <td>{{ phonecall.extension }}</td>
+        <td>{{ phonecall.chargednumber }}</td>
+        <td>{{ phonecall.dialednumber }}</td>
+        <td>{{ phonecall.calltype|calltype_display }}</td>
+        <td>{{ phonecall.service|service_display }}</td>
+        <td>{{ phonecall.pabx|pabx_display }}</td>
+        <td>{{ phonecall.startdate|date:"d/m/Y" }} {{ phonecall.starttime|time:"H:i:s" }}</td>
+        <td>{{ phonecall.stopdate|date:"d/m/Y" }} {{ phonecall.stoptime|time:"H:i:s" }}</td>
+        <td>{{ phonecall.duration|timeformat }}</td>
+        <td>{{ phonecall.billedtime|timeformat }}</td>
+        <td>R$ {{ phonecall.org_billedamount|floatformat:2 }}</td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="9">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with urlencode=urlencode page_obj=page_obj paginator=paginator %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% include "reports/adm_phonecall_modal.html" with request=request action='adm_phonecall_report_csv' showpdf='false' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $("#t-filter")
+      .popup({ position: "top center" })
+
+    $("#t-filter")
+      .click(() => $("#t-filter-bar").transition("slide down"))
+
+    $("#t-report")
+      .click((event) => {
+        event.preventDefault()
+        $("#t-report-modal")
+          .modal("show")
+      })
+
+    $(".ui.radio.checkbox")
+      .checkbox()
+
+    $("#rangestart").calendar({
+      endCalendar: $("#rangeend"),
+      type: "date",
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return ""
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + "/" + month + "/" + year
+        }
+      }
+    })
+
+    $("#rangeend").calendar({
+      startCalendar: $("#rangestart"),
+      type: "date",
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return ""
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + "/" + month + "/" + year
+        }
+      }
+    })
+
+    $('.ui.dropdown').dropdown({ fullTextSearch: true })
+
+    $("#filter-org").change(function() {
+      var orgSlug = $(this).val()
+      var menu_options = `<div class="item" data-value="">----</div>\n`
+
+      $("#filter-company").val("")
+      $("#filter-center").val("")
+      $("#filter-sector").val("")
+      $("#company-dropdown .menu").html(menu_options)
+      $("#center-dropdown .menu").html(menu_options)
+      $("#sector-dropdown .menu").html(menu_options)
+      $('.ui.dropdown').dropdown({ fullTextSearch: true })
+
+      if (orgSlug) {
+        $.ajax({
+          url: `/${orgSlug}/companies/`,
+          success: ({ options }) => {
+            options.forEach(({ value, text }) => {
+              menu_options += `<div class="item" data-value="${ value }">${ text }</div>\n`
+            })
+            $("#company-dropdown .menu").html(menu_options)
+            $("#company-dropdown").dropdown()
+          }
+        })
+      }
+    })
+
+    $("#filter-company").change(function() {
+      var orgSlug = $("#filter-org").val()
+      var companySlug = $(this).val()
+      var menu_options = `<div class="item" data-value="">----</div>\n`
+
+      $("#filter-center").val("")
+      $("#filter-sector").val("")
+      $("#center-dropdown .menu").html(menu_options)
+      $("#sector-dropdown .menu").html(menu_options)
+      $('.ui.dropdown').dropdown({ fullTextSearch: true })
+
+      if (orgSlug && companySlug) {
+        $.ajax({
+          url: `/${orgSlug}/companies/${companySlug}/centers/`,
+          success: ({ options }) => {
+            options.forEach(({ value, text }) => {
+              menu_options += `<div class="item" data-value="${ value }">${ text }</div>\n`
+            })
+            $("#center-dropdown .menu").html(menu_options)
+            $("#center-dropdown").dropdown()
+          }
+        })
+      }
+    })
+
+    $("#filter-center").change(function() {
+      var orgSlug = $("#filter-org").val()
+      var companySlug = $("#filter-company").val()
+      var centerId = $(this).val()
+      var menu_options = `<div class="item" data-value="">----</div>\n`
+
+      $("#filter-sector").val("")
+      $("#sector-dropdown .menu").html(menu_options)
+      $('.ui.dropdown').dropdown({ fullTextSearch: true })
+
+      if (orgSlug && companySlug && centerId) {
+        $.ajax({
+          url: `/${orgSlug}/companies/${companySlug}/sectors/`,
+          data: {
+            "center": centerId
+          },
+          success: ({ options }) => {
+            options.forEach(({ value, text }) => {
+              menu_options += `<div class="item" data-value="${ value }">${ text }</div>\n`
+            })
+            $("#sector-dropdown .menu").html(menu_options)
+            $("#sector-dropdown").dropdown()
+          }
+        })
+      }
+    })
+  })
+</script>
+{% endblock %}

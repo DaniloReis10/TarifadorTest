@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="ui secondary secondary-menu menu t-menu">
+  <div class="item">
+    <div class="ui massive breadcrumb">
+      <a class="section" href="{% url 'organization_list' %}">
+        <h2 class="ui inverted header">Admin</h2>
+      </a>
+      {% block breadcrumb %}{% endblock %}
+    </div>
+  </div>
+</div>
+<div class="t-content">
+  <div class="ui internally celled grid">
+    <div class="row">
+      <div class="thirteen wide column">
+        {% block adm-content %}{% endblock %}
+      </div>
+      <div class="three wide column">
+        {% include "adm/sidemenu.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

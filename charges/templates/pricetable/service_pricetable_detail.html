@@ -1,0 +1,110 @@
+{% extends 'organizations/base.html' %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block title %}{{ organization.name }} - Valores - Serviços Básicos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'charges:service_pricetable_list' organization.slug %}">
+  <h2 class="ui inverted header">Valores - Serviços Básicos</h2>
+</a>
+<i class="right chevron icon divider"></i>
+<a class="section" href="#">
+  <h2 class="ui inverted header">{{ pricetable.name }}</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<div class="ui internally celled grid">
+  <div class="row">
+    <div class="four wide column">
+      <table class="ui definition table">
+        <tbody>
+          <tr>
+            <td>Tabela</td>
+            <td>{{ pricetable.name }}</td>
+          </tr>
+          <tr>
+            <td>Proprietário</td>
+            <td>
+              {{ pricetable.organization.name }}
+            </td>
+          </tr>
+          <tr>
+            <td>Cliente</td>
+            <td>{{ pricetable.service_company_set.first|default:"----" }}</td>
+          </tr>
+          <tr>
+            <td>Criado em</td>
+            <td>{{ pricetable.created|date:"d/m/Y" }} às {{ pricetable.created|time:"H:i" }}</td>
+          </tr>
+          <tr>
+            <td>Atualizado em</td>
+            <td>{{ pricetable.modified|date:"d/m/Y" }} às {{ pricetable.modified|time:"H:i" }}</td>
+          </tr>
+          <tr>
+            <td>Status</td>
+            <td>
+              {% if pricetable.status %}
+                <span class="ui green label">Ativa</span>
+              {% else %}
+                <span class="ui red label">Inativa</span>
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+        {% if user.is_superuser or organization|is_admin:user %}
+          <tfoot>
+            <tr>
+              <td colspan="2">
+                <a class="fluid ui blue basic button" href="{% url 'charges:service_pricetable_update' organization.slug pricetable.id %}">
+                  <i class="edit outline icon"></i> Editar
+                </a>
+              </td>
+            </tr>
+          </tfoot>
+        {% endif %}
+      </table>
+    </div>
+    <div class="twelve wide column">
+      <table class="ui definition table">
+        <thead>
+          <tr class="active">
+            <td class="center aligned" colspan="3"><b>VALORES</b></td>
+          </tr>
+          <tr>
+            <th></th>
+            <th class="center aligned">Quantidade</th>
+            <th class="center aligned">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for price in price_list %}
+            <tr>
+              <td class="collapsing">{{ price.get_basic_service_display }}</td>
+              <td class="center aligned">{{ price.basic_service_amount }}</td>
+              <td class="center aligned">R$ {{ price.value|default:0|floatformat:4 }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3">
+                <div class="ui grid">
+                  <div class="centered two column row">
+                    <div class="center aligned column">
+                      <h2 class="ui header">
+                        <div class="content">Nenhum valor cadastrado</div>
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

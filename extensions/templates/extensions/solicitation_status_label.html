@@ -1,0 +1,11 @@
+{% load solicitation_tags %}
+
+{% if status == 1 %} {# Aberto #}
+  <a class="ui yellow label">{{ status|statussolicitation }}</a>
+{% elif status == 2 %} {# Aprovado #}
+  <a class="ui green label">{{ status|statussolicitation }}</a>
+{% elif status == 3 %} {# Cancelado #}
+  <a class="ui grey label">{{ status|statussolicitation }}</a>
+{% elif status == 4 %} {# Negado #}
+  <a class="ui red label">{{ status|statussolicitation }}</a>
+{% endif %}

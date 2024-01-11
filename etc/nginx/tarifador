@@ -1,0 +1,21 @@
+server {{
+    listen 80;
+    server_name {HOST};
+
+    location = /favicon.ico {{
+        alias {STATIC_ROOT}/favicon.ico;
+    }}
+
+    location {STATIC_URL} {{
+        alias {STATIC_ROOT};
+    }}
+
+    location {MEDIA_URL} {{
+        alias {MEDIA_ROOT};
+    }}
+
+    location / {{
+        include proxy_params;
+        proxy_pass http://unix:{PROJECT_DIR}/{PROJECT_NAME}.sock;
+    }}
+}}

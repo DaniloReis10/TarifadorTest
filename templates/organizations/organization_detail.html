@@ -1,0 +1,132 @@
+{% extends "organizations/base.html" %}
+{% load org_tags %}
+
+{% block title %}{{ organization.name }}{% endblock %}
+
+{% block org-content %}
+<div class="ui grid">
+  <div class="row">
+    <div class="column">
+      <h1 class="ui grey header t-center-header">
+        {% if organization.settings.logo %}
+          <img class="ui image" src="{{ organization.settings.logo.url }}">
+        {% endif %}
+        <div class="content">
+          {{ organization.name }}
+        </div>
+      </h1>
+    </div>
+  </div>
+</div>
+<h2 class="ui dividing grey header">
+  <i class="users icon"></i>
+  Usuários
+</h2>
+
+<table class="ui selectable compact table">
+  <thead>
+    <tr>
+      <th>Usuário</th>
+      <th>E-mail</th>
+      <th>Cliente</th>
+      <th class="center aligned">Nível</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th>Status</th>
+      {% if user.is_superuser or organization|is_admin:user %}
+        <th></th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for org_user in organization_users %}
+      <tr>
+        <td>
+          {% if org_user.user.get_full_name %}
+            {{ org_user.user.get_full_name }}
+          {% else %}
+            {{ org_user.user.username }}
+          {% endif %}
+        </td>
+        <td>{{ org_user.user.email }}</td>
+        <td>{{ org_user.user.companies.first.company.name }}</td>
+        <td class="center aligned">
+          {% if org_user.organizationowner.exists %}
+            <label class="ui blue basic tiny label">Proprietário</label>
+          {% elif org_user.is_admin %}
+            <label class="ui blue basic tiny label">Administrador</label>
+          {% endif %}
+        </td>
+        <td>{{ org_user.user.profile.created|date:"d/m/Y" }} às {{ org_user.user.profile.created|time:"H:i" }}</td>
+        <td>{{ org_user.user.profile.modified|date:"d/m/Y" }} às {{ org_user.user.profile.modified|time:"H:i" }}</td>
+        <td>
+          {% if org_user.user.is_active %}
+            <i class="circle green icon"></i>
+          {% else %}
+            <i class="circle red icon"></i>
+          {% endif %}
+        </td>
+        {% if user.is_superuser or organization|is_admin:user %}
+          <td class="collapsing">
+            <div class="ui small buttons">
+              <a class="ui basic blue button" href="{% url 'org_profile_update' organization.pk org_user.user.pk %}">
+                <i class="edit outline icon"></i> Editar
+              </a>
+            </div>
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<br>
+<h2 class="ui dividing grey header">
+  <i class="briefcase icon"></i>
+  Clientes
+</h2>
+
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Cliente</th>
+      <th>Serviços Básicos</th>
+      <th>Tabela de Valores</th>
+      <th>Usuários</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for company in company_list %}
+      <tr>
+        <td>
+          <a href="{% url 'phonecalls:list' organization.slug company.slug %}">
+            {{ company.name }}
+          </a>
+        </td>
+        <td>{{ company.service_pricetable }}</td>
+        <td>{{ company.call_pricetable }}</td>
+        <td>{{ company.users.count }}</td>
+        <td>{{ company.created|date:"d/m/Y" }} às {{ company.created|time:"H:i" }}</td>
+        <td>{{ company.modified|date:"d/m/Y" }} às {{ company.modified|time:"H:i" }}</td>
+        <td class="collapsing">
+          {% if user.is_superuser or organization|is_admin:user %}
+            <div class="ui small buttons">
+              <a class="ui basic blue button" href="{% url 'extensions:company_extension_list' organization.slug company.slug %}">
+                <i class="phone square icon"></i> Ramais
+              </a>
+              <a class="ui basic blue button" href="{% url 'centers:update' organization.slug company.slug %}">
+                <i class="edit outline icon"></i> Editar
+              </a>
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

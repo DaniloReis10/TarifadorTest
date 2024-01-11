@@ -1,0 +1,59 @@
+{% extends 'centers/base.html' %}
+
+{% load org_tags %}
+{% load static  %}
+
+{% block title %}
+  {% if center %}
+    {{ center.name }} - Editar
+  {% else %}
+    {{ company.name }} - Novo Centro de Custo
+  {% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="{% url 'centers:center_list' organization.slug company.slug %}">
+    <h2 class="ui inverted header">Centros de Custo</h2>
+  </a>
+  {% if center %}
+    <i class="right chevron icon divider"></i>
+    <a class="section">
+      <h2 class="ui inverted header">Editar</h2>
+    </a>
+  {% else %}
+    <i class="right chevron icon divider"></i>
+    <a class="section">
+      <h2 class="ui inverted header">Novo</h2>
+    </a>
+  {% endif %}
+{% endblock %}
+
+{% block center-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <h4 class="ui dividing header">Centro de Custos</h4>
+    <div class="two fields">
+      {% include "utils/form-field.html" with field=form.name %}
+    </div>
+
+    <h4 class="ui dividing header">Associar Ramais</h4>
+    {% if available_ext_range %}
+      <div class="ui info message">
+        RAMAIS DISPONÍVEIS: {{ available_ext_range }}
+      </div>
+    {% else %}
+      <div class="ui negative message">
+        RAMAIS DISPONÍVEIS: Não há ramais disponíveis! Solicite novos ramais.
+      </div>
+    {% endif %}
+    {% include "utils/form-field.html" with field=form.extension_range %}
+
+    <button class="ui blue button" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

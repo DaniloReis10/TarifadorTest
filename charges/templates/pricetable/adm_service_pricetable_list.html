@@ -1,0 +1,100 @@
+{% extends "adm/base.html" %}
+
+{% load org_tags %}
+{% load solicitation_tags %}
+{% load static %}
+
+{% block title %}Admin - Valores - Serviços Básicos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'adm_service_pricetable_list' %}">
+  <h2 class="ui inverted header">Valores - Serviços Básicos</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Tabela</th>
+      <th>Proprietário</th>
+      <th>Organização</th>
+      <th>Cliente</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pricetable in pricetable_list %}
+      <tr>
+        <td>
+          <a href="{% url 'adm_service_pricetable_detail' pricetable.id %}">
+            {{ pricetable.name }}
+          </a>
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            {{ pricetable.organization.name }}
+          {% else %}
+            Administrador
+          {% endif %}
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            ---
+          {% else %}
+            {{ pricetable.service_orgsettings_set.count }}
+          {% endif %}
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            {{ pricetable.service_company_set.count }}
+          {% else %}
+            ---
+          {% endif %}
+        </td>
+        <td>{{ pricetable.created|date:"d/m/Y" }} às {{ pricetable.created|time:"H:i" }}</td>
+        <td>{{ pricetable.modified|date:"d/m/Y" }} às {{ pricetable.modified|time:"H:i" }}</td>
+        <td>
+          {% if pricetable.status %}
+            <span class="ui green label">Ativa</span>
+          {% else %}
+            <span class="ui red label">Inativa</span>
+          {% endif %}
+        </td>
+        <td class="collapsing">
+          <div class="ui small buttons">
+            <a class="ui blue basic button" href="{% url 'adm_service_pricetable_update' pricetable.id %}">
+              <i class="edit outline icon"></i> Editar
+            </a>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="6">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with page_obj=page_obj paginator=paginator page_range=page_range %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}

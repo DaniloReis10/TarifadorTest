@@ -1,0 +1,97 @@
+{% extends "centers/base.html" %}
+
+{% load static  %}
+
+{% block title %}{{ company.name }} - Centros de Custo{% endblock %}
+
+{% block breadcrumb %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="{% url 'centers:center_list' organization.slug company.slug %}">
+    <h2 class="ui inverted header">Centros de Custo</h2>
+  </a>
+{% endblock %}
+
+{% block center-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="item t-search-item">
+    <div class="ui transparent left icon input">
+      <input name="search" placeholder="Buscar por nome ..." type="text" value="{{ request.GET.search }}">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="item">
+    <button class="ui blue circular inverted button" type="submit">Buscar</button>
+  </div>
+</form>
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Centro de Custo</th>
+      <th>Faixas de Ramais</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for center in center_list %}
+      <tr>
+        <td>
+          <a href="{% url 'phonecalls:list' organization.slug company.slug %}?center={{ center.id }}">
+            {{ center.name }}
+          </a>
+        </td>
+        <td>{{ center.extension_range|default:"Não cadastrado." }}</td>
+        <td>{{ center.created|date:"d/m/Y" }} às {{ center.created|time:"H:i" }}</td>
+        <td>{{ center.modified|date:"d/m/Y" }} às {{ center.modified|time:"H:i" }}</td>
+        <td class="collapsing">
+          <div class="ui small buttons">
+            <a class="ui basic blue button" href="{% url 'extensions:company_extension_list' organization.slug company.slug %}?center={{ center.pk }}">
+              <i class="list alternate outline icon"></i> Ramais</a>
+            <a class="ui basic blue button" href="{% url 'centers:center_update' organization.slug company.slug center.pk %}">
+              <i class="edit outline icon"></i> Editar</a>
+            <a class="ui basic red button delete" center-id="{{ center.pk }}">
+              <i class="trash alternate outline icon"></i> Deletar</a>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="3">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with page_obj=page_obj paginator=paginator %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% for center in center_list %}
+  {% include "centers/center_confirm_delete_modal.html" with organization=organization company=company center=center %}
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $('a.delete').click(function() {
+      var centerId = $(this).attr('center-id')
+
+      $(`#t-center-${centerId}-delete-modal`).modal('show')
+    })
+  })
+</script>
+{% endblock %}

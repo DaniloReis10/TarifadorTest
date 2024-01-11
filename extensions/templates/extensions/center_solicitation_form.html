@@ -1,0 +1,19 @@
+{% extends 'centers/base.html' %}
+
+{% load static from staticfiles %}
+
+{% block title %}{{ center.name }} - Solicitação de Faixa de Ramais{% endblock %}
+
+{% block center-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+    <h4 class="ui dividing header">Nova Solicitação de Faixa de Ramais</h4>
+    {% include "utils/form-field.html" with field=form.extension_range %}
+    {% include "utils/form-field.html" with field=form.by_quantity %}
+    <button class="ui blue button" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

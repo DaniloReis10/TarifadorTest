@@ -67,7 +67,7 @@
           </div>
         </div>
         <div class="content">
-          <a class="item" href="{% url 'organization_detail' organization.slug %}">
+          <a class="item" href="{% url 'organization_detail' organization.pk %}">
             <div class="content">
               <div class="header">
                 <i class="chart pie icon"></i> Detalhes
@@ -81,7 +81,7 @@
               </div>
             </div>
           </a>
-          <a class="item" href="{% url 'organization_detail' organization.slug %}">
+          <a class="item" href="{% url 'organization_detail' organization.pk %}">
             <div class="content">
               <div class="header">
                 <i class="users icon"></i> Lista de Usuários
@@ -123,7 +123,7 @@
               </div>
             </div>
           </a>
-          <a class="item" href="{% url 'organization_edit' organization.slug %}">
+          <a class="item" href="{% url 'organization_edit' organization.pk %}">
             <div class="content">
               <div class="header">
                 <i class="edit outline icon"></i> Editar

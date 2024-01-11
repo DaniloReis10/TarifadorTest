@@ -1,0 +1,206 @@
+{% extends 'organizations/base.html' %}
+
+{% load static  %}
+
+{% block title %}{{ organization.name }} - Tabela de Valores - Serviços Básicos{% endblock %}
+
+{% block org-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+	<h2 class="ui dividing grey header">
+		<i class="table icon"></i>
+		Tabela de Valores - Serviços Básicos
+	</h2>
+
+	<div class="ui grid">
+		<div class="row">
+			<div class="column">
+				<form class="ui form" method="post">
+					{% csrf_token %}
+
+					<h4 class="ui dividing header">Descrição</h4>
+					<div class="{% if form.status %}three{% else %}two{% endif %} fields">
+						<div class="ten wide field">
+							{% include "utils/form-field.html" with field=form.name %}
+						</div>
+						{% if form.status %}
+							<div class="field">
+								{% include "utils/form-field.html" with field=form.status %}
+							</div>
+						{% endif %}
+					</div>
+
+					<h4 class="ui dividing header">Serviços Básicos</h4>
+					<h4 class="ui header">Serviços de Disponibilização de Acesso a Comunicação Voip</h4>
+					<h5 class="ui header">Serviço de Acesso Nivel 1</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_1_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_1_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso Nivel 2</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_2_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_2_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso Nivel 3</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_3_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_3_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso Nivel 4</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_4_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_4_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso Nivel 5</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_5_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_5_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso Nivel 6</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_6_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.level_6_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Acesso sem fio</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.wireless_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.wireless_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de acesso via Software</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.software_access_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.software_access_service_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Serviço de Extensão via software</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.software_extension_service_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.software_extension_service_price %}
+						</div>
+					</div>
+
+					<h4 class="ui header">Serviços de Contact Center</h4>
+					<h5 class="ui header">Gerência e Operação da Plataforma Básica de Contact Center</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_basic_contact_center_platform_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_basic_contact_center_platform_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação da Plataforma Básica de Gravação</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_basic_recording_platform_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_basic_recording_platform_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Posição de Atendimentos/h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_service_position_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_service_position_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Supervisor</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_supervisor_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_supervisor_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Acompanhamento em Tempo Real</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_real_time_tracking_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_real_time_tracking_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Canal de Atendimento Automático e Mensagens</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_auto_answer_channel_and_messages_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_auto_answer_channel_and_messages_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Posição de Gravação</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_recording_position_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_recording_position_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Gerência e Operação de Supervisor de Gravação</h5>
+					<div class="two fields">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_recording_supervisor_amount %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.mo_recording_supervisor_price %}
+						</div>
+					</div>
+
+					<button class="ui blue button" type="submit">Salvar</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(() => {
+      $('select.dropdown').dropdown()
+    })
+  </script>
+{% endblock %}

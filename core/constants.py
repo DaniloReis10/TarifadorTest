@@ -1,0 +1,7 @@
+INACTIVE_STATUS = 0
+ACTIVE_STATUS = 1
+
+STATUS_CHOICES = [
+    (INACTIVE_STATUS, 'Inativo'),
+    (ACTIVE_STATUS, 'Ativo')
+]

@@ -1,0 +1,188 @@
+{% extends 'centers/base.html' %}
+{% load static  %}
+
+{% block title %}{{ company.name }} - Resumo{% endblock %}
+
+{% block center-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="right menu">
+    <div class="item" id="t-report">
+      <button class="ui green circular inverted button">
+        <i class="file alternate outline icon" aria-hidden="true"></i>
+        Exportar
+      </button>
+    </div>
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+<div class="ui bottom attached segment" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="three fields">
+      <div class="field">
+        <label>Data Inicial</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt|date:'Y-m-d' }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Data Final</label>
+        <div class="ui calendar" id="rangeend">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt|date:'Y-m-d' }}">
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+
+<h2 class="ui dividing grey header">
+  <i class="calculator icon"></i>
+  Resumo dos Serviços no Período
+</h2>
+
+<table class="ui definition table">
+  <tbody>
+    <tr>
+      <td class="collapsing">Número de Ligações</td>
+      <td>{{ call_detail.call_total }}</td>
+    </tr>
+    <tr>
+      <td class="collapsing">Quantidade de Minutos</td>
+      <td>{{ call_detail.minutes_total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <td class="collapsing">Custo total</td>
+      <td>{{ call_detail.cost_total|floatformat:2 }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="ui dividing grey header">
+  <i class="phone icon"></i>
+  Discagem Local
+</h2>
+
+<table class="ui definition table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Número de Ligações</th>
+      <th>Quantidade de Minutos</th>
+      <th>Custo total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for call in call_detail.call_local %}
+      <tr>
+        <td class="collapsing">
+          {% if call.type == 'LOCAL' %}
+            Local Fixo-Fixo Extragrupo
+          {% elif call.type == 'VC1' %}
+            Local Fixo-Móvel (VC1)
+          {% endif %}
+        </td>
+        <td>{{ call.qtdcall }}</td>
+        <td>{{ call.qtdminutes|floatformat:2 }}</td>
+        <td>{{ call.costcharged|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2 class="ui dividing grey header">
+  <i class="phone volume icon"></i>
+  Longa Distância Nacional
+</h2>
+
+<table class="ui definition table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Número de Ligações</th>
+      <th>Quantidade de Minutos</th>
+      <th>Custo total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for call in call_detail.call_long_distance %}
+      <tr>
+        <td class="collapsing">
+          {% if call.type == 'DDD' %}
+            LDN-fixo/fixo-D1/D2/D3/D4
+          {% elif call.type == 'VC2' %}
+            LDN-VC2 Fixo-Móvel
+          {% elif call.type == 'VC3' %}
+            LDN-VC3 Fixo-Móvel
+          {% endif %}
+        </td>
+        <td>{{ call.qtdcall }}</td>
+        <td>{{ call.qtdminutes|floatformat:2 }}</td>
+        <td>{{ call.costcharged|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% include "centers/center_report_modal.html" with action='centers:resume_report_pdf' company=company showcsv='false' organization=organization request=request %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $('#t-filter')
+      .popup({ position: 'top center' })
+
+    $('#t-report')
+      .popup({ position: 'top center' })
+
+    $('#t-report')
+      .click((event) => {
+        event.preventDefault()
+        $('#t-report-modal')
+          .modal('show')
+      })
+
+    $('.ui.radio.checkbox')
+      .checkbox()
+
+    $('#t-filter')
+      .click(() => $('#t-filter-bar').transition('slide down'))
+
+    $('#rangestart').calendar({
+      endCalendar: $('#rangeend'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+
+    $('#rangeend').calendar({
+      startCalendar: $('#rangestart'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

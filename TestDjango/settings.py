@@ -43,12 +43,30 @@ INSTALLED_APPS = [
     # third party
     'allauth',
     'allauth.account',
+    'cities_light',
+    'django_extensions',
+    'django_filters',
+    'organizations',
+    'phonenumber_field',
 
-# project
+    # project
     'accounts',
-     'core',
+    'core',
+    'extensions',
+    'centers',
+    'phonecalls',
+    'charges',
+    'voip',
 
 ]
+
+# ### MEDIA ###
+
+# https://docs.djangoproject.com/en/2.2/ref/settings/#media-root
+MEDIA_ROOT = [BASE_DIR / 'media/']
+
+# https://docs.djangoproject.com/en/2.2/ref/settings/#media-url
+MEDIA_URL = '/media/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -78,7 +96,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
 
-#                'accounts.context_processors.organization'
+                'accounts.context_processors.organization'
             ],
         },
     },
@@ -160,3 +178,24 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ### Django Organizations ###
+# https://django-organizations.readthedocs.io/en/latest/index.html
+
+# https://django-organizations.readthedocs.io/en/latest/getting_started.html#auto-slug-field
+ORGS_SLUGFIELD = 'django_extensions.db.fields.AutoSlugField'
+
+
+# ### Django Cities Light ###
+# https://django-cities-light.readthedocs.io/en/stable-3.x.x/index.html
+
+# https://django-cities-light.readthedocs.io/en/stable-3.x.x/full.html#module-cities_light.settings
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ['pt']
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['BR']
+
+
+# ### Django Phone Number Field ###
+# https://github.com/stefanfoulis/django-phonenumber-field
+
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = 'BR'

@@ -1,0 +1,49 @@
+<form class="ui mini modal" id="t-report-modal" action="{% url action %}" method="get">
+
+  <input name="company" type="hidden" value="{{ request.GET.company }}">
+  <input name="center" type="hidden" value="{{ request.GET.center }}">
+  <input name="sector" type="hidden" value="{{ request.GET.sector }}">
+  <input name="ddd" type="hidden" value="{{ request.GET.ddd }}">
+  <input name="search" type="hidden" value="{{ request.GET.search }}">
+  <input name="date_gt" type="hidden" value="{{ request.GET.date_gt }}">
+  <input name="date_lt" type="hidden" value="{{ request.GET.date_lt }}">
+  <input name="chargednumber" type="hidden" value="{{ request.GET.chargednumber }}">
+  <input name="dialednumber" type="hidden" value="{{ request.GET.dialednumber }}">
+  <input name="proportionality" type="hidden" value="{{ request.GET.proportionality }}">
+  <input name="showcompanies" type="hidden" value="{{ request.GET.showcompanies }}">
+  <input name="inbound" type="hidden" value="{{ request.GET.inbound }}">
+  <input name="internal" type="hidden" value="{{ request.GET.internal }}">
+  <input name="calltype" type="hidden" value="{{ request.GET.calltype }}">
+  <input name="service" type="hidden" value="{{ request.GET.service }}">
+  <input name="pabx" type="hidden" value="{{ request.GET.pabx }}">
+  <input name="unknown" type="hidden" value="{{ request.GET.unknown }}">
+  <input name="unidentified" type="hidden" value="{{ request.GET.unidentified }}">
+
+  <div class="header">
+    Exportar
+  </div>
+  <div class="content">
+    <div class="inline fields">
+      {% if showcsv|default:True is True %}
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input class="hidden" type="radio" name="format" value="csv" tabindex="0">
+            <label>CSV</label>
+          </div>
+        </div>
+      {% endif %}
+      {% if showpdf|default:True is True %}
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input class="hidden" type="radio" name="format" value="pdf" tabindex="0">
+          <label>PDF</label>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">Cancelar</div>
+    <button class="ui ok green button" type="submit">Exportar</button>
+  </div>
+</form>

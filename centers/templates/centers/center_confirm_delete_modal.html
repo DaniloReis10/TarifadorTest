@@ -1,0 +1,16 @@
+<form id="t-center-{{ center.pk }}-delete-modal"
+      class="ui mini modal"
+      method="post"
+      action="{% url 'centers:center_delete' organization.slug company.slug center.pk %}">
+  {% csrf_token %}
+  <div class="header">
+    Deletar centro de custo {{ center.name }}
+  </div>
+  <div class="content">
+    Tem certeza de que deseja deletar o centro de custo {{ center.name }}?
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">Cancelar</div>
+    <button class="ui ok red button" type="submit">Deletar</button>
+  </div>
+</form>

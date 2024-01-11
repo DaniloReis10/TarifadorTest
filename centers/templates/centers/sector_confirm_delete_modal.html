@@ -1,0 +1,16 @@
+<form id="t-sector-{{ sector.pk }}-delete-modal"
+      class="ui mini modal"
+      method="post"
+      action="{% url 'centers:sector_delete' organization.slug company.slug sector.pk %}">
+  {% csrf_token %}
+  <div class="header">
+    Deletar setor {{ sector.name }}
+  </div>
+  <div class="content">
+    Tem certeza de que deseja deletar o setor {{ sector.name }}?
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">Cancelar</div>
+    <button class="ui ok red button" type="submit">Deletar</button>
+  </div>
+</form>

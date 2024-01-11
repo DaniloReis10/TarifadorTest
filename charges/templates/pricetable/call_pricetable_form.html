@@ -1,0 +1,77 @@
+{% extends 'organizations/base.html' %}
+
+{% load static %}
+
+{% block title %}{{ organization.name }} - Tabela de Valores - Serviços de Comunicação{% endblock %}
+
+{% block org-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+	<h2 class="ui dividing grey header">
+		<i class="table icon"></i>
+		Tabelas de Valores - Serviços de Comunicação
+	</h2>
+
+	<div class="ui grid">
+		<div class="row">
+			<div class="column">
+				<form class="ui form" method="post">
+					{% csrf_token %}
+
+					<h4 class="ui dividing header">Descrição</h4>
+					<div class="{% if form.status %}three{% else %}two{% endif %} fields">
+						<div class="ten wide field">
+							{% include "utils/form-field.html" with field=form.name %}
+						</div>
+						{% if form.status %}
+							<div class="field">
+								{% include "utils/form-field.html" with field=form.status %}
+							</div>
+						{% endif %}
+					</div>
+
+					<h4 class="ui dividing header">Serviços de Comunicação</h4>
+					<h5 class="ui header">Discagem Local</h5>
+					<div class="fields two">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.LOCAL_price %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.VC1_price %}
+						</div>
+					</div>
+					<h5 class="ui header">Longa Distância Nacional</h5>
+					<div class="fields three">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.VC2_price %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.VC3_price %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.LDN_price %}
+						</div>
+					</div>
+          			<h5 class="ui header">Longa Distância Internacional</h5>
+					<div class="fields three">
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.LDI_price %}
+						</div>
+					</div>
+
+					<button class="ui blue button" type="submit">Salvar</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(() => {
+      $('select.dropdown').dropdown()
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'organizations/base.html' %}
+
+{% load org_tags %}
+{% load static  %}
+
+{% block title %}
+  {% if company %}
+    {{ company.name }} - Editar
+  {% else %}
+    {{ organization.name }} - Novo Cliente
+  {% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="{% url 'centers:list' organization.slug %}">
+    <h2 class="ui inverted header">Clientes</h2>
+  </a>
+  {% if company %}
+    <i class="right chevron icon divider"></i>
+    <a class="section">
+      <h2 class="ui inverted header">Editar</h2>
+    </a>
+  {% else %}
+    <i class="right chevron icon divider"></i>
+    <a class="section">
+      <h2 class="ui inverted header">Novo</h2>
+    </a>
+  {% endif %}
+{% endblock %}
+
+{% block org-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% if form.status %}
+      <h4 class="ui dividing header">Ativar/Desativar Centro de Custo</h4>
+      {% include "utils/form-field.html" with field=form.status %}
+    {% endif %}
+
+    <h4 class="ui dividing header">Informações do Centro de Custos</h4>
+    <div class="three fields">
+      {% include "utils/form-field.html" with field=form.name explain='Nome abreviado' %}
+      {% include "utils/form-field.html" with field=form.code explain='O código de identificação das chamadas deve ter todas as letras maiúsculas' %}
+      {% include "utils/form-field.html" with field=form.call_pricetable explain='Tabela de valores dos serviços de comunicação' %}
+    </div>
+    <div class="two fields">
+      {% include "utils/form-field.html" with field=form.phone %}
+      {% include "utils/form-field.html" with field=form.cnpj %}
+    </div>
+
+    {% include "utils/form-field.html" with field=form.logo %}
+    {% include "utils/form-field.html" with field=form.description explain='Nome completo ou descrição' %}
+
+    <h4 class="ui dividing header">Localização</h4>
+    {% include "utils/form-field.html" with field=form.zip_code %}
+    <div class="three fields">
+      {% include "utils/form-field.html" with field=form.country %}
+      {% include "utils/form-field.html" with field=form.state %}
+      {% include "utils/form-field.html" with field=form.city %}
+    </div>
+
+    <h4 class="ui dividing header">Endereço</h4>
+    <div class="three fields">
+      {% include "utils/form-field.html" with field=form.street %}
+      {% include "utils/form-field.html" with field=form.street_number %}
+      {% include "utils/form-field.html" with field=form.neighborhood %}
+    </div>
+    {% include "utils/form-field.html" with field=form.complement %}
+
+    <button class="ui blue button" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(() => {
+      $('select.dropdown').dropdown({
+        clearable: true
+      })
+    })
+  </script>
+{% endblock %}

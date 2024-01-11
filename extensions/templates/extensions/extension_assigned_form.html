@@ -1,0 +1,33 @@
+{% extends 'adm/base.html' %}
+
+{% load static from staticfiles %}
+
+{% block title %}Atribuir faixa de ramais ao sistema{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Faixa de Ramais Atribuidos ao Sistema</h2>
+</a>
+<i class="right chevron icon divider"></i>
+<a class="section" href="#">
+  <h2 class="ui inverted header">Novo</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+    <h4 class="ui dividing header">Atribuir faixa de ramais ao sistema</h4>
+    <div class="two fields">
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.extension_range %}
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Criar</button>
+  </form>
+</div>
+{% endblock %}

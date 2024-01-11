@@ -1,0 +1,21 @@
+{% extends 'centers/base.html' %}
+
+{% load static from staticfiles %}
+
+{% block title %}{{ company.name }} - Novo Ramal{% endblock %}
+
+{% block center-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+
+    <h4 class="ui dividing header">Novo Ramal</h4>
+    {% include "utils/form-field.html" with field=form.extension %}
+    {% include "utils/form-field.html" with field=form.by_quantity %}
+
+    <button class="ui blue button" type="submit">Salvar</button>
+  </form>
+</div>
+{% endblock %}

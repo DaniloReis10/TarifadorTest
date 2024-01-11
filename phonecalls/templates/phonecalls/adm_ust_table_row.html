@@ -1,0 +1,22 @@
+{% load datetime_format %}
+{% load phonecall_tags %}
+
+<tr>
+  <td class="collapsing">
+    {% if type == 'LOCAL' %}
+      Local Fixo-Fixo Extragrupo
+    {% elif type == 'VC1' %}
+      Local Fixo-Móvel ({{ type }})
+    {% elif type == 'VC2' or type == 'VC3' %}
+      LDN-{{ type }} Fixo-Móvel
+    {% elif type == 'DDD' %}
+      LDN-fixo/fixo-D1/D2/D3/D4
+    {% else %}
+      Longa Distância Internacional
+    {% endif %}
+  </td>
+  <td class="center aligned">{{ data.price_ust|default:0|floatformat:4 }}</td>
+  <td class="center aligned">{{ data.amount|default:0|floatformat:4 }}</td>
+  <td class="center aligned">{{ data.cost_ust_sum|default:0|floatformat:4 }}</td>
+  <td class="center aligned">R$ {{ data.cost_sum|default:0|floatformat:4 }}</td>
+</tr>

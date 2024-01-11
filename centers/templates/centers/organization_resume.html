@@ -1,0 +1,240 @@
+{% extends 'organizations/base.html' %}
+
+{% load static  %}
+{% load datetime_format %}
+
+{% block title %}{{ organization.name }} - Resumo{% endblock %}
+
+{% block org-content %}
+<h2 class="ui dividing grey header">
+  <i class="file alternate icon"></i>
+  Resumo geral dos Serviços no Período
+</h2>
+
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="right menu">
+    <div class="item" id="t-report">
+      <button class="ui green circular inverted button">
+        <i class="file alternate outline icon" aria-hidden="true"></i>
+        Exportar
+      </button>
+    </div>
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+<div class="ui bottom attached segment" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="three fields">
+      <div class="field">
+        <label>Data Inicial</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt|date:'Y-m-d' }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Data Final</label>
+        <div class="ui calendar" id="rangeend">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt|date:'Y-m-d' }}">
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+
+{% for company, call_company_map in call_org_map.items %}
+  <h2 class="ui dividing center aligned gray header">
+    <i class="calculator icon"></i>
+    <div class="content" style="text-align: left;">
+      SERVIÇOS BÁSICOS
+      <div class="sub header">Valores totais de todos centros de custo no periodo</div>
+    </div>
+  </h2>
+  <table class="ui compact blue table">
+    <thead>
+      <tr>
+        <th>Serviço</th>
+        <th class="center aligned">Valor Unitário</th>
+        <th class="center aligned">Quantidade</th>
+        <th class="center aligned">Custo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>SERVIÇOS BÁSICOS</b></td>
+      </tr>
+      {% if price_tipe_one and amount_tipe_one %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Operação de Ramal Tipo 1
+          </td>
+          <td class="center aligned">R$ {{ data.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ data.qtdcall|default:0 }}</td>
+          <td class="center aligned">R$ {{ data.costcharged|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if price_contact_center and amount_contact_center %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação da Plataforma de Contact Center
+          </td>
+          <td class="center aligned">R$ {{ data.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ data.qtdcall|default:0 }}</td>
+          <td class="center aligned">R$ {{ data.costcharged|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if price_recording and amount_recording %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação da Plataforma de Gravação
+          </td>
+          <td class="center aligned">R$ {{ data.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ data.qtdcall|default:0 }}</td>
+          <td class="center aligned">R$ {{ data.costcharged|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th class="right aligned" colspan="2"><b>TOTAL DOS SERVIÇOS BÁSICOS:</b></th>
+        <th class="center aligned">{{ call_company_map.call_total }}</th>
+        <th class="center aligned">R$ {{ call_company_map.cost_total|floatformat:2 }}</th>
+      </tr>
+    </tfoot>
+  </table>
+  {% if company == 'SERVIÇOS DE COMUNICAÇÃO' %}
+    <h2 class="ui dividing center aligned gray header">
+      <i class="calculator icon"></i>
+      <div class="content">
+        {{ company }}
+        <div class="sub header">Valores totais de todos centros de custo no periodo</div>
+      </div>
+    </h2>
+  {% else %}
+    <h2 class="ui dividing center aligned header">
+      {{ company }}
+    </h2>
+  {% endif %}
+
+  <table class="ui compact blue table">
+    <thead>
+      <tr>
+        <th>Serviço</th>
+        <th class="center aligned">Valor Unitário</th>
+        <th class="center aligned">Chamadas</th>
+        <th class="center aligned">Tempo Faturado</th>
+        <th class="center aligned">Custo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>SERVIÇOS DE COMUNICAÇÃO</b></td>
+      </tr>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>DISCAGEM LOCAL</b></td>
+      </tr>
+      {% include "centers/resume_table_row.html" with data=call_company_map.LOCAL type="LOCAL" %}
+      {% include "centers/resume_table_row.html" with data=call_company_map.VC1 type="VC1" %}
+      {% include "centers/resume_table_row.html" with data=call_company_map.VC2 type="VC2" %}
+      {% include "centers/resume_table_row.html" with data=call_company_map.VC3 type="VC3" %}
+      <tr class="active">
+        <td class="right aligned" colspan="2"><b>Total de Discagem Local:</b></td>
+        <td class="center aligned">{{ call_company_map.local.call_total }}</td>
+        <td class="center aligned">{{ call_company_map.local.minutes_total|default:0|timeformat }}</td>
+        <td class="center aligned">R$ {{ call_company_map.local.cost_total|floatformat:2 }}</td>
+      </tr>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA NACIONAL</b></td>
+      </tr>
+      {% include "centers/resume_table_row.html" with data=call_company_map.DDD type="DDD" %}
+      <tr class="active">
+        <td class="right aligned" colspan="2"><b>Total de Longa Distancia Nacional:</b></td>
+        <td class="center aligned">{{ call_company_map.national.call_total }}</td>
+        <td class="center aligned">{{ call_company_map.national.minutes_total|default:0|timeformat }}</td>
+        <td class="center aligned">R$ {{ call_company_map.national.cost_total|floatformat:2 }}</td>
+      </tr>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA INTERNACIONAL</b></td>
+      </tr>
+      {% include "centers/resume_table_row.html" %}
+      <tr class="active">
+        <td class="right aligned" colspan="2"><b>Total de Longa Distancia Internacional:</b></td>
+        <td class="center aligned">{{ call_company_map.international.call_total }}</td>
+        <td class="center aligned">{{ call_company_map.international.minutes_total|default:0|timeformat }}</td>
+        <td class="center aligned">R$ {{ call_company_map.international.cost_total|floatformat:2 }}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th class="right aligned" colspan="2"><b>TOTAL DOS SERVIÇOS DE COMUNICAÇÃO:</b></th>
+        <th class="center aligned">{{ call_company_map.call_total }}</th>
+        <th class="center aligned">{{ call_company_map.minutes_total|default:0|timeformat }}</th>
+        <th class="center aligned">R$ {{ call_company_map.cost_total|floatformat:2 }}</th>
+      </tr>
+    </tfoot>
+  </table>
+{% endfor %}
+{% include "centers/organization_report_modal.html" with action='centers:organization_resume_report_pdf' showcsv='false' organization=organization request=request %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $('#t-filter')
+      .popup({ position: 'top center' })
+
+    $('#t-filter')
+      .click(() => $('#t-filter-bar').transition('slide down'))
+
+    $('#t-report')
+      .popup({ position: 'top center' })
+
+    $('#t-report')
+      .click((event) => {
+        event.preventDefault()
+        $('#t-report-modal')
+          .modal('show')
+      })
+
+    $('.ui.radio.checkbox')
+      .checkbox()
+
+    $('#rangestart').calendar({
+      endCalendar: $('#rangeend'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+
+    $('#rangeend').calendar({
+      startCalendar: $('#rangestart'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+  })
+</script>
+{% endblock %}

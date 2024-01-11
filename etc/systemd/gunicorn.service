@@ -1,0 +1,25 @@
+[Unit]
+Description=Gunicorn application server handling TarifadorVoip
+After=network.target
+
+[Service]
+User={USER}
+Group={GROUP}
+PIDFile={PID_DIR}/{PROJECT_NAME}.pid
+Restart=on-failure
+WorkingDirectory={PROJECT_DIR}
+
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+ExecStart={VENV_DIR}/bin/gunicorn \
+    --workers 9 \
+    --timeout 600 \
+    --graceful-timeout 30 \
+    --bind unix:{PROJECT_DIR}/{PROJECT_NAME}.sock \
+    --pid {PID_DIR}/{PROJECT_NAME}.pid \
+    --access-logfile {LOGS_DIR}/gunicorn-access.log \
+    --error-logfile {LOGS_DIR}/gunicorn-error.log \
+    {PROJECT_NAME}.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

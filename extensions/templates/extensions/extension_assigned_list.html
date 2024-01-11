@@ -1,0 +1,24 @@
+{% extends 'adm/base.html' %}
+
+{% load static from staticfiles %}
+
+{% block title %}Faixa de Ramais Atribuidos ao Sistema{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Faixa de Ramais Atribuidos ao Sistema</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui huge celled list">
+  {% for extension_assigned in extension_assigned_list %}
+  <div class="item">
+    <div class="content">
+      <a>{{ extension_assigned }}</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

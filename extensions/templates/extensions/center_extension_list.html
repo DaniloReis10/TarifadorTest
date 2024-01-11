@@ -1,0 +1,170 @@
+{% extends "centers/base.html" %}
+
+{% load org_tags %}
+{% load static from staticfiles %}
+
+{% block title %}{{ company.name }} - Ramais{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extensions:company_extension_list' organization.slug company.slug %}">
+  <h2 class="ui inverted header">Ramais</h2>
+</a>
+{% endblock %}
+
+{% block center-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="item t-search-item">
+    <div class="ui transparent left icon input">
+      <input name="search" placeholder="Buscar por nome ..." type="text" value="{{ request.GET.search }}">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="item">
+    <button class="ui blue circular inverted button" type="submit">Buscar</button>
+  </div>
+  <div class="right menu">
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+<div class="ui bottom attached segment t-filter-bar transition hidden" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <input name="search" type="hidden" value="{{ request.GET.search }}">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="two fields">
+      <div class="field">
+        <label>Centro de Custo</label>
+        <div class="ui selection search dropdown">
+          <input id="filter-center" type="hidden" name="center" value="{{ request.GET.center }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in center_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Setor</label>
+        <div class="ui selection search dropdown" id="sector-dropdown">
+          <input id="filter-sector" type="hidden" name="sector" value="{{ request.GET.sector }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in sector_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Ramal</th>
+      <th>Centro de Custo</th>
+      <th>Setor</th>
+      <th>Criado em</th>
+      <th>Modificado em</th>
+      {% comment %} <th></th> {% endcomment %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for extension_line in extension_line_list %}
+      <tr>
+        <td>
+          <a href="{% url 'phonecalls:list' organization.slug company.slug %}?search={{ extension_line.extension }}">
+            {{ extension_line.extension }}
+          </a>
+        </td>
+        <td>{{ extension_line.center.name }}</td>
+        <td>{{ extension_line.sector.name }}</td>
+        <td>{{ extension_line.created|date:"d/m/Y" }} às {{ extension_line.created|time:"H:i" }}</td>
+        <td>{{ extension_line.modified|date:"d/m/Y" }} às {{ extension_line.modified|time:"H:i" }}</td>
+        {% comment %}
+        <td class="collapsing">
+          {% if user.is_superuser or organization|is_admin:user %}
+            <form action="{% url 'phonecalls:ramal_delete' organization.slug company.slug extension_line.pk %}" method="post">
+              {% csrf_token %}
+              <button class="ui inverted red button" type="submit">
+                <i class="trash alternate outline link icon"></i> Deletar
+              </button>
+            </form>
+          {% endif %}
+        </td>
+        {% endcomment %}
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="3">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with urlencode=urlencode page_obj=page_obj paginator=paginator page_range=page_range %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $("#t-filter")
+      .popup({ position: "top center" })
+
+    $("#t-filter")
+      .click(() => $("#t-filter-bar").transition("slide down"))
+
+    $(".ui.dropdown").dropdown()
+
+    $("#filter-center").change(function() {
+      var url = "{% url 'centers:sector_list' organization.slug company.slug %}"
+      var centerId = $(this).val()
+      var menu_options = `<div class="item" data-value="">----</div>\n`
+
+      $("#filter-sector").val("")
+      $("#sector-dropdown .menu").html(menu_options)
+      $("#sector-dropdown").dropdown()
+
+      if (centerId) {
+        $.ajax({
+          url: url,
+          data: {
+            "center": centerId
+          },
+          success: ({ options }) => {
+            options.forEach(({ value, text }) => {
+              menu_options += `<div class="item" data-value="${ value }">${ text }</div>\n`
+            })
+
+            $("#sector-dropdown .menu").html(menu_options)
+            $("#sector-dropdown").dropdown()
+          }
+        })
+      }
+    })
+  })
+</script>
+{% endblock %}

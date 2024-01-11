@@ -1,0 +1,50 @@
+<form class="ui mini modal" id="t-report-modal" action="{% url action organization.slug company.slug %}" method="get">
+  <div class="header">
+    Exportar
+  </div>
+
+  <input name="center" type="hidden" value="{{ request.GET.center }}">
+  <input name="sector" type="hidden" value="{{ request.GET.sector }}">
+  <input name="ddd" type="hidden" value="{{ request.GET.ddd }}">
+  <input name="search" type="hidden" value="{{ request.GET.search }}">
+  <input name="date_gt" type="hidden" value="{{ request.GET.date_gt }}">
+  <input name="date_lt" type="hidden" value="{{ request.GET.date_lt }}">
+  <input name="chargednumber" type="hidden" value="{{ request.GET.chargednumber }}">
+  <input name="dialednumber" type="hidden" value="{{ request.GET.dialednumber }}">
+  <input name="proportionality" type="hidden" value="{{ request.GET.proportionality }}">
+  <input name="inbound" type="hidden" value="{{ request.GET.inbound }}">
+  <input name="internal" type="hidden" value="{{ request.GET.internal }}">
+  <input name="calltype" type="hidden" value="{{ request.GET.calltype }}">
+  <input name="service" type="hidden" value="{{ request.GET.service }}">
+
+  <div class="content">
+    <div class="inline fields">
+      {% if showcsv|default:True is True %}
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input class="hidden" type="radio" name="format" value="csv" tabindex="0">
+            <label>CSV</label>
+          </div>
+        </div>
+      {% endif %}
+      {% if showxlsx|default:True is True %}
+        <div class="field">
+          <div class="ui radio checkbox">
+            <input class="hidden" type="radio" name="format" value="xlsx" tabindex="0">
+            <label>XLSX</label>
+          </div>
+        </div>
+      {% endif %}
+      <div class="field">
+        <div class="ui radio checkbox">
+          <input class="hidden" type="radio" name="format" value="pdf" tabindex="0">
+          <label>PDF</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui cancel button">Cancelar</div>
+    <button class="ui ok green button" type="submit">Exportar</button>
+  </div>
+</form>

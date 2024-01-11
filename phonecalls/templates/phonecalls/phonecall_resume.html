@@ -1,0 +1,459 @@
+{% extends 'centers/base.html' %}
+
+{% load static from staticfiles %}
+{% load datetime_format %}
+{% load phonecall_tags %}
+
+{% block title %}{{ company.name }} - Resumo{% endblock %}
+
+{% block center-content %}
+<br>
+<h2 class="ui dividing grey header">
+  <i class="paste icon"></i> Relatório Resumido / Resumo das Chamadas e Serviços no Periodo
+</h2>
+
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="right menu">
+    <div class="item" id="t-report">
+      <button class="ui green circular inverted button">
+        <i class="file alternate outline icon" aria-hidden="true"></i>
+        Exportar
+      </button>
+    </div>
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+
+<div class="ui bottom attached segment" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="three fields">
+      <div class="field">
+        <label>Centro de Custo</label>
+        <div class="ui selection search dropdown" id="center-dropdown">
+          <input id="filter-center" type="hidden" name="center" value="{{ request.GET.center }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in center_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Setor</label>
+        <div class="ui selection search dropdown" id="sector-dropdown">
+          <input id="filter-sector" type="hidden" name="sector" value="{{ request.GET.sector }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in sector_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="three fields">
+      <div class="field">
+        <label>Data Inicial</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Data Final</label>
+        <div class="ui calendar" id="rangeend">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt }}">
+          </div>
+        </div>
+      </div>
+      <div class="inline field ">
+        <div class="ui checkbox">
+          <input type="checkbox" name="proportionality" value="true" {% if request.GET.proportionality %}checked{% endif %}>
+          <label>
+            <span style="float: left;">Proporcionalidade de Tempo</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+
+{% if basic_service %}
+  <table class="ui compact blue table">
+    <thead>
+      <tr>
+        <th>Serviço</th>
+        <th class="center aligned">Valor Unitário</th>
+        <th class="center aligned">Quantidade</th>
+        <th class="center aligned">Custo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="active">
+        <td class="center aligned" colspan="5"><b>SERVIÇOS BÁSICOS</b></td>
+      </tr>
+      {% if basic_service.LEVEL_1_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 1
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_1_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_1_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_1_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.LEVEL_2_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 2
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_2_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_2_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_2_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.LEVEL_3_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 3
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_3_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_3_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_3_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.LEVEL_4_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 4
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_4_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_4_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_4_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.LEVEL_5_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 5
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_5_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_5_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_5_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.LEVEL_6_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso Nivel 6
+          </td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_6_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.LEVEL_6_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.LEVEL_6_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.WIRELESS_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Acesso sem fio
+          </td>
+          <td class="center aligned">R$ {{ basic_service.WIRELESS_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.WIRELESS_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.WIRELESS_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.SOFTWARE_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de acesso via Software
+          </td>
+          <td class="center aligned">R$ {{ basic_service.SOFTWARE_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.SOFTWARE_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.SOFTWARE_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.SOFTWARE_EXTENSION_SERVICE %}
+        <tr>
+          <td class="collapsing">
+            Serviço de Extensão via software
+          </td>
+          <td class="center aligned">R$ {{ basic_service.SOFTWARE_EXTENSION_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.SOFTWARE_EXTENSION_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.SOFTWARE_EXTENSION_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_BASIC_CONTACT_CENTER_PLATFORM %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação da Plataforma Básica de Contact Center
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_BASIC_CONTACT_CENTER_PLATFORM.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_BASIC_CONTACT_CENTER_PLATFORM.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_BASIC_CONTACT_CENTER_PLATFORM.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_BASIC_RECORDING_PLATFORM %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação da Plataforma Básica de Gravação
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_BASIC_RECORDING_PLATFORM.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_BASIC_RECORDING_PLATFORM.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_BASIC_RECORDING_PLATFORM.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_SERVICE_POSITION %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Posição de Atendimentos
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_SERVICE_POSITION.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_SERVICE_POSITION.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_SERVICE_POSITION.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_SUPERVISOR %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Supervisor
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_SUPERVISOR.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_SUPERVISOR.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_SUPERVISOR.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_REAL_TIME_TRACKING %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Acompanhamento em Tempo Real
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_REAL_TIME_TRACKING.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_REAL_TIME_TRACKING.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_REAL_TIME_TRACKING.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Canal de Atendimento Automático e Mensagens
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_RECORDING_POSITION %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Posição de Gravação
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_RECORDING_POSITION.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_RECORDING_POSITION.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_RECORDING_POSITION.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+      {% if basic_service.MO_RECORDING_SUPERVISOR %}
+        <tr>
+          <td class="collapsing">
+            Gerência e Operação de Supervisor de Gravação
+          </td>
+          <td class="center aligned">R$ {{ basic_service.MO_RECORDING_SUPERVISOR.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ basic_service.MO_RECORDING_SUPERVISOR.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ basic_service.MO_RECORDING_SUPERVISOR.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+    </tbody>
+    <tfoot>
+    {% if basic_service.service_basic %}
+      <tr>
+        <th class="right aligned" colspan="2"><b>TOTAL DOS SERVIÇOS BÁSICOS:</b></th>
+        <th class="center aligned">{{ basic_service.service_basic.amount }}</th>
+        <th class="center aligned">R$ {{ basic_service.service_basic.cost|floatformat:2 }}</th>
+      </tr>
+    {% endif %}
+    </tfoot>
+  </table>
+{% endif %}
+
+<h2 class="ui dividing grey header">
+  <i class="calculator icon"></i>
+  Resumo dos Serviços no Período
+</h2>
+
+<table class="ui definition table">
+  <tbody>
+    <tr>
+      <td class="collapsing">Número de Ligações</td>
+      <td>{{ phonecall_total }}</td>
+    </tr>
+    <tr>
+      <td class="collapsing">Duração Total</td>
+      <td>{{ duration_total|timeformat }}</td>
+    </tr>
+    <tr>
+      <td class="collapsing">Custo total</td>
+      <td>{{ cost_total|floatformat:2 }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 class="ui dividing grey header">
+  <i class="phone icon"></i>
+  Discagem Local
+</h2>
+
+<table class="ui definition table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Número de Ligações</th>
+      <th>Duração Total</th>
+      <th>Custo total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for phonecall in phonecall_local %}
+      <tr>
+        <td class="collapsing">
+          {% if phonecall.calltype == 4 %} {# Ligações locais para fixo #}
+            Local Fixo-Fixo Extragrupo
+          {% elif phonecall.calltype == 1 %} {# Ligações para celular local (VC1) #}
+            Local Fixo-Móvel (VC1)
+          {% endif %}
+        </td>
+        <td>{{ phonecall.count }}</td>
+        <td>{{ phonecall.billedtime_sum|timeformat }}</td>
+        <td>{{ phonecall.cost_sum|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2 class="ui dividing grey header">
+  <i class="phone volume icon"></i>
+  Longa Distância Nacional
+</h2>
+
+<table class="ui definition table">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Número de Ligações</th>
+      <th>Duração Total</th>
+      <th>Custo total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for phonecall in phonecall_long_distance %}
+      <tr>
+        <td class="collapsing">
+          {% if phonecall.calltype == 5 %} {# Ligações DDD para fixo #}
+            LDN-fixo/fixo-D1/D2/D3/D4
+          {% elif phonecall.calltype == 2 %} {# Ligações para celular na mesma região (VC2) #}
+            LDN-VC2 Fixo-Móvel
+          {% elif phonecall.calltype == 3 %} {# Ligações para celular em outra área (VC3) #}
+            LDN-VC3 Fixo-Móvel
+          {% endif %}
+        </td>
+        <td>{{ phonecall.count }}</td>
+        <td>{{ phonecall.billedtime_sum|timeformat }}</td>
+        <td>{{ phonecall.cost_sum|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% include "reports/report_modal.html" with request=request action='phonecalls:resume_report' company=company organization=organization showcsv='false' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $('#t-filter')
+      .popup({ position: 'top center' })
+
+    $('#t-report')
+      .popup({ position: 'top center' })
+
+    $('#t-report')
+      .click((event) => {
+        event.preventDefault()
+        $('#t-report-modal')
+          .modal('show')
+      })
+
+    $('.ui.radio.checkbox')
+      .checkbox()
+
+    $('#t-filter')
+      .click(() => $('#t-filter-bar').transition('slide down'))
+
+    $('#rangestart').calendar({
+      endCalendar: $('#rangeend'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+
+    $('#rangeend').calendar({
+      startCalendar: $('#rangestart'),
+      type: 'date',
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate()
+          var month = date.getMonth() + 1
+          var year = date.getFullYear()
+          return day + '/' + month + '/' + year
+        }
+      }
+    })
+
+    $('.ui.dropdown').dropdown()
+
+    $("#filter-center").change(function() {
+      var centerId = $(this).val()
+      var menu_options = `<div class="item" data-value="">----</div>\n`
+
+      $("#filter-sector").val("")
+      $("#sector-dropdown .menu").html(menu_options)
+      $(".ui.dropdown").dropdown()
+
+      if (centerId) {
+        $.ajax({
+          url: `/{{ organization.slug }}/companies/{{ company.slug }}/sectors/`,
+          data: {
+            "center": centerId
+          },
+          success: ({ options }) => {
+            options.forEach(({ value, text }) => {
+              menu_options += `<div class="item" data-value="${ value }">${ text }</div>\n`
+            })
+            $("#sector-dropdown .menu").html(menu_options)
+            $("#sector-dropdown").dropdown()
+          }
+        })
+      }
+    })
+  })
+</script>
+{% endblock %}

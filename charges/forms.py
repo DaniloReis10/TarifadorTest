@@ -8,6 +8,7 @@ from phonecalls.models import PriceTable
 # local
 from .constants import PRICE_FIELDS_BASIC_SERVICE_MAP
 from .constants import PRICE_FIELDS_CALLTYPE_MAP
+from .constants import PRICE_FIELDS_OTHERTYPE_MAP
 
 
 class ServicePriceTableForm(forms.ModelForm):
@@ -180,17 +181,11 @@ class CallPriceTableForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
     VC1_price = forms.DecimalField(
-        label='Ligações para celular local (VC1)',
+        label='Ligações para telefones móveis',
         widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
     # Longa Distância Nacional
-    VC2_price = forms.DecimalField(
-        label='Ligações para celular na mesma região (VC2)',
-        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
-    VC3_price = forms.DecimalField(
-        label='Ligações para celular em outra área (VC3)',
-        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
     LDN_price = forms.DecimalField(
         label='Ligações DDD para fixo',
@@ -224,6 +219,53 @@ class CallPriceTableUpdateForm(CallPriceTableForm):
             if price.calltype not in PRICE_FIELDS_CALLTYPE_MAP:
                 continue
             price_field = PRICE_FIELDS_CALLTYPE_MAP[price.calltype]
+            self.fields[f'{price_field}_price'].initial = price.value
+
+    def clean_status(self):
+        status = self.cleaned_data.get('status')
+        if status == INACTIVE_STATUS:
+            if self.instance.company_set.all().exists():
+                raise forms.ValidationError('Não é possivel inativar uma tabela de preço que '
+                                            'ainda esteja vinculada a algum cliente')
+        return status
+
+
+class OtherPriceTableForm(forms.ModelForm):
+
+    # Serviços Diversos
+
+    UST_price = forms.DecimalField(
+        label='Serviços especializados de comunicação VoIP por demanda',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
+
+    KM_price = forms.DecimalField(
+        label='Serviço de deslocamento para prestar serviço fora da Região Metropolitana de Fortaleza',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
+
+
+    class Meta:
+        model = PriceTable
+        fields = ['name']
+
+
+class OtherPriceTableCreateForm(OtherPriceTableForm):
+
+    pass
+
+
+class OtherPriceTableUpdateForm(OtherPriceTableForm):
+
+    class Meta:
+        model = PriceTable
+        fields = ['name', 'status']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        price_list = self.instance.price_set.active()
+        for price in price_list:
+            if price.othertype not in PRICE_FIELDS_OTHERTYPE_MAP:
+                continue
+            price_field = PRICE_FIELDS_OTHERTYPE_MAP[price.othertype]
             self.fields[f'{price_field}_price'].initial = price.value
 
     def clean_status(self):

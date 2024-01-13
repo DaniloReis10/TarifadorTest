@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}{{ organization.name }} - Tabela de Valores - Serviços de Comunicação{% endblock %}
+{% block title %}{{ organization.name }} - Tabela de Valores - Serviços Diversos{% endblock %}
 
 {% block org-content %}
 <div class="ui container">
@@ -10,7 +10,7 @@
 
 	<h2 class="ui dividing grey header">
 		<i class="table icon"></i>
-		Tabelas de Valores - Serviços de Comunicação
+		Tabelas de Valores - Serviços Diversos
 	</h2>
 
 	<div class="ui grid">
@@ -31,28 +31,16 @@
 						{% endif %}
 					</div>
 
-					<h4 class="ui dividing header">Serviços de Comunicação</h4>
-					<h5 class="ui header">Discagem Local/Celular</h5>
-					<div class="fields two">
+					<h4 class="ui dividing header">Serviços Diversos</h4>
+                    <div class="fields two">
 						<div class="field">
-							{% include "utils/form-field.html" with field=form.LOCAL_price %}
+							{% include "utils/form-field.html" with field=form.UST_price %}
 						</div>
 						<div class="field">
-							{% include "utils/form-field.html" with field=form.VC1_price %}
-						</div>
-					</div>
-					<h5 class="ui header">Longa Distância Nacional</h5>
-					<div class="fields three">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.LDN_price %}
+							{% include "utils/form-field.html" with field=form.KM_price %}
 						</div>
 					</div>
-          			<h5 class="ui header">Longa Distância Internacional</h5>
-					<div class="fields three">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.LDI_price %}
-						</div>
-					</div>
+
 
 					<button class="ui blue button" type="submit">Salvar</button>
 				</form>

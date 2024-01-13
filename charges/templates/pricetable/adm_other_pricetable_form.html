@@ -1,0 +1,72 @@
+{% extends 'adm/base.html' %}
+
+{% load static  %}
+
+{% block title %}Valores - Serviços Diversos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'adm_call_pricetable_list' %}">
+  <h2 class="ui inverted header">Valores - Serviços Diversos</h2>
+</a>
+{% if pricetable %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="#">
+    <h2 class="ui inverted header">Editar</h2>
+  </a>
+{% else %}
+  <i class="right chevron icon divider"></i>
+  <a class="section" href="#">
+    <h2 class="ui inverted header">Novo</h2>
+  </a>
+{% endif %}
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <div class="ui grid">
+    <div class="row">
+      <div class="column">
+        <form class="ui form" method="post">
+          {% csrf_token %}
+
+          <h4 class="ui dividing header">Descrição</h4>
+          <div class="{% if form.status %}three{% else %}two{% endif %} fields">
+            <div class="ten wide field">
+              {% include "utils/form-field.html" with field=form.name %}
+            </div>
+            {% if form.status %}
+              <div class="field">
+                {% include "utils/form-field.html" with field=form.status %}
+              </div>
+            {% endif %}
+          </div>
+
+          <h4 class="ui dividing header">Serviços Diversos</h4>
+          <div class="fields two">
+            <div class="field">
+              {% include "utils/form-field.html" with field=form.UST_price %}
+            </div>
+            <div class="field">
+              {% include "utils/form-field.html" with field=form.KM_price %}
+            </div>
+          </div>
+
+
+          <button class="ui blue button" type="submit">Salvar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(() => {
+      $('select.dropdown').dropdown()
+    })
+  </script>
+{% endblock %}

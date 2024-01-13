@@ -2,10 +2,12 @@ from phonecalls import constants as phonecalls_constants
 
 BASIC_SERVICE = 1
 COMMUNICATION_SERVICE = 2
+DIVERSE_SERVICE = 3
 
 SERVICE_TYPE_CHOICES = [
     (BASIC_SERVICE, 'Serviços Básicos de Disponibilidade e Contact Center'),
-    (COMMUNICATION_SERVICE, 'Serviços de Comunicação')
+    (COMMUNICATION_SERVICE, 'Serviços de Comunicação'),
+    (DIVERSE_SERVICE, 'Serviços Diversos')
 ]
 
 LEVEL_1_ACCESS_SERVICE = 1
@@ -25,6 +27,9 @@ MO_REAL_TIME_TRACKING = 14
 MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES = 15
 MO_RECORDING_POSITION = 16
 MO_RECORDING_SUPERVISOR = 17
+
+UST_OTHER = 1
+KM_OTHER = 2
 
 BASIC_SERVICE_CHOICES = [
     # Serviço de Disponibilização de Acesso a Comunicação Voip
@@ -129,7 +134,9 @@ PRICE_FIELDS = [
     'VC2',
     'VC3',
     'LDN',
-    'LDI'
+    'LDI',
+    'UST',
+    'KM'
 ]
 
 PRICE_FIELDS_BASIC_SERVICE_MAP = {
@@ -155,8 +162,11 @@ PRICE_FIELDS_BASIC_SERVICE_MAP = {
 PRICE_FIELDS_CALLTYPE_MAP = {
     phonecalls_constants.LOCAL: 'LOCAL',
     phonecalls_constants.VC1: 'VC1',
-    phonecalls_constants.VC2: 'VC2',
-    phonecalls_constants.VC3: 'VC3',
     phonecalls_constants.LDN: 'LDN',
     phonecalls_constants.LDI: 'LDI'
+}
+
+PRICE_FIELDS_OTHERTYPE_MAP = {
+    UST_OTHER: 'UST',
+    KM_OTHER: 'KM',
 }

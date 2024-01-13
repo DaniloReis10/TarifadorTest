@@ -1,0 +1,102 @@
+{% extends "adm/base.html" %}
+
+{% load org_tags %}
+{% load solicitation_tags %}
+{% load static  %}
+
+{% block title %}Admin - Valores - Serviços Diversos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'adm_other_pricetable_list' %}">
+  <h2 class="ui inverted header">Valores - Serviços Diversos</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Tabela</th>
+      <th>Proprietário</th>
+      <th>Organizações</th>
+      <th>Centros de Custo</th>
+      <th>Criado em</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pricetable in pricetable_list %}
+      <tr>
+        <td>
+          <a href="{% url 'adm_other_pricetable_detail' pricetable.id %}">
+            {{ pricetable.name }}
+          </a>
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            {{ pricetable.organization.name }}
+          {% else %}
+            Administrador
+          {% endif %}
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            ---
+          {% else %}
+            {{ pricetable.other_orgsettings_set.count }}
+          {% endif %}
+        </td>
+        <td>
+          {% if pricetable.organization %}
+            {{ pricetable.other_company_set.count }}
+          {% else %}
+              ---
+          {% endif %}
+        </td>
+        <td>{{ pricetable.created|date:"d/m/Y H:i:s" }}</td>
+        <td>
+          {% if pricetable.status %}
+            <span class="ui green label">Ativa</span>
+          {% else %}
+            <span class="ui red label">Inativa</span>
+          {% endif %}
+        </td>
+        <td class="collapsing">
+          <div class="ui small buttons">
+            <a class="ui blue basic button" href="{% url 'adm_other_pricetable_update' pricetable.id %}">
+              <i class="edit outline icon"></i> Editar
+            </a>
+            {% comment %} <form action="{% url 'adm_pricetable_delete' pricetable.id %}" method="post">
+              {% csrf_token %}
+              <button class="ui red button" type="submit"><i class="trash icon"></i> Deletar</button>
+            </form> {% endcomment %}
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="5">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with page_obj=page_obj paginator=paginator page_range=page_range %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}

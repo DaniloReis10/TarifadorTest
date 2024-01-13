@@ -27,6 +27,10 @@ from charges.views import AdmServicePriceTableCreateView
 from charges.views import AdmServicePriceTableDetailView
 from charges.views import AdmServicePriceTableListView
 from charges.views import AdmServicePriceTableUpdateView
+from charges.views import AdmOtherPriceTableCreateView
+from charges.views import AdmOtherPriceTableDetailView
+from charges.views import AdmOtherPriceTableListView
+from charges.views import AdmOtherPriceTableUpdateView
 from core.views import HomeRedirectView
 from extensions.views import ExtensionAssignedCreateView
 from extensions.views import ExtensionAssignedListView
@@ -109,6 +113,18 @@ urlpatterns = [
 
     path('pricetable/service/<int:pk>/update/',
          AdmServicePriceTableUpdateView.as_view(), name='adm_service_pricetable_update'),
+
+    path('pricetable/other/',
+         AdmOtherPriceTableListView.as_view(), name='adm_other_pricetable_list'),
+
+    path('pricetable/other/<int:pk>/detail/',
+         AdmOtherPriceTableDetailView.as_view(), name='adm_other_pricetable_detail'),
+
+    path('pricetable/other/create/',
+         AdmOtherPriceTableCreateView.as_view(), name='adm_other_pricetable_create'),
+
+    path('pricetable/other/<int:pk>/update/',
+         AdmOtherPriceTableUpdateView.as_view(), name='adm_other_pricetable_update'),
 
     # home
     path('',

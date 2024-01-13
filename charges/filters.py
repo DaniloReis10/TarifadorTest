@@ -26,5 +26,5 @@ class PriceTableFilter(django_filters.FilterSet):
 
     def company_filter(self, queryset, name, value):
         if value:
-            return queryset.filter(Q(service_company_set=value) | Q(call_company_set=value))
+            return queryset.filter(Q(service_company_set=value) | Q(call_company_set=value) | Q(other_company_set=value))
         return queryset

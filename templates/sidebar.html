@@ -51,6 +51,14 @@
         </div>
       </div>
     </a>
+      
+    <a class="item" href="{% url 'adm_other_pricetable_list' %}">
+      <div class="content">
+        <div class="header">
+          <i class="table icon"></i> Serviços Diversos
+        </div>
+      </div>
+    </a>
     <a class="item" href="{% url 'admin:index' %}">
       <div class="content">
         <div class="header">
@@ -191,6 +199,13 @@
       <div class="content">
         <div class="header">
           <i class="table icon"></i> Serviços de Comunicação
+        </div>
+      </div>
+    </a>
+    <a class="item" href="{% url 'charges:other_pricetable_list' organization.slug %}">
+      <div class="content">
+        <div class="header">
+          <i class="table icon"></i> Serviços Diversos
         </div>
       </div>
     </a>

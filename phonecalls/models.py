@@ -26,6 +26,7 @@ from extensions.models import ExtensionLine
 
 # local
 from .constants import CALLTYPE_CHOICES
+from .constants import OTHERTYPE_CHOICES
 from .constants import PABX_CHOICES
 from .constants import SERVICE_CHOICES
 from .constants import VC1, VC2, VC3, LOCAL, LDN, LDI
@@ -67,6 +68,9 @@ class Price(TimeStampedModel, ActivatorModel):
 
     calltype = models.IntegerField(
         'Tipo de Chamada', choices=CALLTYPE_CHOICES, null=True, blank=True)
+
+    othertype = models.IntegerField(
+        'Tipo de Serviço Diverso', choices=OTHERTYPE_CHOICES, null=True, blank=True)
 
     basic_service = models.IntegerField(
         'Tipo de Serviço Básico', choices=BASIC_SERVICE_CHOICES, null=True, blank=True)

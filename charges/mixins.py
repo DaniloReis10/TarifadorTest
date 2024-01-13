@@ -28,3 +28,13 @@ class ServicePriceTableMixin(OrganizationMixin, MembershipRequiredMixin):
         if user.is_superuser or self.organization.is_admin(user):
             return queryset
         return queryset.filter(service_company_set__in=user.company_set.only('id'))
+
+class OtherPriceTableMixin(OrganizationMixin, MembershipRequiredMixin):
+
+    def get_queryset(self):
+        queryset = super().get_queryset() \
+            .filter(organization=self.organization, servicetype=constants.DIVERSE_SERVICE)
+        user = self.request.user
+        if user.is_superuser or self.organization.is_admin(user):
+            return queryset
+        return queryset.filter(service_company_set__in=user.company_set.only('id'))

@@ -71,6 +71,14 @@ CALLTYPE_CHOICES = [
     (ADDEDVALUE, 'AddedValue')  # TODO
 ]
 
+UST = 1
+KM = 2
+
+OTHERTYPE_CHOICES =[
+    (UST, 'Serviços especializados de comunicação VoIP por demanda '),
+    (KM, 'Serviço de deslocamento para prestar serviço fora da Região Metropolitana de Fortaleza')
+]
+
 REPORT_CALLTYPE_MAP = {
     LOCAL: 'Local Fixo-Fixo Extragrupo',
     VC1:   'Local Fixo-Móvel (VC1)',

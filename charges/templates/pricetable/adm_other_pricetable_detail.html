@@ -7,7 +7,7 @@
 {% block breadcrumb %}
 <i class="right chevron icon divider"></i>
 <a class="section" href="{% url 'adm_call_pricetable_list' %}">
-  <h2 class="ui inverted header">Valores - Serviços de Comunicação</h2>
+  <h2 class="ui inverted header">Valores - Serviços Diversos</h2>
 </a>
 <i class="right chevron icon divider"></i>
 <a class="section" href="#">
@@ -78,7 +78,7 @@
         </thead>
         <tbody>
           {% if pricetable.organization %}
-            {% for company in pricetable.call_company_set.all %}
+            {% for company in pricetable.other_company_set.all %}
               <tr>
                 <td>{{ company.name }}</td>
               </tr>
@@ -88,7 +88,7 @@
               </tr>
             {% endfor %}
           {% else %}
-            {% for orgsettings in pricetable.call_orgsettings_set.all %}
+            {% for orgsettings in pricetable.other_orgsettings_set.all %}
               <tr>
                 <td>{{ orgsettings.organization.name }}</td>
               </tr>
@@ -115,7 +115,7 @@
         <tbody>
           {% for price in price_list %}
             <tr>
-              <td class="collapsing">{{ price.get_calltype_display }}</td>
+              <td class="collapsing">{{ price.get_othertype_display }}</td>
               <td class="center aligned">R$ {{ price.value|default:0|floatformat:4 }}</td>
             </tr>
           {% empty %}

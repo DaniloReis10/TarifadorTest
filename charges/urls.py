@@ -28,5 +28,17 @@ urlpatterns = [
          views.ServicePriceTableCreateView.as_view(), name='service_pricetable_create'),
 
     path('pricetable/basicservice/<int:pk>/update/',
-         views.ServicePriceTableUpdateView.as_view(), name='service_pricetable_update')
+         views.ServicePriceTableUpdateView.as_view(), name='service_pricetable_update'),
+
+    path('pricetable/other/',
+         views.OtherPriceTableListView.as_view(), name='other_pricetable_list'),
+
+    path('pricetable/other/create/',
+         views.OtherPriceTableCreateView.as_view(), name='other_pricetable_create'),
+
+    path('pricetable/other/<int:pk>/detail/',
+         views.OtherPriceTableDetailView.as_view(), name='other_pricetable_detail'),
+
+    path('pricetable/other/<int:pk>/update/',
+         views.OtherPriceTableUpdateView.as_view(), name='other_pricetable_update')
 ]

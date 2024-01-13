@@ -1,0 +1,153 @@
+{% extends "organizations/base.html" %}
+
+{% load org_tags %}
+{% load charge_tags %}
+{% load static  %}
+
+{% block title %}{{ organization.name }} - Valores - Serviços Diversos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'charges:call_pricetable_list' organization.slug %}">
+  <h2 class="ui inverted header">
+    Valores <i class="right chevron icon divider"></i> Serviços Diversos</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<form class="ui borderless secondary top attached fluid menu" method="get">
+  <div class="item t-search-item">
+    <div class="ui transparent left icon input">
+      <input name="search" placeholder="Buscar por nome..." type="text" value="{{ request.GET.search }}">
+      <i class="search icon"></i>
+    </div>
+  </div>
+  <div class="item">
+    <button class="ui blue circular inverted button" type="submit">Buscar</button>
+  </div>
+  <div class="right menu">
+    <div class="item" id="t-filter" data-content="Filtrar">
+      <i class="filter icon" aria-hidden="true"></i>
+    </div>
+  </div>
+</form>
+
+<div class="ui bottom attached segment t-filter-bar transition hidden" id="t-filter-bar">
+  <form class="ui form" method="get">
+    <input name="search" type="hidden" value="{{ request.GET.search }}">
+
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="three fields">
+      <div class="field">
+        <label>Cliente</label>
+        <div class="ui selection search dropdown" id="center-dropdown">
+          <input type="hidden" name="company" value="{{ request.GET.company }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in company_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <div class="ui selection search dropdown">
+          <input type="hidden" name="status" value="{{ request.GET.status }}">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            <div class="item" data-value="1">Ativa</div>
+            <div class="item" data-value="0">Inativa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>Tabela</th>
+      <th>Clientes</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pricetable in pricetable_list %}
+      <tr>
+        <td>
+          <a href="{% url 'charges:other_pricetable_detail' organization.slug pricetable.id %}">
+            {{ pricetable.name }}
+          </a>
+        </td>
+        <td>{% company_count pricetable.other_company_set user organization %}</td>
+        <td>{{ pricetable.created|date:"d/m/Y" }} às {{ pricetable.created|time:"H:i" }}</td>
+        <td>{{ pricetable.modified|date:"d/m/Y" }} às {{ pricetable.modified|time:"H:i" }}</td>
+        <td>
+          {% if pricetable.status %}
+            <span class="ui green label">Ativa</span>
+          {% else %}
+            <span class="ui red label">Inativa</span>
+          {% endif %}
+        </td>
+        <td class="collapsing">
+          {% if organization|is_admin:user or user.is_superuser %}
+            <div class="ui small buttons">
+              <a class="ui blue basic button" href="{% url 'charges:other_pricetable_update' organization.slug pricetable.id %}">
+                <i class="edit outline icon"></i> Editar
+              </a>
+              {% comment %}
+              <form action="{% url 'charges:pricetable_delete' organization.slug pricetable.id %}" method="post">
+                {% csrf_token %}
+                <button class="ui red button" type="submit"><i class="trash icon"></i> Deletar</button>
+              </form>
+              {% endcomment %}
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      {% include "utils/empty-tbody.html" with search=request.GET.search %}
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="4">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with page_obj=page_obj paginator=paginator page_range=page_range %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(() => {
+    $('#t-filter').popup({ position: 'top center' })
+    $('#t-filter').click(() => $('#t-filter-bar').transition('slide down'))
+
+    $('.ui.dropdown').dropdown()
+  })
+</script>
+{% endblock %}

@@ -1,13 +1,14 @@
-{% extends 'adm/base.html' %}
+{% extends 'organizations/base.html' %}
 
-{% load static  %}
+{% load org_tags %}
+{% load static %}
 
-{% block title %}Admin - Valores - Serviços Diversos{% endblock %}
+{% block title %}{{ organization.name }} - Valores - Serviços Diversos{% endblock %}
 
 {% block breadcrumb %}
 <i class="right chevron icon divider"></i>
-<a class="section" href="{% url 'adm_call_pricetable_list' %}">
-  <h2 class="ui inverted header">Valores - Serviços de Comunicação</h2>
+<a class="section" href="{% url 'charges:other_pricetable_list' organization.slug %}">
+  <h2 class="ui inverted header">Valores - Serviços Diversos</h2>
 </a>
 <i class="right chevron icon divider"></i>
 <a class="section" href="#">
@@ -15,7 +16,7 @@
 </a>
 {% endblock %}
 
-{% block adm-content %}
+{% block org-content %}
 <div class="ui internally celled grid">
   <div class="row">
     <div class="four wide column">
@@ -28,11 +29,7 @@
           <tr>
             <td>Proprietário</td>
             <td>
-              {% if pricetable.organization %}
-                {{ pricetable.organization.name }}
-              {% else %}
-                Administrador
-              {% endif %}
+              {{ pricetable.organization.name }}
             </td>
           </tr>
           <tr>
@@ -54,50 +51,34 @@
             </td>
           </tr>
         </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="2">
-              <a class="fluid ui blue basic button" href="{% url 'adm_call_pricetable_update' pricetable.id %}">
-                <i class="edit outline icon"></i> Editar
-              </a>
-            </td>
-          </tr>
-        </tfoot>
+        {% if user.is_superuser or organization|is_admin:user %}
+          <tfoot>
+            <tr>
+              <td colspan="2">
+                <a class="fluid ui blue basic button" href="{% url 'charges:other_pricetable_update' organization.slug pricetable.id %}">
+                  <i class="edit outline icon"></i> Editar
+                </a>
+              </td>
+            </tr>
+          </tfoot>
+        {% endif %}
       </table>
       <table class="ui compact table">
         <thead>
           <tr>
-            <th>
-              {% if pricetable.organization %}
-                Clientes
-              {% else %}
-                Organizações
-              {% endif %}
-            </th>
+            <th>Clientes</th>
           </tr>
         </thead>
         <tbody>
-          {% if pricetable.organization %}
-            {% for company in pricetable.call_company_set.all %}
-              <tr>
-                <td>{{ company.name }}</td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td> ---- </td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            {% for orgsettings in pricetable.call_orgsettings_set.all %}
-              <tr>
-                <td>{{ orgsettings.organization.name }}</td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td> ---- </td>
-              </tr>
-            {% endfor %}
-          {% endif %}
+          {% for company in company_list %}
+            <tr>
+              <td>{{ company.name }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td> ---- </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
@@ -115,7 +96,7 @@
         <tbody>
           {% for price in price_list %}
             <tr>
-              <td class="collapsing">{{ price.get_calltype_display }}</td>
+              <td class="collapsing">{{ price.get_othertype_display }}</td>
               <td class="center aligned">R$ {{ price.value|default:0|floatformat:4 }}</td>
             </tr>
           {% empty %}

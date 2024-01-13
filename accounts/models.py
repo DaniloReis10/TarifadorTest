@@ -60,6 +60,11 @@ class OrganizationSetting(TimeStampedModel):
         verbose_name='Tabela de Valores Serviços de Comunicação',
         on_delete=models.SET_NULL, blank=True, null=True)
 
+    other_pricetable = models.ForeignKey(
+        'phonecalls.PriceTable', related_name='other_orgsettings_set',
+        verbose_name='Tabela de Valores Serviços Diversos',
+        on_delete=models.SET_NULL, blank=True, null=True)
+
     zip_code = models.CharField(
         'CEP', max_length=8, blank=True, null=True)
 

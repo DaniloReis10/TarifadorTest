@@ -27,6 +27,7 @@ MO_REAL_TIME_TRACKING = 14
 MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES = 15
 MO_RECORDING_POSITION = 16
 MO_RECORDING_SUPERVISOR = 17
+WIFI_ACCESS_SERVICE = 18
 
 UST_OTHER = 1
 KM_OTHER = 2
@@ -61,6 +62,19 @@ BASIC_SERVICE_CHOICES = [
      'Gerência e Operação de Supervisor de Gravação')
 ]
 
+BASIC_SERVICE_CHOICES_NEW = {
+    # Serviço de Disponibilização de Acesso a Comunicação Voip
+    LEVEL_1_ACCESS_SERVICE:     'Serviço de Acesso VoIP com aparelho 2 SIP e 100 Mb',
+    LEVEL_2_ACCESS_SERVICE:     'Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE',
+    LEVEL_3_ACCESS_SERVICE:     'Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função',
+    LEVEL_4_ACCESS_SERVICE:     'Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função',
+    LEVEL_5_ACCESS_SERVICE:     'Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT',
+    LEVEL_6_ACCESS_SERVICE:     'Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi',
+    WIRELESS_ACCESS_SERVICE:    'Serviço de Acesso VoIP sem aparelho (aparelho contratante)',
+    SOFTWARE_ACCESS_SERVICE:    'Serviço de acesso via Software',
+    SOFTWARE_EXTENSION_SERVICE: 'Serviço de Extensão via software'
+}
+
 BASIC_SERVICE_ACCESS = [
     LEVEL_1_ACCESS_SERVICE,
     LEVEL_2_ACCESS_SERVICE,
@@ -83,6 +97,19 @@ BASIC_SERVICE_ACCESS_MAP = {
     'WIRELESS_ACCESS_SERVICE': 'Serviço de Acesso sem fio',
     'SOFTWARE_ACCESS_SERVICE': 'Serviço de acesso via Software',
     'SOFTWARE_EXTENSION_SERVICE': 'Serviço de Extensão via software'
+}
+
+BASIC_SERVICE_ACCESS_MAP_NEW = {
+    'LEVEL_1_ACCESS_SERVICE': 'Serviço de Acesso VoIP com aparelho 2 SIP e 100 Mb',
+    'LEVEL_2_ACCESS_SERVICE': 'Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE',
+    'LEVEL_3_ACCESS_SERVICE': 'Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função',
+    'LEVEL_4_ACCESS_SERVICE': 'Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função',
+    'LEVEL_5_ACCESS_SERVICE': 'Serviço de Acesso VoIP sem aparelho (aparelho contratante)',
+#    'LEVEL_6_ACCESS_SERVICE': 'Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi',
+    'WIRELESS_ACCESS_SERVICE': 'Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT',
+    'SOFTWARE_ACCESS_SERVICE': 'Serviço de acesso via Software',
+    'SOFTWARE_EXTENSION_SERVICE': 'Serviço de Extensão via software',
+    'WIFI_ACCESS_SERVICE': 'Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi'
 }
 
 BASIC_SERVICE_MO = [
@@ -110,6 +137,7 @@ BASIC_SERVICE_MO_MAP = {
 }
 
 BASIC_SERVICE_MAP = {**BASIC_SERVICE_ACCESS_MAP, **BASIC_SERVICE_MO_MAP}
+BASIC_SERVICE_MAP_NEW = {**BASIC_SERVICE_ACCESS_MAP_NEW, **BASIC_SERVICE_MO_MAP}
 
 PRICE_FIELDS = [
     'level_1_access_service',
@@ -159,9 +187,12 @@ PRICE_FIELDS_BASIC_SERVICE_MAP = {
     MO_RECORDING_SUPERVISOR: 'mo_recording_supervisor',
 }
 
+
 PRICE_FIELDS_CALLTYPE_MAP = {
     phonecalls_constants.LOCAL: 'LOCAL',
     phonecalls_constants.VC1: 'VC1',
+    phonecalls_constants.VC2: 'VC2',
+    phonecalls_constants.VC3: 'VC3',
     phonecalls_constants.LDN: 'LDN',
     phonecalls_constants.LDI: 'LDI'
 }

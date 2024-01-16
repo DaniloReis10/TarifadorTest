@@ -38,7 +38,10 @@
 
     {% if form.status %}
       <h4 class="ui dividing header">Ativar/Desativar Centro de Custo</h4>
-      {% include "utils/form-field.html" with field=form.status %}
+      <div class="two fields">
+        {% include "utils/form-field.html" with field=form.status %}
+        {% include "utils/form-field.html" with field=form.is_new_contract %}
+      </div>
     {% endif %}
 
     <h4 class="ui dividing header">Informações do Centro de Custos</h4>

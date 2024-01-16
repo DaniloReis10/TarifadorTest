@@ -1,5 +1,6 @@
 {% load formtags %}
 
+
 {% if field.field.widget.input_type == 'checkbox' %}
   <div class="{% if field.field.required %}required{% endif %} inline field {% if field.errors %}error{% endif %}">
     <div class="ui checkbox">

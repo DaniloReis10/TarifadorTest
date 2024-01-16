@@ -28,10 +28,12 @@ from centers.utils import make_price
 from centers.utils import make_price_adm
 from charges.constants import BASIC_SERVICE_ACCESS_MAP
 from charges.constants import BASIC_SERVICE_MAP
+from charges.constants import BASIC_SERVICE_MAP_NEW
 from charges.constants import BASIC_SERVICE_MO_MAP
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
 from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
+from phonecalls.constants import NEW_CONTRACT, OLD_CONTRACT
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 
@@ -71,7 +73,7 @@ class SystemReportOrganization(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}"'
-                        'width="550" height="66" valign="top"/>',
+                        'width="150" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({
@@ -309,19 +311,44 @@ class SystemReportOrganization(object):
                         'desc': 'Local Fixo-Móvel (VC3)'
                     }]
                 thead = []
+                local_call_number = 0
+                local_minutes = 0
+                local_cost = 0
+                mobile_call_number = 0
+                mobile_minutes = 0
+                mobile_cost = 0
+
                 for local in local_list:
                     if local['type'] in call_company_map:
                         call_company = call_company_map[local['type']]
                         if type(call_company) is not dict:
                             call_company = call_company._asdict()
-                        minutes = call_company['billedtime_sum']
-                        thead.append([
-                            local['desc'],
-                            str(call_company['count']),
-                            time_format(minutes),
-                            f"R$ {make_price(call_company['cost_sum'])}"])
-                    else:
-                        thead.append([local['desc'], '0', '00:00:00', 'R$ 0,00'])
+                        if local['type'] == LOCAL:
+                            local_call_number = call_company['count']
+                            local_minutes = call_company['billedtime_sum']
+                            local_cost = call_company['cost_sum']
+                        else:
+                            mobile_call_number += call_company['count']
+                            mobile_minutes += call_company['billedtime_sum']
+                            mobile_cost += call_company['cost_sum']
+                       # minutes = call_company['billedtime_sum']
+                      #  thead.append([
+                      #      local['desc'],
+                      #      str(call_company['count']),
+                      #      time_format(minutes),
+                      #      f"R$ {make_price(call_company['cost_sum'])}"])
+                    #else:
+                    #    thead.append([local['desc'], '0', '00:00:00', 'R$ 0,00'])
+                thead.append([
+                          'Local Fixo-Fixo Extragrupo',
+                          str(local_call_number),
+                          time_format(local_minutes),
+                          f"R$ {make_price(local_cost)}"])
+                thead.append([
+                    'Local Fixo-Móvel',
+                    str(mobile_call_number),
+                    time_format(mobile_minutes),
+                    f"R$ {make_price(mobile_cost)}"])
                 size = (self._width - 50) / 5
                 tbl = Table(
                     thead,
@@ -607,7 +634,7 @@ class SystemReportOrganization(object):
 
                 service_amount = 0
                 service_cost = 0
-                for key, value in BASIC_SERVICE_MAP.items():
+                for key, value in BASIC_SERVICE_MAP_NEW.items():
                     if key in call_company_map:
                         service_amount += call_company_map[key]['amount']
                         service_cost += call_company_map[key]['cost']
@@ -712,7 +739,11 @@ class SystemReportOrganization(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = []
 
-                    for key, value in BASIC_SERVICE_MAP.items():
+                    if call_company_map['contract_version'] == NEW_CONTRACT:
+                        service_map = BASIC_SERVICE_MAP_NEW
+                    else:
+                        service_map = BASIC_SERVICE_MAP
+                    for key, value in service_map.items():
                         if key in call_company_map:
                             service_amount += call_company_map[key]['amount']
                             service_cost += call_company_map[key]['cost']
@@ -841,20 +872,50 @@ class SystemReportOrganization(object):
                         'desc': 'Local Fixo-Móvel (VC3)'
                     }]
                 thead = []
+                local_call_number = 0
+                local_minutes = 0
+                local_cost = 0
+                mobile_call_number = 0
+                mobile_minutes = 0
+                mobile_cost = 0
                 for local in local_list:
                     if local['type'] in call_company_map:
                         call_company = call_company_map[local['type']]
                         if type(call_company) is not dict:
                             call_company = call_company._asdict()
-                        minutes = call_company['billedtime_sum']
-                        thead.append([
-                            local['desc'],
-                            f"R$ {make_price(call_company['price'])}",
-                            str(call_company['count']),
-                            time_format(minutes),
-                            f"R$ {make_price(call_company['cost_sum'])}"])
+                        if call_company_map['contract_version'] == NEW_CONTRACT:
+                            if local['type'] == LOCAL:
+                                local_call_number = call_company['count']
+                                local_minutes = call_company['billedtime_sum']
+                                local_cost = call_company['cost_sum']
+                            else:
+                                mobile_call_number += call_company['count']
+                                mobile_minutes += call_company['billedtime_sum']
+                                mobile_cost += call_company['cost_sum']
+                        else:
+                            minutes = call_company['billedtime_sum']
+                            thead.append([
+                                local['desc'],
+                                f"R$ {make_price(call_company['price'])}",
+                                str(call_company['count']),
+                                time_format(minutes),
+                                f"R$ {make_price(call_company['cost_sum'])}"])
                     else:
-                        thead.append([local['desc'], 'R$ 0,00', '0', '00:00:00', 'R$ 0,00'])
+                        if call_company_map['contract_version'] == OLD_CONTRACT:
+                            thead.append([local['desc'], 'R$ 0,00', '0', '00:00:00', 'R$ 0,00'])
+                if call_company_map['contract_version'] == NEW_CONTRACT:
+                    thead.append([
+                        'Local Fixo-Fixo Extragrupo',
+                        f"R$ {make_price(call_company['price'])}",
+                        str(local_call_number),
+                        time_format(local_minutes),
+                        f"R$ {make_price(local_cost)}"])
+                    thead.append([
+                        'Local Fixo-Móvel',
+                        f"R$ {make_price(call_company['price'])}",
+                        str(mobile_call_number),
+                        time_format(mobile_minutes),
+                        f"R$ {make_price(mobile_cost)}"])
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,

@@ -8,7 +8,7 @@ from datetime import date
 # django
 from django.conf import settings
 from django.db.models import Count, Sum
-from django.db.models import F
+from django.db.models import F, FloatField, ExpressionWrapper
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import StreamingHttpResponse
@@ -38,6 +38,7 @@ from charges.constants import LEVEL_3_ACCESS_SERVICE
 from charges.constants import LEVEL_4_ACCESS_SERVICE
 from charges.constants import LEVEL_5_ACCESS_SERVICE
 from charges.constants import LEVEL_6_ACCESS_SERVICE
+from charges.constants import WIFI_ACCESS_SERVICE
 from charges.constants import MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES
 from charges.constants import MO_BASIC_CONTACT_CENTER_PLATFORM
 from charges.constants import MO_BASIC_RECORDING_PLATFORM
@@ -69,6 +70,7 @@ from .constants import SERVICE_CHOICES
 from .constants import VC1, VC2, VC3, LOCAL, LDN, LDI
 from .filters import PhonecallFilter
 from .models import Phonecall
+from .constants import OLD_CONTRACT,  NEW_CONTRACT
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 PABX_MAP = dict(PABX_CHOICES)
@@ -91,7 +93,8 @@ BASIC_SERVICE_MAP = {
     MO_REAL_TIME_TRACKING: 'MO_REAL_TIME_TRACKING',
     MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES: 'MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES',
     MO_RECORDING_POSITION: 'MO_RECORDING_POSITION',
-    MO_RECORDING_SUPERVISOR: 'MO_RECORDING_SUPERVISOR'
+    MO_RECORDING_SUPERVISOR: 'MO_RECORDING_SUPERVISOR',
+    WIFI_ACCESS_SERVICE: 'WIFI_ACCESS_SERVICE'
 }
 
 services_voip_communication = [
@@ -817,13 +820,14 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
             service_price_list = {}
             if service_pricetable:
                 service_price_list = service_pricetable.price_set.active()
-
+            phonecall_map.setdefault(company.name, copy(TOTAL_DICT))
+            phonecall_map[company.name].update({'contract_version': company.is_new_contract})
             service_basic_amount = 0
             service_basic_cost = 0
             for service in service_price_list:
                 service_cost = service.basic_service_amount * service.value
                 service_cost = (service_cost / divider) * multiplier
-                phonecall_map.setdefault(company.name, copy(TOTAL_DICT))
+
                 phonecall_map[company.name].update({
                     BASIC_SERVICE_MAP[service.basic_service]: {
                         'price': service.value,
@@ -844,6 +848,8 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
 
         phonecall_map[SERVICE] = service_data
         context['phonecall_map'] = phonecall_map
+        context['new_contract'] = NEW_CONTRACT
+        context['old_contract'] = OLD_CONTRACT
         return context
 
 
@@ -867,9 +873,9 @@ class OrgPhonecallUSTView(BaseOrgPhonecallView):  # ORG
                     inbound=False,
                     calltype__in=[LOCAL, VC1, VC2, VC3, LDN, LDI]) \
             .values('calltype') \
-            .annotate(price_ust=F('org_price') / settings.PRICE_UST,
+            .annotate(price_ust=  ExpressionWrapper(F('org_price') / settings.PRICE_UST, output_field=FloatField()),
                       billedtime_sum=Sum('billedtime'),
-                      cost_ust_sum=Sum('org_billedamount') / settings.PRICE_UST,
+                      cost_ust_sum=Sum('org_billedamount', output_field=FloatField()) / settings.PRICE_UST,
                       cost_sum=Sum('org_billedamount')) \
             .values('calltype', 'price_ust', 'billedtime_sum', 'cost_sum', 'cost_ust_sum') \
             .order_by('calltype')
@@ -1491,6 +1497,7 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
 
             phonecall_map.setdefault(company.name, copy(TOTAL_DICT))
             phonecall_map[company.name]['desc'] = company.description
+            phonecall_map[company.name].update({'contract_version': company.is_new_contract})
 
             service_basic_amount = 0
             service_basic_cost = 0
@@ -1503,10 +1510,17 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
                             'price': service.value,
                             'amount': service.basic_service_amount,
                             'cost': service_cost})
-                    service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['amount'] += \
-                        service.basic_service_amount
-                    service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['cost'] += \
-                        service_cost
+                    # Now for each level_6 service (DECT phone without a base) we need to add a base
+                    if BASIC_SERVICE_MAP[service.basic_service] == 'LEVEL_6_ACCESS_SERVICE' and company.is_new_contract == OLD_CONTRACT:
+                        service_basic_total[BASIC_SERVICE_MAP[WIRELESS_ACCESS_SERVICE]]['amount'] += \
+                            service.basic_service_amount
+                        service_basic_total[BASIC_SERVICE_MAP[WIRELESS_ACCESS_SERVICE]]['cost'] += \
+                            service_cost
+                    elif BASIC_SERVICE_MAP[service.basic_service] != 'WIRELESS_ACCESS_SERVICE' or company.is_new_contract == NEW_CONTRACT:
+                        service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['amount'] += \
+                            service.basic_service_amount
+                        service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['cost'] += \
+                            service_cost
                     service_basic_amount += service.basic_service_amount
                     service_basic_cost += service_cost
 

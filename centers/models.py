@@ -14,6 +14,7 @@ from django_extensions.db.models import TimeStampedModel
 # project
 from organizations.models import Organization
 from phonenumber_field.modelfields import PhoneNumberField
+from phonecalls.constants import OLD_CONTRACT, CONTRACT_CHOICES, NEW_CONTRACT
 
 
 class Company(ActivatorModel, TimeStampedModel):
@@ -23,6 +24,10 @@ class Company(ActivatorModel, TimeStampedModel):
     Contém dados de identidade, usuários associados,
       endereço, contato, tabelas de valores por serviço
     """
+    """
+    To Indicate contract version. Now only old and new but can have multiple versions
+     """
+
 
     organization = models.ForeignKey(
         Organization, verbose_name='Organização', on_delete=models.CASCADE)
@@ -95,6 +100,10 @@ class Company(ActivatorModel, TimeStampedModel):
 
     longitude = models.FloatField(
         'Longitude', blank=True, null=True)
+
+    is_new_contract = models.IntegerField(
+        verbose_name='Is new contract?', choices=CONTRACT_CHOICES, default=OLD_CONTRACT
+    )
 
     def is_member(self, user):
         return True if user in self.users.all() else False

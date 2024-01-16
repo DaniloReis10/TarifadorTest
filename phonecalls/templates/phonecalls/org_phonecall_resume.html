@@ -89,7 +89,11 @@
       {% if company_phonecall_map.LEVEL_1_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
+              {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
+              {% else %}
+                  Serviço de Acesso Nivel 1
+              {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.LEVEL_1_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.LEVEL_1_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -99,7 +103,11 @@
       {% if company_phonecall_map.LEVEL_2_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
+              {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
+              {% else %}
+                  Serviço de Acesso Nivel 2
+              {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.LEVEL_2_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.LEVEL_2_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -109,7 +117,11 @@
       {% if company_phonecall_map.LEVEL_3_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso Nivel 3
+               {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função
+               {% else %}
+                  Serviço de Acesso Nivel 3
+              {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.LEVEL_3_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.LEVEL_3_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -119,7 +131,11 @@
       {% if company_phonecall_map.LEVEL_4_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso Nivel 4
+            {% if company_phonecall_map.contract_version == new_contract %}
+                Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função
+            {% else %}
+                  Serviço de Acesso Nivel 4
+            {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.LEVEL_4_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.LEVEL_4_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -129,7 +145,11 @@
       {% if company_phonecall_map.LEVEL_5_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso Nivel 5
+              {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso VoIP sem aparelho (aparelho contratante)
+              {% else %}
+                    Serviço de Acesso Nivel 5
+              {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.LEVEL_5_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.LEVEL_5_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -149,11 +169,29 @@
       {% if company_phonecall_map.WIRELESS_ACCESS_SERVICE %}
         <tr>
           <td class="collapsing">
-            Serviço de Acesso sem fio
+              {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT
+              {% else %}
+                    Serviço de Acesso sem fio
+              {% endif %}
           </td>
           <td class="center aligned">R$ {{ company_phonecall_map.WIRELESS_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
           <td class="center aligned">{{ company_phonecall_map.WIRELESS_ACCESS_SERVICE.amount|default:0 }}</td>
           <td class="center aligned">R$ {{ company_phonecall_map.WIRELESS_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
+       {% if company_phonecall_map.WIFI_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+              {% if company_phonecall_map.contract_version == new_contract %}
+                    Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi
+              {% else %}
+                    ERRO
+              {% endif %}
+          </td>
+          <td class="center aligned">R$ {{ company_phonecall_map.WIFI_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ company_phonecall_map.WIFI_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ company_phonecall_map.WIFI_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
         </tr>
       {% endif %}
       {% if company_phonecall_map.SOFTWARE_ACCESS_SERVICE %}

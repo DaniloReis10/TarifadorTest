@@ -97,7 +97,7 @@ class CompanyUpdateView(OrganizationMixin, AdminRequiredMixin, UpdateView):  # O
     fields = [
         'status', 'name', 'code', 'phone', 'cnpj', 'description',
         'logo', 'zip_code', 'country', 'state', 'city', 'call_pricetable',
-        'street', 'street_number', 'neighborhood', 'complement']
+        'street', 'street_number', 'neighborhood', 'complement', 'is_new_contract']
     http_method_names = ['get', 'post']
     model = Company
     query_pk_and_slug = True

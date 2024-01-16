@@ -274,6 +274,10 @@ class ServicePriceTableUpdateView(OrganizationMixin,
         return reverse(
             'charges:service_pricetable_list', kwargs={'org_slug': self.organization.slug})
 
+    def get_context_data(self, **kwargs):
+        context = super(ServicePriceTableUpdateView, self).get_context_data(**kwargs)
+        context['new_contract_dict'] = charges_constants.BASIC_SERVICE_CHOICES_NEW
+
 
 class OtherPriceTableListView(OtherPriceTableMixin,
                                 BaseFilterView,

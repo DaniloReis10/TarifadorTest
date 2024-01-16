@@ -1,3 +1,11 @@
+OLD_CONTRACT = 0
+NEW_CONTRACT = 1
+
+CONTRACT_CHOICES = [
+    (OLD_CONTRACT, 'Contrato antigo'),
+    (NEW_CONTRACT, 'Contrato Novo'),
+]
+
 IN_CALL = 1
 IN_ABANDONED = 2
 OUT_CALL = 3

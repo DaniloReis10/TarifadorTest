@@ -30,6 +30,7 @@ from .forms import OtherPriceTableUpdateForm
 from .mixins import CallPriceTableMixin
 from .mixins import ServicePriceTableMixin
 from .mixins import OtherPriceTableMixin
+from phonecalls.constants import NEW_CONTRACT, OLD_CONTRACT
 
 class CallPriceTableListView(CallPriceTableMixin,
                              BaseFilterView,
@@ -195,7 +196,18 @@ class ServicePriceTableDetailView(ServicePriceTableMixin,
 
     def get_context_data(self, **kwargs):
         kwargs.update({'price_list': self.object.price_set.active().order_by('basic_service')})
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        if (context['pricetable'].service_company_set.first() is None or \
+            context['pricetable'].service_company_set.first().is_new_contract == NEW_CONTRACT):
+#            context['is_new_contract'] = NEW_CONTRACT
+            context['contract_dict'] = charges_constants.BASIC_SERVICE_CHOICES_NEW
+        else:
+#            context['is_new_contract'] = context['pricetable'].service_company_set.first().is_new_contract
+            context['contract_dict'] = charges_constants.BASIC_SERVICE_CHOICES_LIST
+#        context['new_contract'] = NEW_CONTRACT
+#        context['old_contract'] = OLD_CONTRACT
+        return context
+
 
 
 class ServicePriceTableCreateView(OrganizationMixin,
@@ -250,7 +262,11 @@ class ServicePriceTableUpdateView(OrganizationMixin,
     def form_valid(self, form):
         pricetable = form.instance
 
-        price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP.values()
+
+        if (pricetable.service_company_set.first() is None or pricetable.service_company_set.first().is_new_contract == NEW_CONTRACT):
+            price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP_NEW.values()
+        else:
+            price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP.values()
         for price_field in price_fields:
             amount = form.cleaned_data.get(f'{price_field}_amount')
             price = form.cleaned_data.get(f'{price_field}_price')
@@ -259,6 +275,7 @@ class ServicePriceTableUpdateView(OrganizationMixin,
             basic_service = getattr(charges_constants, price_field.upper())
             updated = False
             try:
+
                 curr_price = pricetable.price_set.active().get(basic_service=basic_service)
                 if curr_price.basic_service_amount != amount or curr_price.value != price:
                     curr_price.inactive()
@@ -277,6 +294,14 @@ class ServicePriceTableUpdateView(OrganizationMixin,
     def get_context_data(self, **kwargs):
         context = super(ServicePriceTableUpdateView, self).get_context_data(**kwargs)
         context['new_contract_dict'] = charges_constants.BASIC_SERVICE_CHOICES_NEW
+        if context['pricetable'].service_company_set.first() is None:
+            context['is_new_contract'] = NEW_CONTRACT
+        else:
+            context['is_new_contract'] = context['pricetable'].service_company_set.first().is_new_contract
+        context['new_contract'] = NEW_CONTRACT
+        context['old_contract'] = OLD_CONTRACT
+        return context
+
 
 
 class OtherPriceTableListView(OtherPriceTableMixin,

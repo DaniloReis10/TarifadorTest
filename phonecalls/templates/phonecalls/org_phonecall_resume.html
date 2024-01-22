@@ -32,7 +32,7 @@
         <div class="ui calendar" id="rangestart">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt }}">
+            <input name="date_gt" placeholder="Data Inicial" type="date" value="{{ date_gt }}">
           </div>
         </div>
       </div>
@@ -41,7 +41,7 @@
         <div class="ui calendar" id="rangeend">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt }}">
+            <input name="date_lt" placeholder="Data Final" type="date" value="{{ date_lt }}">
           </div>
         </div>
       </div>
@@ -337,7 +337,7 @@
       <tr class="active">
         <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA NACIONAL</b></td>
       </tr>
-      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.DDD type="DDD" %}
+      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.5 type="DDD" %}
       <tr class="active">
         <td class="right aligned" colspan="2"><b>Total de Longa Distancia Nacional:</b></td>
         <td class="center aligned">{{ company_phonecall_map.national.count }}</td>
@@ -347,7 +347,7 @@
       <tr class="active">
         <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA INTERNACIONAL</b></td>
       </tr>
-      {% include "phonecalls/resume_table_row.html" %}
+      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.6 type="DDI"%}
       <tr class="active">
         <td class="right aligned" colspan="2"><b>Total de Longa Distancia Internacional:</b></td>
         <td class="center aligned">{{ company_phonecall_map.international.count }}</td>
@@ -390,33 +390,9 @@
     $('.ui.radio.checkbox')
       .checkbox()
 
-    $('#rangestart').calendar({
-      endCalendar: $('#rangeend'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
 
-    $('#rangeend').calendar({
-      startCalendar: $('#rangestart'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
+
+
   })
 </script>
 {% endblock %}

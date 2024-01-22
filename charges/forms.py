@@ -7,8 +7,11 @@ from phonecalls.models import PriceTable
 
 # local
 from .constants import PRICE_FIELDS_BASIC_SERVICE_MAP
+from .constants import PRICE_FIELDS_BASIC_SERVICE_MAP_NEW
 from .constants import PRICE_FIELDS_CALLTYPE_MAP
 from .constants import PRICE_FIELDS_OTHERTYPE_MAP
+from phonecalls.constants import NEW_CONTRACT
+
 
 
 class ServicePriceTableForm(forms.ModelForm):
@@ -55,6 +58,13 @@ class ServicePriceTableForm(forms.ModelForm):
         label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
 
     level_6_access_service_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Serviço de Acesso Wifi
+    wifi_access_service_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    wifi_access_service_amount = forms.IntegerField(
         label='Quantidade', required=False)
 
     # Serviço de Acesso sem fio
@@ -141,6 +151,7 @@ class ServicePriceTableForm(forms.ModelForm):
         fields = ['name']
 
 
+
 class ServicePriceTableCreateForm(ServicePriceTableForm):
 
     pass
@@ -155,10 +166,23 @@ class ServicePriceTableUpdateForm(ServicePriceTableForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         price_list = self.instance.price_set.active()
+
+# The master (ETICE-SEATIC) has no company pointing to it
+
+        testset = self.instance.service_company_set.first()
+
+        if (self.instance.service_company_set.first() is None or self.instance.service_company_set.first().is_new_contract == NEW_CONTRACT):
+            price_basic_service_map =  PRICE_FIELDS_BASIC_SERVICE_MAP_NEW
+            del self.fields['level_6_access_service_price']
+            del self.fields['level_6_access_service_amount']
+        else:
+            price_basic_service_map = PRICE_FIELDS_BASIC_SERVICE_MAP
+            del self.fields['wifi_access_service_price']
+            del self.fields['wifi_access_service_amount']
         for price in price_list:
-            if price.basic_service not in PRICE_FIELDS_BASIC_SERVICE_MAP:
+            if price.basic_service not in price_basic_service_map:
                 continue
-            price_field = PRICE_FIELDS_BASIC_SERVICE_MAP[price.basic_service]
+            price_field = price_basic_service_map[price.basic_service]
             self.fields[f'{price_field}_amount'].initial = price.basic_service_amount
             self.fields[f'{price_field}_price'].initial = price.value
 
@@ -186,6 +210,13 @@ class CallPriceTableForm(forms.ModelForm):
 
     # Longa Distância Nacional
 
+    VC2_price = forms.DecimalField(
+        label='Ligações para celular na mesma região (VC2)',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
+
+    VC3_price = forms.DecimalField(
+        label='Ligações para celular em outra área (VC3)',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
     LDN_price = forms.DecimalField(
         label='Ligações DDD para fixo',

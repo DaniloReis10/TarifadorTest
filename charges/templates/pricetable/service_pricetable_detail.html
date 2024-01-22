@@ -84,11 +84,7 @@
         <tbody>
           {% for price in price_list %}
             <tr>
-                {% if pricetable.service_company_set.first.is_new_contract %}
-                    <td class="collapsing">{{ new_contract_dict | dict_key:price.basic_service }}</td>
-                {% else %}
-                    <td class="collapsing">{{ price.get_basic_service_display }}</td>
-                {% endif %}
+                <td class="collapsing">{{ contract_dict | dict_key:price.basic_service }}</td>
               <td class="center aligned">{{ price.basic_service_amount }}</td>
               <td class="center aligned">R$ {{ price.value|default:0|floatformat:4 }}</td>
             </tr>

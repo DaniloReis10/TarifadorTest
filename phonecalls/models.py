@@ -73,7 +73,8 @@ class Price(TimeStampedModel, ActivatorModel):
         'Tipo de Serviço Diverso', choices=OTHERTYPE_CHOICES, null=True, blank=True)
 
     basic_service = models.IntegerField(
-        'Tipo de Serviço Básico', choices=BASIC_SERVICE_CHOICES, null=True, blank=True)
+ #       'Tipo de Serviço Básico', choices=BASIC_SERVICE_CHOICES, null=True, blank=True)
+        'Tipo de Serviço Básico', null=True, blank=True)
 
     basic_service_amount = models.IntegerField(
         'Quantidade de Serviço Básico', null=True, blank=True)

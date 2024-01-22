@@ -33,8 +33,8 @@
 
 					<h4 class="ui dividing header">Serviços Básicos</h4>
 					<h4 class="ui header">Serviços de Disponibilização de Acesso a Comunicação Voip</h4>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
-					    <h5 class="ui header">Serviço de AcessoX VoIP com aparelho 2 SIP e 100 MbE</h5>
+                    {% if is_new_contract == new_contract %}
+					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 1</h5>
                     {%  endif %}
@@ -46,7 +46,7 @@
 							{% include "utils/form-field.html" with field=form.level_1_access_service_price %}
 						</div>
 					</div>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
+                    {% if is_new_contract == new_contract %}
 					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 2</h5>
@@ -59,7 +59,7 @@
 							{% include "utils/form-field.html" with field=form.level_2_access_service_price %}
 						</div>
 					</div>
-					{% if pricetable.service_company_set.first.is_new_contract %}
+					{% if is_new_contract == new_contract%}
                         <h5 class="ui header">Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 3</h5>
@@ -72,7 +72,7 @@
 							{% include "utils/form-field.html" with field=form.level_3_access_service_price %}
 						</div>
 					</div>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
+                    {% if is_new_contract == new_contract %}
 					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 4</h5>
@@ -85,8 +85,8 @@
 							{% include "utils/form-field.html" with field=form.level_4_access_service_price %}
 						</div>
 					</div>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
-					    <h5 class="ui header">Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT</h5>
+                    {% if is_new_contract == new_contract%}
+					    <h5 class="ui header">Serviço de Acesso VoIP sem aparelho (aparelho contratante)</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 5</h5>
                     {%  endif %}
@@ -98,21 +98,20 @@
 							{% include "utils/form-field.html" with field=form.level_5_access_service_price %}
 						</div>
 					</div>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
-					    <h5 class="ui header">Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi</h5>
-                    {% else %}
+                <! –– The new contract does not have DECT phones without base -->
+                    {% if is_new_contract == old_contract %}
                         <h5 class="ui header">Serviço de Acesso Nivel 6</h5>
-                    {%  endif %}
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_6_access_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_6_access_service_price %}
-						</div>
-					</div>
-                    {% if pricetable.service_company_set.first.is_new_contract %}
-					    <h5 class="ui header">Serviço de Acesso VoIP sem aparelho (aparelho contratante)</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_6_access_service_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_6_access_service_price %}
+						    </div>
+					    </div>
+                    {% endif  %}
+                    {% if is_new_contract == new_contract%}
+					    <h5 class="ui header">Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso sem fio</h5>
                     {%  endif %}
@@ -124,6 +123,18 @@
 							{% include "utils/form-field.html" with field=form.wireless_access_service_price %}
 						</div>
 					</div>
+                <! ––# Only new contract has wi-fi -->
+                    {% if is_new_contract == new_contract%}
+                            <h5 class="ui header">Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi</h5>
+                            <div class="two fields">
+						        <div class="field">
+							        {% include "utils/form-field.html" with field=form.wifi_access_service_amount %}
+						        </div>
+						        <div class="field">
+							        {% include "utils/form-field.html" with field=form.wifi_access_service_price %}
+						        </div>
+					        </div>
+                    {% endif %}
 					<h5 class="ui header">Serviço de acesso via Software</h5>
 					<div class="two fields">
 						<div class="field">

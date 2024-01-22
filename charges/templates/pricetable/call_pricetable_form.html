@@ -43,6 +43,12 @@
 					</div>
 					<h5 class="ui header">Longa Distância Nacional</h5>
 					<div class="fields three">
+                        <div class="field">
+							{% include "utils/form-field.html" with field=form.VC2_price %}
+						</div>
+						<div class="field">
+							{% include "utils/form-field.html" with field=form.VC3_price %}
+						</div>
 						<div class="field">
 							{% include "utils/form-field.html" with field=form.LDN_price %}
 						</div>

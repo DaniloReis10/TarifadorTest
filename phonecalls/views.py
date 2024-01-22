@@ -4,7 +4,8 @@ import urllib
 
 from copy import copy
 from datetime import date
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 # django
 from django.conf import settings
 from django.db.models import Count, Sum
@@ -71,6 +72,8 @@ from .constants import VC1, VC2, VC3, LOCAL, LDN, LDI
 from .filters import PhonecallFilter
 from .models import Phonecall
 from .constants import OLD_CONTRACT,  NEW_CONTRACT
+
+from phonecalls.models import Price
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 PABX_MAP = dict(PABX_CHOICES)
@@ -148,11 +151,18 @@ class BaseOrgPhonecallView(OrganizationMixin,
         return f"{self.organization.slug}-{date_gt}-{date_lt}{'-resumo' if resume else ''}"
 
     def get_queryset(self):
+       # self.date_gt = self.request.GET.get('date_gt')
+        if self.request.GET.get('date_gt') is not None:
+            self.date_gt = datetime.strptime( self.request.GET.get('date_gt'), '%Y-%m-%d').date()
+            self.date_lt = datetime.strptime(self.request.GET.get('date_lt'), '%Y-%m-%d').date()
         queryset = super().get_queryset() \
             .select_related('extension') \
             .filter(organization=self.organization, startdate__gte=self.date_gt) \
             .only('extension__extension', 'chargednumber', 'dialednumber', 'calltype', 'service', 'pabx',
                   'startdate', 'starttime', 'stopdate', 'stoptime', 'duration', 'billedamount')
+        count = 0
+        for phonecall in queryset.filter(inbound=False, calltype__in=[LOCAL, VC1, VC2, VC3, LDN, LDI]):
+            count += 1
         if self.params.get('bound', None) is None:
             return queryset.filter(inbound=False, calltype__in=[LOCAL, VC1, VC2, VC3, LDN, LDI])
         return queryset
@@ -733,10 +743,11 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
             .values('company__name', 'calltype') \
             .annotate(count=Count('id'),
                       billedtime_sum=Sum('billedtime'),
-                      cost_sum=Sum('billedamount')) \
-            .values('company__name', 'calltype', 'price',
+                      cost_sum=Sum('billedamount') )\
+            .values('company__name', 'calltype', 'price', 'company__call_pricetable',
                     'count', 'billedtime_sum', 'cost_sum') \
             .order_by('company__name', 'calltype')
+
 
         # constants
         SERVICE = 'SERVIÇOS DE COMUNICAÇÃO'
@@ -757,7 +768,11 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
 
         for phonecall in phonecall_data:
             company_name = phonecall['company__name']
-
+          #  price = Price.objects.all().filter(table_id = phonecall['price_table'], calltype = phonecall['calltype']).active().values('value')
+            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                               calltype=phonecall['calltype']).active().values('value')
+            phonecall['price'] = price.first()['value']
+            phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
             phonecall_map.setdefault(company_name, copy(TOTAL_DICT))
             phonecall_map[company_name][phonecall['calltype']] = phonecall
             service_data.setdefault(phonecall['calltype'], {

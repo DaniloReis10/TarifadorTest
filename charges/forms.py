@@ -8,6 +8,7 @@ from phonecalls.models import PriceTable
 # local
 from .constants import PRICE_FIELDS_BASIC_SERVICE_MAP
 from .constants import PRICE_FIELDS_BASIC_SERVICE_MAP_NEW
+from .constants import PRICE_FIELDS_CALLTYPE_MAP_NEW
 from .constants import PRICE_FIELDS_CALLTYPE_MAP
 from .constants import PRICE_FIELDS_OTHERTYPE_MAP
 from phonecalls.constants import NEW_CONTRACT
@@ -169,7 +170,6 @@ class ServicePriceTableUpdateForm(ServicePriceTableForm):
 
 # The master (ETICE-SEATIC) has no company pointing to it
 
-        testset = self.instance.service_company_set.first()
 
         if (self.instance.service_company_set.first() is None or self.instance.service_company_set.first().is_new_contract == NEW_CONTRACT):
             price_basic_service_map =  PRICE_FIELDS_BASIC_SERVICE_MAP_NEW
@@ -246,10 +246,17 @@ class CallPriceTableUpdateForm(CallPriceTableForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         price_list = self.instance.price_set.active()
+        if ( self.instance.call_company_set.first() is None or self.instance.call_company_set.first().is_new_contract == NEW_CONTRACT):
+            call_service_map = PRICE_FIELDS_CALLTYPE_MAP_NEW
+            del self.fields['VC2_price']
+            del self.fields['VC3_price']
+        else:
+            call_service_map = PRICE_FIELDS_BASIC_SERVICE_MAP
+
         for price in price_list:
-            if price.calltype not in PRICE_FIELDS_CALLTYPE_MAP:
+            if price.calltype not in call_service_map:
                 continue
-            price_field = PRICE_FIELDS_CALLTYPE_MAP[price.calltype]
+            price_field = call_service_map[price.calltype]
             self.fields[f'{price_field}_price'].initial = price.value
 
     def clean_status(self):

@@ -8,7 +8,7 @@
 {% block breadcrumb %}
 <i class="right chevron icon divider"></i>
 <a class="section" href="{% url 'adm_phonecall_resume' %}">
-  <h2 class="ui inverted header">Relatório Resumido / Resumo das Chamadas e Serviços no Periodo</h2>
+  <h2 class="ui inverted header">Relatório Resumido / Resumo das Chamadas e Serviços X no Periodo</h2>
 </a>
 {% endblock %}
 
@@ -35,7 +35,7 @@
         <div class="ui calendar" id="rangestart">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt }}">
+            <input name="date_gt" placeholder="Data Inicial" type="date" value="{{ date_gt }}">
           </div>
         </div>
       </div>
@@ -44,7 +44,7 @@
         <div class="ui calendar" id="rangeend">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt }}">
+            <input name="date_lt" placeholder="Data Final" type="date" value="{{ date_lt }}">
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@
         {% if organization_phonecall_map.LEVEL_1_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 1
+              Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -109,7 +109,7 @@
         {% if organization_phonecall_map.LEVEL_2_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 2
+              Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -119,7 +119,7 @@
         {% if organization_phonecall_map.LEVEL_3_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 3
+              Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -129,7 +129,7 @@
         {% if organization_phonecall_map.LEVEL_4_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 4
+              Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -139,7 +139,7 @@
         {% if organization_phonecall_map.LEVEL_5_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 5
+              Serviço de Acesso VoIP sem aparelho (aparelho contratante)
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.amount|default:0 }}</td>
@@ -159,13 +159,23 @@
         {% if organization_phonecall_map.WIRELESS_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
-              Serviço de Acesso sem fio
+              Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT
             </td>
             <td class="center aligned">R$ {{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
             <td class="center aligned">{{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.amount|default:0 }}</td>
             <td class="center aligned">R$ {{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
         {% endif %}
+        {% if company_phonecall_map.WIFI_ACCESS_SERVICE %}
+        <tr>
+          <td class="collapsing">
+              Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi
+          </td>
+          <td class="center aligned">R$ {{ company_phonecall_map.WIFI_ACCESS_SERVICE.price|default:0|floatformat:2 }}</td>
+          <td class="center aligned">{{ company_phonecall_map.WIFI_ACCESS_SERVICE.amount|default:0 }}</td>
+          <td class="center aligned">R$ {{ company_phonecall_map.WIFI_ACCESS_SERVICE.cost|default:0|floatformat:2 }}</td>
+        </tr>
+      {% endif %}
         {% if organization_phonecall_map.SOFTWARE_ACCESS_SERVICE %}
           <tr>
             <td class="collapsing">
@@ -297,9 +307,8 @@
         <td class="center aligned" colspan="5"><b>DISCAGEM LOCAL</b></td>
       </tr>
       {% include "phonecalls/adm_resume_table_row.html" with data=organization_phonecall_map.4 type="LOCAL" %}
-      {% include "phonecalls/adm_resume_table_row.html" with data=organization_phonecall_map.1 type="VC1" %}
-      {% include "phonecalls/adm_resume_table_row.html" with data=organization_phonecall_map.2 type="VC2" %}
-      {% include "phonecalls/adm_resume_table_row.html" with data=organization_phonecall_map.3 type="VC3" %}
+      {% include "phonecalls/adm_resume_table_row.html" with data=organization_phonecall_map.1 type="VC1/VC2/VC3" %}
+
       <tr class="active">
         <td class="right aligned" colspan="2"><b>Total de Discagem Local:</b></td>
         <td class="center aligned">{{ organization_phonecall_map.local.count|default:0 }}</td>
@@ -427,33 +436,7 @@
     $('.ui.radio.checkbox')
       .checkbox()
 
-    $('#rangestart').calendar({
-      endCalendar: $('#rangeend'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
 
-    $('#rangeend').calendar({
-      startCalendar: $('#rangestart'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
   })
 </script>
 {% endblock %}

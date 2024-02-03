@@ -256,6 +256,13 @@ PRICE_FIELDS_CALLTYPE_MAP = {
     phonecalls_constants.LDI: 'LDI'
 }
 
+PRICE_FIELDS_CALLTYPE_MAP_NEW = {
+    phonecalls_constants.LOCAL: 'LOCAL',
+    phonecalls_constants.VC1: 'VC1',
+    phonecalls_constants.LDN: 'LDN',
+    phonecalls_constants.LDI: 'LDI'
+}
+
 PRICE_FIELDS_OTHERTYPE_MAP = {
     UST_OTHER: 'UST',
     KM_OTHER: 'KM',

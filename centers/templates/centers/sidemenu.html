@@ -37,10 +37,10 @@
       <div class="item active">
         <a class="active title"><i class="dropdown icon"></i> <b>Usuários</b></a>
         <div class="active content menu">
-          <a class="item" href="{% url 'organization_detail' organization.slug %}">
+          <a class="item" href="{% url 'organization_detail' organization.pk %}">
             <i class="users icon"></i> Lista de Usuários
           </a>
-          <a class="item" href="{% url 'organization_user_add' organization.slug %}">
+          <a class="item" href="{% url 'organization_user_add' organization.pk %}">
             <i class="user plus icon"></i> Novo Usuário
           </a>
         </div>

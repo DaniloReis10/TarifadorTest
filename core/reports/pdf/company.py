@@ -23,13 +23,14 @@ from reportlab.rl_config import TTFSearchPath
 
 # project
 from centers.utils import make_price
-from charges.constants import BASIC_SERVICE_MAP
+from charges.constants import BASIC_SERVICE_MAP, BASIC_SERVICE_MAP_NEW
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
 from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
 
 # local
 from .utils import get_tj_calltype_title
+from phonecalls.constants import OLD_CONTRACT,  NEW_CONTRACT
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 
@@ -83,7 +84,7 @@ class SystemReport(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" '
-                        'width="550" height="86" valign="top"/>',
+                        'width="150" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({
@@ -107,7 +108,7 @@ class SystemReport(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}"'
-                        'width="550" height="86" valign="top"/>',
+                        'width="150" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height-20})
         header_list.append({
@@ -346,8 +347,11 @@ class SystemReport(object):
                 ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
             tblstyle = TableStyle(array_tblstyle)
             thead = []
-
-            for key, value in BASIC_SERVICE_MAP.items():
+            if context['contract_version'] == NEW_CONTRACT:
+                basic_map = BASIC_SERVICE_MAP_NEW
+            else:
+                basic_map = BASIC_SERVICE_MAP
+            for key, value in basic_map.items():
                 if key in context['basic_service']:
                     service_amount += context['basic_service'][key]['amount']
                     service_cost += context['basic_service'][key]['cost']
@@ -424,7 +428,10 @@ class SystemReport(object):
         cost_vc1 = cost_vc2 = cost_vc3 = cost_local = cost_ldn = 0
         qnt_vc1 = qnt_vc2 = qnt_vc3 = qnt_local = qnt_ldn = 0
         price_vc1 = price_vc2 = price_vc3 = price_local = price_ldn = 0
+        contract_version = OLD_CONTRACT
         for phonecall in context['phonecall_long_distance']:
+            if phonecall['company__is_new_contract']:
+                contract_version = NEW_CONTRACT
             if phonecall['calltype'] == LDN:
                 cost_ldn = phonecall['cost_sum']
                 qnt_ldn = phonecall['count']
@@ -438,6 +445,8 @@ class SystemReport(object):
                 qnt_vc3 = phonecall['count']
                 price_vc3 = phonecall['price']
         for phonecall in context['phonecall_local']:
+            if phonecall['company__is_new_contract']:
+                contract_version = NEW_CONTRACT
             if phonecall['calltype'] == LOCAL:
                 cost_local = phonecall['cost_sum']
                 qnt_local = phonecall['count']
@@ -477,20 +486,36 @@ class SystemReport(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
-        thead = [
-            [
-                get_tj_calltype_title(LOCAL) if self.company.slug == 'tj' else 'Local Fixo-Fixo Extragrupo',
-                f"R$ {make_price(price_local)}",
-                qnt_local,
-                f"R$ {make_price(cost_local)}"
-            ],
-            [
-                get_tj_calltype_title(VC1) if self.company.slug == 'tj' else 'Local Fixo-Móvel (VC1)',
-                f"R$ {make_price(price_vc1)}",
-                qnt_vc1,
-                f"R$ {make_price(cost_vc1)}"
+        if contract_version == NEW_CONTRACT:
+            thead = [
+                [
+                    get_tj_calltype_title(LOCAL) if self.company.slug == 'tj'  else 'Local Fixo-Fixo Extragrupo',
+                    f"R$ {make_price(price_local)}",
+                    qnt_local,
+                    f"R$ {make_price(cost_local)}"
+                ],
+                [
+                    get_tj_calltype_title(VC1) if self.company.slug == 'tj' else 'Local Fixo-Móvel (VC1/VC2/VC3)',
+                    f"R$ {make_price(price_vc1)}",
+                    qnt_vc1,
+                    f"R$ {make_price(cost_vc1)}"
+                ]
             ]
-        ]
+        else:
+            thead = [
+                [
+                    get_tj_calltype_title(LOCAL) if self.company.slug == 'tj' else 'Local Fixo-Fixo Extragrupo',
+                    f"R$ {make_price(price_local)}",
+                    qnt_local,
+                    f"R$ {make_price(cost_local)}"
+                ],
+                [
+                    get_tj_calltype_title(VC1) if self.company.slug == 'tj' else 'Local Fixo-Móvel (VC1)',
+                    f"R$ {make_price(price_vc1)}",
+                    qnt_vc1,
+                    f"R$ {make_price(cost_vc1)}"
+                ]
+            ]
         size = (self._width - 50) / 5
         tbl = Table(
             thead,
@@ -527,26 +552,36 @@ class SystemReport(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
-        thead = [
-            [
-                get_tj_calltype_title(LDN) if self.company.slug == 'tj' else 'LDN-fixo/fixo-D1/D2/D3/D4',
-                f"R$ {make_price(price_ldn)}",
-                qnt_ldn,
-                f"R$ {make_price(cost_ldn)}"
-            ],
-            [
-                get_tj_calltype_title(VC2) if self.company.slug == 'tj' else 'LDN-VC2 Fixo-Móvel',
-                f"R$ {make_price(price_vc2)}",
-                qnt_vc2,
-                f"R$ {make_price(cost_vc2)}"
-            ],
-            [
-                get_tj_calltype_title(VC3) if self.company.slug == 'tj' else 'LDN-VC3 Fixo-Móvel',
-                f"R$ {make_price(price_vc3)}",
-                qnt_vc3,
-                f"R$ {make_price(cost_vc3)}"
+        if contract_version == NEW_CONTRACT:
+            thead = [
+                [
+                    get_tj_calltype_title(LDN) if self.company.slug == 'tj' else 'LDN-fixo/fixo-D1/D2/D3/D4',
+                    f"R$ {make_price(price_ldn)}",
+                    qnt_ldn,
+                    f"R$ {make_price(cost_ldn)}"
+                ]
             ]
-        ]
+        else:
+            thead = [
+                [
+                    get_tj_calltype_title(LDN) if self.company.slug == 'tj' else 'LDN-fixo/fixo-D1/D2/D3/D4',
+                    f"R$ {make_price(price_ldn)}",
+                    qnt_ldn,
+                    f"R$ {make_price(cost_ldn)}"
+                ],
+                [
+                    get_tj_calltype_title(VC2) if self.company.slug == 'tj' else 'LDN-VC2 Fixo-Móvel',
+                    f"R$ {make_price(price_vc2)}",
+                    qnt_vc2,
+                    f"R$ {make_price(cost_vc2)}"
+                ],
+                [
+                    get_tj_calltype_title(VC3) if self.company.slug == 'tj' else 'LDN-VC3 Fixo-Móvel',
+                    f"R$ {make_price(price_vc3)}",
+                    qnt_vc3,
+                    f"R$ {make_price(cost_vc3)}"
+                ]
+            ]
         size = (self._width - 50) / 5
         tbl = Table(
             thead,

@@ -25,12 +25,13 @@ from reportlab.rl_config import TTFSearchPath
 
 # project
 from centers.utils import make_price_adm
-from charges.constants import BASIC_SERVICE_ACCESS_MAP
-from charges.constants import BASIC_SERVICE_MAP
+from charges.constants import BASIC_SERVICE_ACCESS_MAP, BASIC_SERVICE_ACCESS_MAP_NEW
+from charges.constants import BASIC_SERVICE_MAP,  BASIC_SERVICE_MAP_NEW
 from charges.constants import BASIC_SERVICE_MO_MAP
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
-from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
+from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN, LDI
+from phonecalls.constants import OLD_CONTRACT,  NEW_CONTRACT
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 
@@ -42,7 +43,7 @@ class SystemReportAdministrador(object):
         self._dateEnd = dateEnd
         self._issueDate = datetime.now().strftime('%d/%m/%Y')
         self._reportTitle = reportTitle
-        self._orgLogo = static('img/logo_relatorio.png')
+        self._orgLogo = static('img/Logo.jpg')
         self._buffer = io.BytesIO()
         self._doc = SimpleDocTemplate(
             self._buffer,
@@ -68,7 +69,7 @@ class SystemReportAdministrador(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.BASE_DIR}{self._orgLogo}"'
-                        'width="550" height="66" valign="top"/>',
+                        'width="150" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({
@@ -96,7 +97,7 @@ class SystemReportAdministrador(object):
         canvas.drawCentredString(self._width / 2, self._height - 91, escape(self._reportTitle))
         canvas.setFont('Sans', 11)
         canvas.drawCentredString(
-            self._width / 2, self._height - 103, 'Referente ao Contrato Nº 44/2018 – AMT / SEATIC')
+            self._width / 2, self._height - 103, 'Referente ao Contrato Nº XX/2023 – SEATIC')
 
     def create_header_and_footer(self, canvas, doc):
         """
@@ -274,14 +275,16 @@ class SystemReportAdministrador(object):
                         'desc': 'Local Fixo-Fixo Extragrupo'
                     }, {
                         'type': VC1,  # VC1
-                        'desc': 'Local Fixo-Móvel (VC1)'
-                    }, {
-                        'type': VC2,  # VC2
-                        'desc': 'Local Fixo-Móvel (VC2)'
-                    }, {
-                        'type': VC3,  # VC3
-                        'desc': 'Local Fixo-Móvel (VC3)'
+                        'desc': 'Local Fixo-Móvel (VC1/VC2/VC3)'
                     }]
+
+#                    {
+#                        'type': VC2,  # VC2
+#                        'desc': 'Local Fixo-Móvel (VC2)'
+#                    }, {
+#                        'type': VC3,  # VC3
+#                        'desc': 'Local Fixo-Móvel (VC3)'
+#                    }]"""
                 thead = []
                 for local in local_list:
                     if local['type'] in call_organization_map:
@@ -452,7 +455,7 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                thead = [['Longa Distância Internacional', '0', '00:00:00', 'R$ 0,00']]
+                thead = [['Longa Distância Internacional', '0', '00:00:00', 'R$ 2,00']]
                 size = (self._width - 50) / 5
                 tbl = Table(
                     thead,
@@ -486,7 +489,7 @@ class SystemReportAdministrador(object):
                         'Total de Longa Distancia Internacional',
                         '0',
                         '00:00:00',
-                        'R$ 0,00']]
+                        'R$ 2,00']]
                 size = (self._width - 50) / 5
                 tbl = Table(
                     thead,
@@ -508,7 +511,7 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                minutes = call_organization_map['billedtime_sum'] * 60
+                minutes = call_organization_map['billedtime_sum']
                 thead = [[
                     'TOTAL DOS SERVIÇOS DE COMUNICAÇÃO',
                     str(call_organization_map['count']),
@@ -581,7 +584,8 @@ class SystemReportAdministrador(object):
 
                 service_amount = 0
                 service_cost = 0
-                for key, value in BASIC_SERVICE_MAP.items():
+
+                for key, value in BASIC_SERVICE_MAP_NEW.items():
                     if key in call_organization_map:
                         service_amount += call_organization_map[key]['amount']
                         service_cost += call_organization_map[key]['cost']
@@ -682,7 +686,8 @@ class SystemReportAdministrador(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = []
 
-                    for key, value in BASIC_SERVICE_MAP.items():
+
+                    for key, value in BASIC_SERVICE_MAP_NEW.items():
                         if key in call_organization_map:
                             service_amount += call_organization_map[key]['amount']
                             service_cost += call_organization_map[key]['cost']
@@ -802,14 +807,14 @@ class SystemReportAdministrador(object):
                         'desc': 'Local Fixo-Fixo Extragrupo'
                     }, {
                         'type': VC1,  # VC1
-                        'desc': 'Local Fixo-Móvel (VC1)'
-                    }, {
-                        'type': VC2,  # VC2
-                        'desc': 'Local Fixo-Móvel (VC2)'
-                    }, {
-                        'type': VC3,  # VC3
-                        'desc': 'Local Fixo-Móvel (VC3)'
-                    }]
+                        'desc': 'Local Fixo-Móvel (VC1/VC2/VC3)'
+                    }] #, {
+#                        'type': VC2,  # VC2
+#                        'desc': 'Local Fixo-Móvel (VC2)'
+#                    }, {
+#                        'type': VC3,  # VC3
+#                        'desc': 'Local Fixo-Móvel (VC3)'
+#                    }]
                 thead = []
                 for local in local_list:
                     if local['type'] in call_organization_map:
@@ -984,7 +989,19 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                thead = [['Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                if LDI in call_organization_map:
+                    call_organization = call_organization_map[LDI]
+                    if type(call_organization) is not dict:
+                        call_organization = call_organization._asdict()
+                    minutes = call_organization['billedtime_sum']
+                    thead = [[
+                        'Longa Distância Internacional',
+                        f"R$ {make_price_adm(call_organization['org_price'])}",
+                        str(call_organization['count']),
+                        time_format(minutes),
+                        f"R$ {make_price_adm(call_organization['cost_sum'])}"]]
+                else:
+                    thead = [['Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1018,7 +1035,7 @@ class SystemReportAdministrador(object):
                         'Total de Longa Distancia Internacional',
                         '0',
                         '00:00:00',
-                        'R$ 0,00']]
+                        'R$ 2,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1284,14 +1301,14 @@ class SystemReportAdministrador(object):
                                 'desc': 'Local Fixo-Fixo Extragrupo'
                             }, {
                                 'type': VC1,  # VC1
-                                'desc': 'Local Fixo-Móvel (VC1)'
-                            }, {
-                                'type': VC2,  # VC2
-                                'desc': 'Local Fixo-Móvel (VC2)'
-                            }, {
-                                'type': VC3,  # VC3
-                                'desc': 'Local Fixo-Móvel (VC3)'
-                            }]
+                                'desc': 'Local Fixo-Móvel (VC1/VC2/VC3)'
+                            }] #, {
+#                                'type': VC2,  # VC2
+#                                'desc': 'Local Fixo-Móvel (VC2)'
+#                            }, {
+#                                'type': VC3,  # VC3
+#                                'desc': 'Local Fixo-Móvel (VC3)'
+#                            }]
                         thead = []
                         for local in local_list:
                             if local['type'] in call_company_map:
@@ -1467,8 +1484,20 @@ class SystemReportAdministrador(object):
                             ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                         tblstyle = TableStyle(array_tblstyle)
-                        thead = [[
-                            'Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                        if LDI in call_company_map:
+                            call_company = call_company_map[LDI]
+                            if type(call_company) is not dict:
+                                call_company = call_company._asdict()
+                            minutes = call_company['billedtime_sum']
+                            thead = [[
+                                'Longa Distância Internacional',
+                                f"R$ {make_price_adm(call_company['org_price'])}",
+                                str(call_company['count']),
+                                time_format(minutes),
+                                f"R$ {make_price_adm(call_company['cost_sum'])}"]]
+                        else:
+                            thead = [[
+                                'Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                         size = (self._width - 50) / 6
                         tbl = Table(
                             thead,
@@ -1503,7 +1532,7 @@ class SystemReportAdministrador(object):
                                 'Total de Longa Distancia Internacional',
                                 '0',
                                 '00:00:00',
-                                'R$ 0,00']]
+                                'R$ 2,00']]
                         size = (self._width - 50) / 6
                         tbl = Table(
                             thead,
@@ -1738,12 +1767,11 @@ class SystemReportAdministrador(object):
                         ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                     tblstyle = TableStyle(array_tblstyle)
-                    thead = [['SERVIÇO', 'VALOR UNITÁRIO(UST)', 'QUANTIDADE(UST)',
-                              'VALOR MENSAL(UST)', 'VALOR MENSAL(R$)']]
-                    size = (self._width - 50) / 6
+                    thead = [['SERVIÇO', 'VALOR MENSAL(R$)']]
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size*2, size, size, size, size],
+                        colWidths=[size*2, size],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1752,9 +1780,6 @@ class SystemReportAdministrador(object):
                     array_tblstyle = [
                         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
                         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (4, 0), (4, -1), 'RIGHT'),   # 1 column
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                         ('FONTSIZE', (0, 0), (0, -1), 7),  # middle column
                         ('FONTSIZE', (1, 0), (-1, -1), 9),  # middle column
@@ -1768,28 +1793,22 @@ class SystemReportAdministrador(object):
                     service_amount = 0
                     service_cost = 0
                     service_cost_ust = 0.0
-                    for key, value in BASIC_SERVICE_ACCESS_MAP.items():
+                    for key, value in BASIC_SERVICE_ACCESS_MAP_NEW.items():
                         if key in call_organization_map:
                             service_amount += call_organization_map[key]['amount']
                             service_cost += call_organization_map[key]['cost']
                             service_cost_ust += call_organization_map[key]['cost_ust']
                             thead.append([
                                 value,
-                                f"{make_price_adm(call_organization_map[key]['price'])}",
-                                str(make_price_adm(call_organization_map[key]['amount'])),
-                                f"{make_price_adm(call_organization_map[key]['cost_ust'])}",
                                 f"R$ {make_price_adm(call_organization_map[key]['cost'])}"])
                         else:
                             thead.append([
                                 value,
-                                "0,0000",
-                                "0,0000",
-                                "0,0000",
                                 "R$ 0,0000"])
-                    size = (self._width - 50) / 6
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size * 2, size, size, size, size],
+                        colWidths=[size * 2, size ],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1797,9 +1816,7 @@ class SystemReportAdministrador(object):
                     # ### Parte 12 - Total dos Serviços de Comunicação ###
                     array_tblstyle = [
                         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                        ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                        ('ALIGN', (2, 0), (2, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                         ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -1809,13 +1826,11 @@ class SystemReportAdministrador(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = [[
                         'TOTAL',
-                        str(make_price_adm(service_amount)),
-                        f"{make_price_adm(service_cost_ust)}",
                         f"R$ {make_price_adm(service_cost)}"]]
-                    size = (self._width - 50) / 6
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size * 3, size, size, size],
+                        colWidths=[size * 2, size],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1853,12 +1868,11 @@ class SystemReportAdministrador(object):
                         ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                     tblstyle = TableStyle(array_tblstyle)
-                    thead = [['SERVIÇO', 'VALOR UNITÁRIO(UST)', 'QUANTIDADE(UST)',
-                              'VALOR MENSAL(UST)', 'VALOR MENSAL(R$)']]
-                    size = (self._width - 50) / 6
+                    thead = [['SERVIÇO', 'VALOR MENSAL(R$)']]
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size*2, size, size, size, size],
+                        colWidths=[size*2, size],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1867,9 +1881,6 @@ class SystemReportAdministrador(object):
                     array_tblstyle = [
                         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
                         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (4, 0), (4, -1), 'RIGHT'),   # 1 column
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                         ('FONTSIZE', (0, 0), (0, -1), 7),  # middle column
                         ('FONTSIZE', (1, 0), (-1, -1), 9),  # middle column
@@ -1890,21 +1901,15 @@ class SystemReportAdministrador(object):
                             service_cost_ust += call_organization_map[key]['cost_ust']
                             thead.append([
                                 value,
-                                f"{make_price_adm(call_organization_map[key]['price'])}",
-                                str(make_price_adm(call_organization_map[key]['amount'])),
-                                f"{make_price_adm(call_organization_map[key]['cost_ust'])}",
                                 f"R$ {make_price_adm(call_organization_map[key]['cost'])}"])
                         else:
                             thead.append([
                                 value,
-                                "0,0000",
-                                "0,0000",
-                                "0,0000",
                                 "R$ 0,0000"])
-                    size = (self._width - 50) / 6
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size * 2, size, size, size, size],
+                        colWidths=[size * 2, size],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1912,9 +1917,7 @@ class SystemReportAdministrador(object):
                     # ### Parte 16 - Total dos Serviços de Comunicação ###
                     array_tblstyle = [
                         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                        ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                        ('ALIGN', (2, 0), (2, -1), 'RIGHT'),   # 1 column
-                        ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                         ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -1924,13 +1927,11 @@ class SystemReportAdministrador(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = [[
                         'TOTAL',
-                        str(make_price_adm(service_amount)),
-                        f"{make_price_adm(service_cost_ust)}",
                         f"R$ {make_price_adm(service_cost)}"]]
-                    size = (self._width - 50) / 6
+                    size = (self._width - 50) / 3
                     tbl = Table(
                         thead,
-                        colWidths=[size * 3, size, size, size],
+                        colWidths=[size * 2, size],
                         rowHeights=[20 for x in range(len(thead))])
                     tbl.setStyle(tblstyle)
                     self._story.append(tbl)
@@ -1968,12 +1969,11 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                thead = [['SERVIÇO', 'VALOR UNITÁRIO(UST)', 'QUANTIDADE(UST)',
-                          'VALOR MENSAL(UST)', 'VALOR MENSAL(R$)']]
-                size = (self._width - 50) / 6
+                thead = [['SERVIÇO', 'VALOR MENSAL(R$)']]
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size*2, size, size, size, size],
+                    colWidths=[size*2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2001,9 +2001,6 @@ class SystemReportAdministrador(object):
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
                     ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (4, 0), (4, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2016,13 +2013,7 @@ class SystemReportAdministrador(object):
                         'desc': 'Local Fixo-Fixo Extragrupo'
                     }, {
                         'type': VC1,  # VC1
-                        'desc': 'Local Fixo-Móvel (VC1)'
-                    }, {
-                        'type': VC2,  # VC2
-                        'desc': 'Local Fixo-Móvel (VC2)'
-                    }, {
-                        'type': VC3,  # VC3
-                        'desc': 'Local Fixo-Móvel (VC3)'
+                        'desc': 'Local Fixo-Móvel (VC1/VC2/VC3)'
                     }]
                 thead = []
                 # Valores referentes a quantidade total de cada tabela de serviços de comunicação
@@ -2044,16 +2035,13 @@ class SystemReportAdministrador(object):
                             amount = 0.0
                         thead.append([
                             local['desc'],
-                            f"{make_price_adm(round(call_organization['price_ust'],4))}",
-                            str(make_price_adm(amount)),
-                            f"{make_price_adm(round(call_organization['cost_ust_sum'],4))}",
                             f"R$ {make_price_adm(call_organization['cost_sum'])}"])
                     else:
-                        thead.append([local['desc'], 'R$ 0,0000', '0,0000', '0,0000', 'R$ 0,0000'])
-                size = (self._width - 50) / 6
+                        thead.append([local['desc'], 'R$ 0,0000'])
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 2, size, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2061,9 +2049,7 @@ class SystemReportAdministrador(object):
                 # ### Parte 21 - Total de Discagem Local ###
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2074,15 +2060,13 @@ class SystemReportAdministrador(object):
                 if 'local' in call_organization_map:
                     thead = [[
                         'Total de Discagem Local',
-                        str(make_price_adm(partial_quantity)),
-                        f"{make_price_adm(call_organization_map['local']['cost_ust_sum'])}",
                         f"R$ {make_price_adm(call_organization_map['local']['cost_sum'])}"]]
                 else:
-                    thead = [['Total de Discagem Local', '0,0000', '0,0000', 'R$ 0,0000']]
-                size = (self._width - 50) / 6
+                    thead = [['Total de Discagem Local', 'R$ 0,0000']]
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 3, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2110,9 +2094,6 @@ class SystemReportAdministrador(object):
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
                     ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (4, 0), (4, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2137,17 +2118,14 @@ class SystemReportAdministrador(object):
                         amount = 0.0
                     thead = [[
                         'LDN-fixo/fixo-D1/D2/D3/D4',
-                        f"{make_price_adm(round(call_organization['price_ust'],4))}",
-                        str(make_price_adm(amount)),
-                        f"{make_price_adm(round(call_organization['cost_ust_sum'],4))}",
                         f"R$ {make_price_adm(call_organization['cost_sum'])}"]]
                 else:
                     thead = [[
-                        'LDN-fixo/fixo-D1/D2/D3/D4', 'R$ 0,0000', '0,0000', '0,0000', 'R$ 0,0000']]
-                size = (self._width - 50) / 6
+                        'LDN-fixo/fixo-D1/D2/D3/D4', 'R$ 0,0000']]
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 2, size, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2155,9 +2133,7 @@ class SystemReportAdministrador(object):
                 # ### Parte 24 - Total de Longa Distancia Nacional ###
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2168,19 +2144,15 @@ class SystemReportAdministrador(object):
                 if 'national' in call_organization_map:
                     thead = [[
                         'Total de Longa Distancia Nacional',
-                        str(make_price_adm(partial_quantity)),
-                        f"{make_price_adm(call_organization_map['national']['cost_ust_sum'])}",
                         f"R$ {make_price_adm(call_organization_map['national']['cost_sum'])}"]]
                 else:
                     thead = [[
                         'Total de Longa Distancia Nacional',
-                        '0,0000',
-                        '0,0000',
                         'R$ 0,0000']]
-                size = (self._width - 50) / 6
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 3, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2208,9 +2180,6 @@ class SystemReportAdministrador(object):
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
                     ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (4, 0), (4, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2219,11 +2188,11 @@ class SystemReportAdministrador(object):
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
                 thead = [[
-                    'Longa Distância Internacional', 'R$ 0,0000', '0,0000', '0,0000', 'R$ 0,0000']]
-                size = (self._width - 50) / 6
+                    'Longa Distância Internacional', 'R$ 0,0000']]
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 2, size, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2231,9 +2200,7 @@ class SystemReportAdministrador(object):
                 # ### Parte 27 - Total de Longa Distancia Internacional ###
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2244,19 +2211,15 @@ class SystemReportAdministrador(object):
                 if 'international' in call_organization_map:
                     thead = [[
                         'Total de Longa Distancia Internacional',
-                        str(make_price_adm(call_organization_map['international']['count'])),
-                        f"{make_price_adm(call_organization_map['international']['cost_ust_sum'])}",
                         f"R$ {make_price_adm(call_organization_map['international']['cost_sum'])}"]]
                 else:
                     thead = [[
                         'Total de Longa Distancia Internacional',
-                        '0,0000',
-                        '0,0000',
                         'R$ 0,0000']]
-                size = (self._width - 50) / 6
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 3, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)
@@ -2264,9 +2227,7 @@ class SystemReportAdministrador(object):
                 # ### Parte 28 - Total dos Serviços de Comunicação ###
                 array_tblstyle = [
                     ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
                     ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
                     ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
@@ -2276,13 +2237,11 @@ class SystemReportAdministrador(object):
                 tblstyle = TableStyle(array_tblstyle)
                 thead = [[
                     'TOTAL DOS SERVIÇOS DE COMUNICAÇÃO',
-                    str(make_price_adm(total_amount)),
-                    f"{make_price_adm(call_organization_map['cost_ust_sum'])}",
                     f"R$ {make_price_adm(call_organization_map['cost_sum'])}"]]
-                size = (self._width - 50) / 6
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 3, size, size, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
 
@@ -2326,32 +2285,12 @@ class SystemReportAdministrador(object):
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
                 thead = [[
-                    'Valor Mensal (UST) (t1+t2+t3+t4+t5):',
-                    f"{make_price_adm(value_total_ust)}"]]
-                size = (self._width - 50) / 6
-                tbl = Table(
-                    thead,
-                    colWidths=[size * 5, size],
-                    rowHeights=[20 for x in range(len(thead))])
-                tbl.setStyle(tblstyle)
-                self._story.append(tbl)
-                array_tblstyle = [
-                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                    ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                    ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
-                    ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                tblstyle = TableStyle(array_tblstyle)
-                thead = [[
                     'Valor Mensal (R$) (t1+t2+t3+t4+t5):',
                     f"R$ {make_price_adm(value_total)}"]]
-                size = (self._width - 50) / 6
+                size = (self._width - 50) / 3
                 tbl = Table(
                     thead,
-                    colWidths=[size * 5, size],
+                    colWidths=[size * 2, size],
                     rowHeights=[20 for x in range(len(thead))])
                 tbl.setStyle(tblstyle)
                 self._story.append(tbl)

@@ -35,7 +35,7 @@
         <div class="ui calendar" id="rangestart">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_gt" placeholder="Data Inicial" type="text" value="{{ date_gt }}">
+            <input name="date_gt" placeholder="Data Inicial" type="date" value="{{ date_gt }}">
           </div>
         </div>
       </div>
@@ -44,7 +44,7 @@
         <div class="ui calendar" id="rangeend">
           <div class="ui input left icon">
             <i class="calendar icon"></i>
-            <input name="date_lt" placeholder="Data Final" type="text" value="{{ date_lt }}">
+            <input name="date_lt" placeholder="Data Final" type="date" value="{{ date_lt }}">
           </div>
         </div>
       </div>
@@ -80,118 +80,86 @@
     <table class="ui compact blue table">
       <thead>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>SERVIÇOS BÁSICOS</b></td>
+          <td class="center aligned" colspan="2"><b>SERVIÇOS BÁSICOS</b></td>
         </tr>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>SERVIÇOS DE DISPONIBILIZAÇÃO DE ACESSO A COMUNICAÇÃO VOIP</b></td>
+          <td class="center aligned" colspan="2"><b>SERVIÇOS DE DISPONIBILIZAÇÃO DE ACESSO A COMUNICAÇÃO VOIP</b></td>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>Serviço</th>
-          <th class="center aligned">Valor Unitário (UST)</th>
-          <th class="center aligned">Quantidade (UST)</th>
-          <th class="center aligned">Valor Mensal (UST)</th>
-          <th class="center aligned">Valor Mensal (R$)</th>
+          <th class="right aligned">Valor Mensal (R$)</th>
         </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 1
+              Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.LEVEL_1_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 2
+              Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.LEVEL_2_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 3
+              Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.LEVEL_3_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 4
+              Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.LEVEL_4_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 5
+              Serviço de Acesso VoIP sem aparelho (aparelho contratante)
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.LEVEL_5_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso Nivel 6
+              Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_6_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_6_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.LEVEL_6_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.LEVEL_6_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
-              Serviço de Acesso sem fio
+              Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.WIRELESS_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.WIFI_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Serviço de acesso via Software
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_ACCESS_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_ACCESS_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_ACCESS_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.SOFTWARE_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.SOFTWARE_ACCESS_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Serviço de Extensão via software
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_EXTENSION_SERVICE.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_EXTENSION_SERVICE.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.SOFTWARE_EXTENSION_SERVICE.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.SOFTWARE_EXTENSION_SERVICE.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.SOFTWARE_EXTENSION_SERVICE.cost|default:0|floatformat:4 }}</td>
           </tr>
       </tbody>
       <tfoot>
         <tr>
-          <th class="aligned" colspan="2"><b>TOTAL:</b></th>
-          <th class="center aligned">{{ organization_phonecall_map.services_voip_communication.amount|floatformat:4 }}</th>
-          <th class="center aligned">{{ organization_phonecall_map.services_voip_communication.cost_ust|floatformat:4 }}</th>
-          <th class="center aligned">R$ {{ organization_phonecall_map.services_voip_communication.cost|floatformat:4 }}</th>
+          <th class="aligned" ><b>TOTAL:</b></th>
+          <th class="right aligned">R$ {{ organization_phonecall_map.services_voip_communication.cost|floatformat:4 }}</th>
         </tr>
       </tfoot>
     </table>
     <table class="ui compact blue table">
       <thead>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>SERVIÇOS BÁSICOS </b></td>
+          <td class="center aligned" colspan="2"><b>SERVIÇOS BÁSICOS </b></td>
         </tr>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>SERVIÇOS DE CONTACT CENTER</b></td>
+          <td class="center aligned" colspan="2"><b>SERVIÇOS DE CONTACT CENTER</b></td>
         </tr>
       </thead>
       <tbody>
@@ -199,81 +167,55 @@
             <td class="collapsing">
               Gerência e Operação da Plataforma Básica de Contact Center
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_CONTACT_CENTER_PLATFORM.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_CONTACT_CENTER_PLATFORM.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_CONTACT_CENTER_PLATFORM.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_BASIC_CONTACT_CENTER_PLATFORM.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_BASIC_CONTACT_CENTER_PLATFORM.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação da Plataforma Básica de Gravação
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_RECORDING_PLATFORM.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_RECORDING_PLATFORM.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_BASIC_RECORDING_PLATFORM.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_BASIC_RECORDING_PLATFORM.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_BASIC_RECORDING_PLATFORM.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Posição de Atendimentos
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SERVICE_POSITION.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SERVICE_POSITION.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SERVICE_POSITION.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_SERVICE_POSITION.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_SERVICE_POSITION.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Supervisor
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SUPERVISOR.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SUPERVISOR.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_SUPERVISOR.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_SUPERVISOR.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_SUPERVISOR.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Acompanhamento em Tempo Real
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_REAL_TIME_TRACKING.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_REAL_TIME_TRACKING.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_REAL_TIME_TRACKING.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_REAL_TIME_TRACKING.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_REAL_TIME_TRACKING.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Canal de Atendimento Automático e Mensagens
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Posição de Gravação
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_POSITION.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_POSITION.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_POSITION.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_RECORDING_POSITION.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_RECORDING_POSITION.cost|default:0|floatformat:4 }}</td>
           </tr>
           <tr>
             <td class="collapsing">
               Gerência e Operação de Supervisor de Gravação
             </td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_SUPERVISOR.price|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_SUPERVISOR.amount|default:0|floatformat:4 }}</td>
-            <td class="center aligned">{{ organization_phonecall_map.MO_RECORDING_SUPERVISOR.cost_ust|default:0|floatformat:4 }}</td>
-            <td class="center aligned">R$ {{ organization_phonecall_map.MO_RECORDING_SUPERVISOR.cost|default:0|floatformat:4 }}</td>
+            <td class="right aligned">R$ {{ organization_phonecall_map.MO_RECORDING_SUPERVISOR.cost|default:0|floatformat:4 }}</td>
           </tr>
       </tbody>
       <tfoot>
         <tr>
-          <th class="aligned" colspan="2"><b>TOTAL:</b></th>
-          <th class="center aligned">{{ organization_phonecall_map.contact_center_services.amount|floatformat:4 }}</th>
-          <th class="center aligned">{{ organization_phonecall_map.contact_center_services.cost_ust|floatformat:4 }}</th>
-          <th class="center aligned">R$ {{ organization_phonecall_map.contact_center_services.cost|floatformat:4 }}</th>
+          <th class="aligned"><b>TOTAL:</b></th>
+          <th class="right aligned">R$ {{ organization_phonecall_map.contact_center_services.cost|floatformat:4 }}</th>
         </tr>
       </tfoot>
     </table>
@@ -282,57 +224,44 @@
     <table class="ui compact blue table">
       <thead>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>SERVIÇOS DE COMUNICAÇÃO</b></td>
+          <td class="center aligned" colspan="2"><b>SERVIÇOS DE COMUNICAÇÃO</b></td>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th>Serviço</th>
-            <th class="center aligned">Valor Unitário (UST)</th>
-            <th class="center aligned">Quantidade (UST)</th>
-            <th class="center aligned">Valor Mensal (UST)</th>
             <th class="center aligned">Valor Mensal (R$)</th>
         </tr>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>DISCAGEM LOCAL</b></td>
+          <td class="center aligned" colspan="2"><b>DISCAGEM LOCAL</b></td>
         </tr>
         {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.4 type="LOCAL" %}
-        {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.1 type="VC1" %}
-        {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.2 type="VC2" %}
-        {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.3 type="VC3" %}
+        {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.1 type="VC1/VC2/VC3" %}
         <tr class="active">
-          <td class="right aligned" colspan="2"><b>Total de Discagem Local:</b></td>
-          <td class="center aligned">{{ organization_phonecall_map.local.count|default:0|floatformat:4 }}</td>
-          <td class="center aligned">{{ organization_phonecall_map.local.cost_ust_sum|default:0|floatformat:4 }}</td>
-          <td class="center aligned">R$ {{ organization_phonecall_map.local.cost_sum|default:0|floatformat:4 }}</td>
+            <td class="right aligned"><b>Total de Discagem Local:</b></td>
+          <td class="right aligned">R$ {{ organization_phonecall_map.local.cost_sum|default:0|floatformat:4 }}</td>
         </tr>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA NACIONAL</b></td>
+          <td class="center aligned" colspan="2"><b>LONGA DISTÂNCIA NACIONAL</b></td>
         </tr>
         {% include "phonecalls/adm_ust_table_row.html" with data=organization_phonecall_map.5 type="DDD" %}
         <tr class="active">
-          <td class="right aligned" colspan="2"><b>Total de Longa Distancia Nacional:</b></td>
-          <td class="center aligned">{{ organization_phonecall_map.national.count|default:0|floatformat:4 }}</td>
-          <td class="center aligned">{{ organization_phonecall_map.national.cost_ust_sum|default:0|floatformat:4 }}</td>
-          <td class="center aligned">R$ {{ organization_phonecall_map.national.cost_sum|default:0|floatformat:4 }}</td>
+          <td class="right aligned"><b>Total de Longa Distancia Nacional:</b></td>
+          <td class="right aligned">R$ {{ organization_phonecall_map.national.cost_sum|default:0|floatformat:4 }}</td>
         </tr>
         <tr class="active">
-          <td class="center aligned" colspan="5"><b>LONGA DISTÂNCIA INTERNACIONAL</b></td>
+          <td class="center aligned" colspan="2"><b>LONGA DISTÂNCIA INTERNACIONAL</b></td>
         </tr>
         {% include "phonecalls/adm_ust_table_row.html" %}
         <tr class="active">
-          <td class="right aligned" colspan="2"><b>Total de Longa Distancia Internacional:</b></td>
-          <td class="center aligned">{{ organization_phonecall_map.international.count|default:0|floatformat:4 }}</td>
-          <td class="center aligned">{{ organization_phonecall_map.international.cost_ust_sum|default:0|floatformat:4 }}</td>
-          <td class="center aligned">R$ {{ organization_phonecall_map.international.cost_sum|default:0|floatformat:4 }}</td>
+          <td class="right aligned" ><b>Total de Longa Distancia Internacional:</b></td>
+          <td class="right aligned">R$ {{ organization_phonecall_map.international.cost_sum|default:0|floatformat:4 }}</td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
-          <th class="right aligned" colspan="2"><b>TOTAL DOS SERVIÇOS DE COMUNICAÇÃO:</b></th>
-          <th class="center aligned">{{ organization_phonecall_map.count|default:0|floatformat:4 }}</th>
-          <th class="center aligned">{{ organization_phonecall_map.cost_ust_sum|default:0|floatformat:4 }}</th>
-          <th class="center aligned">R$ {{ organization_phonecall_map.cost_sum|default:0|floatformat:4 }}</th>
+          <th class="right aligned" ><b>TOTAL DOS SERVIÇOS DE COMUNICAÇÃO:</b></th>
+          <th class="right aligned">R$ {{ organization_phonecall_map.cost_sum|default:0|floatformat:4 }}</th>
         </tr>
       </tfoot>
     </table>
@@ -363,33 +292,7 @@
     $('.ui.radio.checkbox')
       .checkbox()
 
-    $('#rangestart').calendar({
-      endCalendar: $('#rangeend'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
 
-    $('#rangeend').calendar({
-      startCalendar: $('#rangestart'),
-      type: 'date',
-      formatter: {
-        date: function (date, settings) {
-          if (!date) return '';
-          var day = date.getDate()
-          var month = date.getMonth() + 1
-          var year = date.getFullYear()
-          return day + '/' + month + '/' + year
-        }
-      }
-    })
   })
 </script>
 {% endblock %}

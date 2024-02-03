@@ -104,7 +104,7 @@
         <tr>
           <td class="collapsing">
               {% if company_phonecall_map.contract_version == new_contract %}
-                    Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE
+                    Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE
               {% else %}
                   Serviço de Acesso Nivel 2
               {% endif %}
@@ -325,9 +325,14 @@
         <td class="center aligned" colspan="5"><b>DISCAGEM LOCAL</b></td>
       </tr>
       {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.4 type="LOCAL" %}
-      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.1 type="VC1" %}
-      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.2 type="VC2" %}
-      {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.3 type="VC3" %}
+
+      {% if company_phonecall_map.contract_version == new_contract %}
+          {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.1 type="VC1/VC2/VC3" %}
+      {%  else %}
+            {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.1 type="VC1" %}
+            {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.2 type="VC2" %}
+            {% include "phonecalls/resume_table_row.html" with data=company_phonecall_map.3 type="VC3" %}
+      {% endif %}
       <tr class="active">
         <td class="right aligned" colspan="2"><b>Total de Discagem Local:</b></td>
         <td class="center aligned">{{ company_phonecall_map.local.count }}</td>

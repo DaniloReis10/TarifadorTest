@@ -115,6 +115,288 @@ contact_center_services = [
     MO_RECORDING_POSITION, MO_RECORDING_SUPERVISOR
 ]
 
+class BaseContextData():
+
+    def get_Company_Context(self, phonecall_data):
+        phonecall_total = 0
+        duration_total = 0
+        cost_total = 0.0
+        phonecall_local = []
+        phonecall_long_distance = []
+        # The descending order will list VC3, VC2 and VC1 so I can do this
+        total_mobile_count = 0
+        total_mobile_billedtime_sum = 0
+        for phonecall in phonecall_data:
+            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                               calltype=phonecall['calltype']).active().values('value')
+            phonecall['price'] = price.first()['value']
+            if phonecall['company__is_new_contract'] and phonecall['calltype'] in (VC2, VC3):
+                total_mobile_count += phonecall['count']
+                total_mobile_billedtime_sum += phonecall['billedtime_sum']
+                phonecall['count'] = 0
+                phonecall['billedtime_sum'] = 0
+            elif phonecall['company__is_new_contract'] and phonecall['calltype'] == VC1:
+                phonecall['count'] += total_mobile_count
+                phonecall['billedtime_sum'] += total_mobile_billedtime_sum
+            phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
+            if phonecall['calltype'] in (VC1, LOCAL):
+                phonecall_local.append(phonecall)
+            elif phonecall['calltype'] in (VC2, VC3, LDN):
+                phonecall_long_distance.append(phonecall)
+            else:
+                continue
+            phonecall_total += phonecall['count']
+            duration_total += phonecall['billedtime_sum']
+            cost_total += float(phonecall['cost_sum'])
+
+#        multiplier, divider = get_values_proportionality(
+#            date_lt=self.date_lt,
+#            date_gt=self.date_gt,
+#            proportionality=context['proportionality'])
+
+        service_pricetable = self.company.service_pricetable
+        service_price_list = {}
+        if service_pricetable:
+            service_price_list = service_pricetable.price_set.active()
+
+        service_basic_amount = 0
+        service_basic_cost = 0
+        basicservice = {}
+        for service in service_price_list:
+            service_cost = service.basic_service_amount * service.value
+#            service_cost = (service_cost / divider) * multiplier
+            basicservice.setdefault(
+                BASIC_SERVICE_MAP[service.basic_service], {
+                    'price': service.value,
+                    'amount': service.basic_service_amount,
+                    'cost': service_cost})
+            service_basic_amount += service.basic_service_amount
+            service_basic_cost += service_cost
+
+        if service_basic_amount != 0 and service_basic_cost != 0:
+            basicservice.update({'service_basic': {
+                'amount': service_basic_amount,
+                'cost': service_basic_cost}})
+        company_context = {}
+        company_context.update({
+            'phonecall_local': phonecall_local,
+            'phonecall_long_distance': phonecall_long_distance,
+            'phonecall_total': phonecall_total,
+            'cost_total': cost_total,
+            'basic_service': basicservice,
+            'duration_total': duration_total})
+        return company_context
+
+    def get_Org_Context(self):
+        phonecall_data = self.object_list \
+            .filter(company__isnull=False,
+                    inbound=False,
+                    calltype__in=[VC1, VC2, VC3, LOCAL, LDN, LDI]) \
+            .values('company__name', 'calltype') \
+            .annotate(count=Count('id'),
+                      billedtime_sum=Sum('billedtime'),
+                      cost_sum=Sum('billedamount') )\
+            .values('company__name', 'calltype', 'price', 'company__call_pricetable',
+                    'count', 'billedtime_sum', 'cost_sum') \
+            .order_by('company__name', 'calltype')
+        result_companies = {}
+        for company__name in phonecall_data:
+            sub_phonecall_data = self.get_Company_Context(phonecall_data.filter(company__name=company__name))
+            result_companies[company__name].update(sub_phonecall_data)
+
+        # constants
+        SERVICE = 'SERVIÇOS DE COMUNICAÇÃO'
+        CALL_LOCAL = 'local'
+        CALL_NATIONAL = 'national'
+        CALL_INTERNATIONAL = 'international'
+        TOTAL_DICT = {
+            'count': 0,
+            'cost_sum': 0.0,
+            'billedtime_sum': 0}
+
+        phonecall_map = {}
+        service_data = copy(TOTAL_DICT)
+        service_data.update({'contract_version': NEW_CONTRACT})
+#        multiplier, divider = get_values_proportionality(
+#            date_lt=self.date_lt,
+#            date_gt=self.date_gt,
+#            proportionality=context['proportionality'])
+        # Fix VC1 + VC2 + VC3
+        new_contract_mobile = self.object_list \
+            .filter(company__isnull=False,
+                    inbound=False,
+                    calltype__in=[VC1, VC2, VC3],
+                    company__is_new_contract = NEW_CONTRACT) \
+            .values('company__name') \
+            .annotate(count=Count('id'),
+                      billedtime_sum=Sum('billedtime'),
+                      cost_sum=Sum('billedamount') )\
+            .values('company__name',
+                    'count', 'billedtime_sum', 'cost_sum') \
+            .order_by('company__name')
+        new_contract_list = new_contract_mobile.values_list('company__name', flat = True)
+        service_data.setdefault(VC1, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(VC2, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(VC3, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(LOCAL, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(LDN, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(LDI, {
+            'cost_sum': 0.0,
+            'count': 0,
+            'billedtime_sum': 0,
+            'price': 0})
+        service_data.setdefault(CALL_LOCAL, copy(TOTAL_DICT))
+        service_data.setdefault(CALL_NATIONAL, copy(TOTAL_DICT))
+        service_data.setdefault(CALL_INTERNATIONAL, copy(TOTAL_DICT))
+        service_data[VC1]['price'] = Price.objects.all().filter(table_id=PriceTable.objects.get(name = "Valores Base ETICE").id,
+                                           calltype=VC1).active().values('value').first()['value']
+        service_data[LOCAL]['price'] = \
+        Price.objects.all().filter(table_id=PriceTable.objects.get(name="Valores Base ETICE").id,
+                                   calltype=LOCAL).active().values('value').first()['value']
+        service_data[LDN]['price'] = \
+        Price.objects.all().filter(table_id=PriceTable.objects.get(name="Valores Base ETICE").id,
+                                   calltype=LDN).active().values('value').first()['value']
+        service_data[LDI]['price'] = \
+            Price.objects.all().filter(table_id=PriceTable.objects.get(name="Valores Base ETICE").id,
+                                       calltype=LDI).active().values('value').first()['value']
+        for phonecall in phonecall_data:
+            company_name = phonecall['company__name']
+            if (company_name in new_contract_list):
+                for company_info in new_contract_mobile:
+                    # For a company with new contract VC1 is the summ of all mobile and VC2 = VC3 = 0
+                    if company_info['company__name'] == company_name and phonecall['calltype'] == VC1:
+                        phonecall['count'] = company_info['count']
+                        phonecall['billedtime_sum'] = company_info['billedtime_sum']
+                    elif company_info['company__name'] == company_name and phonecall['calltype'] in (VC2, VC3):
+                        phonecall['count'] = 0
+                        phonecall['billedtime_sum'] = 0
+            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                               calltype=phonecall['calltype']).active().values('value')
+            phonecall['price'] = price.first()['value']
+            phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
+            phonecall_map.setdefault(company_name, copy(TOTAL_DICT))
+            phonecall_map[company_name][phonecall['calltype']] = phonecall
+            service_data.setdefault(phonecall['calltype'], {
+                'cost_sum': 0.0,
+                'count': 0,
+                'billedtime_sum': 0,
+                'price': phonecall['price']})
+            service_data[phonecall['calltype']]['cost_sum'] += float(phonecall['cost_sum'])
+            service_data[phonecall['calltype']]['count'] += phonecall['count']
+            service_data[phonecall['calltype']]['billedtime_sum'] += phonecall['billedtime_sum']
+            phonecall_map[company_name].setdefault(CALL_LOCAL, copy(TOTAL_DICT))
+            phonecall_map[company_name].setdefault(CALL_NATIONAL, copy(TOTAL_DICT))
+            phonecall_map[company_name].setdefault(CALL_INTERNATIONAL, copy(TOTAL_DICT))
+            service_data.setdefault(CALL_LOCAL, copy(TOTAL_DICT))
+            service_data.setdefault(CALL_NATIONAL, copy(TOTAL_DICT))
+            service_data.setdefault(CALL_INTERNATIONAL, copy(TOTAL_DICT))
+
+            if phonecall['calltype'] in (LOCAL, VC1, VC2, VC3):
+                if company_name not in new_contract_list or phonecall['calltype'] not in (VC2, VC3):
+                    phonecall_map[company_name][CALL_LOCAL]['count'] += \
+                        phonecall['count']
+                    phonecall_map[company_name][CALL_LOCAL]['cost_sum'] += \
+                        float(phonecall['cost_sum'])
+                    phonecall_map[company_name][CALL_LOCAL]['billedtime_sum'] += \
+                        phonecall['billedtime_sum']
+                    service_data[CALL_LOCAL]['count'] += phonecall['count']
+                    service_data[CALL_LOCAL]['cost_sum'] += float(phonecall['cost_sum'])
+                    service_data[CALL_LOCAL]['billedtime_sum'] += phonecall['billedtime_sum']
+            elif phonecall['calltype'] in (LDN,):
+                phonecall_map[company_name][CALL_NATIONAL]['count'] += \
+                    phonecall['count']
+                phonecall_map[company_name][CALL_NATIONAL]['cost_sum'] += \
+                    float(phonecall['cost_sum'])
+                phonecall_map[company_name][CALL_NATIONAL]['billedtime_sum'] += \
+                    phonecall['billedtime_sum']
+                service_data[CALL_NATIONAL]['count'] += phonecall['count']
+                service_data[CALL_NATIONAL]['cost_sum'] += float(phonecall['cost_sum'])
+                service_data[CALL_NATIONAL]['billedtime_sum'] += phonecall['billedtime_sum']
+            else:
+                phonecall_map[company_name][CALL_INTERNATIONAL]['count'] += \
+                    phonecall['count']
+                phonecall_map[company_name][CALL_INTERNATIONAL]['cost_sum'] += \
+                    float(phonecall['cost_sum'])
+                phonecall_map[company_name][CALL_INTERNATIONAL]['billedtime_sum'] += \
+                    phonecall['billedtime_sum']
+                service_data[CALL_INTERNATIONAL]['count'] += phonecall['count']
+                service_data[CALL_INTERNATIONAL]['cost_sum'] += float(phonecall['cost_sum'])
+                service_data[CALL_INTERNATIONAL]['billedtime_sum'] += phonecall['billedtime_sum']
+
+            phonecall_map[company_name]['count'] += phonecall['count']
+            phonecall_map[company_name]['cost_sum'] += float(phonecall['cost_sum'])
+            phonecall_map[company_name]['billedtime_sum'] += phonecall['billedtime_sum']
+            service_data['count'] += phonecall['count']
+            service_data['cost_sum'] += float(phonecall['cost_sum'])
+            service_data['billedtime_sum'] += phonecall['billedtime_sum']
+
+        company_list = self.organization.company_set.all()
+        for company in company_list:
+            service_pricetable = company.service_pricetable
+            service_price_list = {}
+            if service_pricetable:
+                service_price_list = service_pricetable.price_set.active()
+            phonecall_map.setdefault(company.name, copy(TOTAL_DICT))
+            phonecall_map[company.name].update({'contract_version': company.is_new_contract})
+            service_basic_amount = 0
+            service_basic_cost = 0
+            for service in service_price_list:
+                service_cost = service.basic_service_amount * service.value
+                service_cost = (service_cost / divider) * multiplier
+
+                phonecall_map[company.name].update({
+                    BASIC_SERVICE_MAP[service.basic_service]: {
+                        'price': service.value,
+                        'amount': service.basic_service_amount,
+                        'cost': service_cost
+                    }
+                })
+                service_basic_amount += service.basic_service_amount
+                service_basic_cost += service_cost
+
+            if service_basic_amount != 0 and service_basic_cost != 0:
+                phonecall_map[company.name].update({
+                    'service_basic': {
+                        'amount': service_basic_amount,
+                        'cost': service_basic_cost
+                    }
+                })
+
+        service_data[VC1]['count'] += service_data[VC2]['count'] + service_data[VC3]['count']
+        service_data[VC1]['billedtime_sum'] += service_data[VC2]['billedtime_sum'] + service_data[VC3]['billedtime_sum']
+        service_data[VC1]['cost_sum'] = service_data[VC1]['billedtime_sum'] * service_data[VC1]['price'] / 60
+        service_data[LOCAL]['cost_sum'] = service_data[LOCAL]['billedtime_sum'] * service_data[LOCAL]['price'] /60
+        service_data[LDN]['cost_sum'] = service_data[LDN]['billedtime_sum'] * service_data[LDN]['price'] / 60
+        service_data[LDI]['cost_sum'] = service_data[LDI]['billedtime_sum'] * service_data[LDI]['price'] / 60
+        service_data[CALL_LOCAL]['cost_sum'] = service_data[VC1]['cost_sum'] + service_data[LOCAL]['cost_sum']
+        service_data[CALL_NATIONAL]['cost_sum'] = service_data[LDN]['cost_sum']
+        service_data[CALL_INTERNATIONAL]['cost_sum'] = service_data[LDI]['cost_sum']
+        service_data['cost_sum'] = service_data[CALL_LOCAL]['cost_sum'] + service_data[CALL_NATIONAL]['cost_sum'] + service_data[LDI]['cost_sum']
+        phonecall_map[SERVICE] = service_data
+        context['phonecall_map'] = phonecall_map
+        context['new_contract'] = NEW_CONTRACT
+        context['old_contract'] = OLD_CONTRACT
+        return context
 
 class BaseCompanyPhonecallView(CompanyMixin,
                                CompanyContextMixin,
@@ -240,7 +522,7 @@ class CompanyPhonecallListView(BaseCompanyPhonecallView):  # COMPANY
         return page_size
 
 
-class CompanyPhonecallResumeView(BaseCompanyPhonecallView):  # COMPANY
+class CompanyPhonecallResumeView(BaseCompanyPhonecallView, BaseContextData):  # COMPANY
     """
     Página com dados do relatório resumido da empresa (cliente)
     Permissão: Membro da empresa
@@ -255,7 +537,6 @@ class CompanyPhonecallResumeView(BaseCompanyPhonecallView):  # COMPANY
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         phonecall_data = self.object_list \
             .filter(inbound=False,
                     calltype__in=[VC1, VC2, VC3, LOCAL, LDN, LDI]) \
@@ -266,74 +547,8 @@ class CompanyPhonecallResumeView(BaseCompanyPhonecallView):  # COMPANY
             .values( 'company__is_new_contract', 'calltype', 'price', 'company__call_pricetable',
                     'count', 'billedtime_sum', 'cost_sum')\
             .order_by('-calltype')
-
-        phonecall_total = 0
-        duration_total = 0
-        cost_total = 0.0
-        phonecall_local = []
-        phonecall_long_distance = []
-        # The descending order will list VC3, VC2 and VC1 so I can do this
-        total_mobile_count = 0
-        total_mobile_billedtime_sum = 0
-        for phonecall in phonecall_data:
-            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
-                                               calltype=phonecall['calltype']).active().values('value')
-            phonecall['price'] = price.first()['value']
-            if phonecall['company__is_new_contract'] and phonecall['calltype'] in (VC2,VC3):
-                total_mobile_count += phonecall['count']
-                total_mobile_billedtime_sum += phonecall['billedtime_sum']
-                phonecall['count'] = 0
-                phonecall['billedtime_sum'] = 0
-            elif phonecall['company__is_new_contract'] and phonecall['calltype'] == VC1:
-                phonecall['count'] += total_mobile_count
-                phonecall['billedtime_sum'] += total_mobile_billedtime_sum
-            phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
-            if phonecall['calltype'] in (VC1, LOCAL):
-                phonecall_local.append(phonecall)
-            elif phonecall['calltype'] in (VC2, VC3, LDN):
-                phonecall_long_distance.append(phonecall)
-            else:
-                continue
-            phonecall_total += phonecall['count']
-            duration_total += phonecall['billedtime_sum']
-            cost_total += float(phonecall['cost_sum'])
-
-        multiplier, divider = get_values_proportionality(
-            date_lt=self.date_lt,
-            date_gt=self.date_gt,
-            proportionality=context['proportionality'])
-
-        service_pricetable = self.company.service_pricetable
-        service_price_list = {}
-        if service_pricetable:
-            service_price_list = service_pricetable.price_set.active()
-
-        service_basic_amount = 0
-        service_basic_cost = 0
-        basicservice = {}
-        for service in service_price_list:
-            service_cost = service.basic_service_amount * service.value
-            service_cost = (service_cost / divider) * multiplier
-            basicservice.setdefault(
-                BASIC_SERVICE_MAP[service.basic_service], {
-                    'price': service.value,
-                    'amount': service.basic_service_amount,
-                    'cost': service_cost})
-            service_basic_amount += service.basic_service_amount
-            service_basic_cost += service_cost
-
-        if service_basic_amount != 0 and service_basic_cost != 0:
-            basicservice.update({'service_basic': {
-                                     'amount': service_basic_amount,
-                                     'cost': service_basic_cost}})
-
-        context.update({
-            'phonecall_local': phonecall_local,
-            'phonecall_long_distance': phonecall_long_distance,
-            'phonecall_total': phonecall_total,
-            'cost_total': cost_total,
-            'basic_service': basicservice,
-            'duration_total': duration_total})
+        context_info = super().get_Company_Context(phonecall_data)
+        context.update(context_info)
         return context
 
 
@@ -2736,6 +2951,33 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
             if service_pricetable:
                 service_price_list = service_pricetable.price_set.active()
 
+            if company_name is not None:
+                company = Company.objects.get(name=company_name)
+                company_pricetable = company.service_pricetable
+                company_price_list = {}
+                phonecall_map[org_name]['companies'][company_name].setdefault('services', {})
+                if company_pricetable:
+                    company_price_list = company_pricetable.price_set.active()
+# Not the value comes from the service_price_list
+                for company_service in company_price_list:
+                    #TODO: FIX the level services in the database At least level 1
+                    if company_service.basic_service == LEVEL_1_ACCESS_SERVICE:
+                        company_service.basic_service = LEVEL_2_ACCESS_SERVICE
+                    elif company_service.basic_service == LEVEL_6_ACCESS_SERVICE:
+                        company_service.basic_service = WIRELESS_ACCESS_SERVICE
+                    elif company_service.basic_service == WIRELESS_ACCESS_SERVICE:
+                        continue
+                #TODO: Deal with multiple values and doesnotexist
+                    service_cost = service_pricetable.price_set.active().get(basic_service=company_service.basic_service).value
+                    cost = ((company_service.basic_service_amount * service_cost) / divider) * multiplier
+                    #phonecall_map[org_name]['services'].setdefault(company_name, {})
+                    phonecall_map[org_name]['companies'][company_name]['services'].update({
+                        BASIC_SERVICE_MAP[company_service.basic_service]: {
+                            'price': service_cost,
+                            'amount': company_service.basic_service_amount,
+                            'cost': cost
+                        }
+                    })
             service_basic_amount = 0
             service_basic_cost = 0
             for service in service_price_list:

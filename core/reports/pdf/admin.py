@@ -688,7 +688,7 @@ class SystemReportAdministrador(object):
 
 
                     for key, value in BASIC_SERVICE_MAP_NEW.items():
-                        if key in call_organization_map:
+                        if key != 'WIRELESS_ACCESS_SERVICE' and key in call_organization_map:
                             service_amount += call_organization_map[key]['amount']
                             service_cost += call_organization_map[key]['cost']
                             thead.append([
@@ -802,6 +802,7 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
+                #In this case I assume that the amount comes already coorected in VC1
                 local_list = [{
                         'type': LOCAL,  # LOCAL
                         'desc': 'Local Fixo-Fixo Extragrupo'
@@ -1057,7 +1058,7 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                minutes = call_organization_map['billedtime_sum'] * 60
+                minutes = call_organization_map['billedtime_sum']
                 thead = [[
                     'TOTAL DOS SERVIÇOS DE COMUNICAÇÃO',
                     str(call_organization_map['count']),
@@ -1126,103 +1127,104 @@ class SystemReportAdministrador(object):
                             self.insert_title_table(
                                 title=f"Organização: {organization} - Cliente: {company}")
 
-                        # if 'service_basic' in call_company_map:
-                        #     # ### Parte 2 - Título Serviços de Comunicação ###
-                        #     array_tblstyle = [
-                        #         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
-                        #         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                        #         ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                        #         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                        #         ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
-                        #         ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
-                        #         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                        #     tblstyle = TableStyle(array_tblstyle)
-                        #     thead = [['SERVIÇOS BASICOS']]
-                        #     size = self._width - 50
-                        #     tbl = Table(
-                        #         thead,
-                        #         colWidths=[size],
-                        #         rowHeights=[20 for x in range(len(thead))])
-                        #     tbl.setStyle(tblstyle)
-                        #     self._story.append(tbl)
+                        if 'services' in call_company_map:
+                             # ### Parte 2 - Título Serviços de Comunicação ###
+                            array_tblstyle = [
+                                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
+                                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                                 ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
+                                 ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                                 ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
+                                 ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
+                                 ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+                            tblstyle = TableStyle(array_tblstyle)
+                            thead = [['SERVIÇOS BASICOS']]
+                            size = self._width - 50
+                            tbl = Table(
+                                 thead,
+                                 colWidths=[size],
+                                 rowHeights=[20 for x in range(len(thead))])
+                            tbl.setStyle(tblstyle)
+                            self._story.append(tbl)
 
-                        #     # ### Parte 1 - Cabeçalho da tabela ###
-                        #     array_tblstyle = [
-                        #         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
-                        #         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                        #         ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                        #         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                        #         ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
-                        #         ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
-                        #         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                        #     tblstyle = TableStyle(array_tblstyle)
-                        #     thead = [['SERVIÇO', 'VALOR UNITÁRIO', 'QUANTIDADE', 'VALOR PERÍODO']]
-                        #     size = (self._width - 50) / 5
-                        #     tbl = Table(
-                        #         thead,
-                        #         colWidths=[size*2, size, size, size],
-                        #         rowHeights=[20 for x in range(len(thead))])
-                        #     tbl.setStyle(tblstyle)
-                        #     self._story.append(tbl)
+                            # ### Parte 1 - Cabeçalho da tabela ###
+                            array_tblstyle = [
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
+                                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                                ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
+                                ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                                ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
+                                ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
+                                ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+                            tblstyle = TableStyle(array_tblstyle)
+                            thead = [['SERVIÇO', 'VALOR UNITÁRIO', 'QUANTIDADE', 'VALOR PERÍODO']]
+                            size = (self._width - 50) / 5
+                            tbl = Table(
+                                 thead,
+                                 colWidths=[size*2, size, size, size],
+                                 rowHeights=[20 for x in range(len(thead))])
+                            tbl.setStyle(tblstyle)
+                            self._story.append(tbl)
 
-                        #     # ### Parte 4 - Chamadas de Discagem Local ###
-                        #     array_tblstyle = [
-                        #         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                        #         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                        #         ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
-                        #         ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
-                        #         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                        #         ('FONTSIZE', (0, 0), (0, -1), 7),  # middle column
-                        #         ('FONTSIZE', (1, 0), (-1, -1), 9),  # middle column
-                        #         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                        #         ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f1f1f1')),
-                        #         ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
-                        #         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                        #     tblstyle = TableStyle(array_tblstyle)
-                        #     thead = []
+                             # ### Parte 4 - Chamadas de Discagem Local ###
+                            array_tblstyle = [
+                                 ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
+                                 ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
+                                 ('ALIGN', (2, 0), (2, -1), 'CENTER'),   # 1 column
+                                 ('ALIGN', (3, 0), (3, -1), 'RIGHT'),   # 1 column
+                                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                                 ('FONTSIZE', (0, 0), (0, -1), 7),  # middle column
+                                 ('FONTSIZE', (1, 0), (-1, -1), 9),  # middle column
+                                 ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                                 ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f1f1f1')),
+                                 ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
+                                 ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+                            tblstyle = TableStyle(array_tblstyle)
+                            thead = []
+                            service_amount = 0
+                            service_cost = 0
+                            for key, value in BASIC_SERVICE_MAP_NEW.items():
+                                if key in call_company_map['services']:
+                                     service_amount += call_company_map['services'][key]['amount']
+                                     service_cost += call_company_map['services'][key]['cost']
+                                     thead.append([
+                                         value,
+                                         f"R$ {make_price_adm(call_company_map['services'][key]['price'])}",
+                                         str(call_company_map['services'][key]['amount']),
+                                         f"R$ {make_price_adm(call_company_map['services'][key]['cost'])}"])
 
-                        #     for key, value in BASIC_SERVICE_MAP.items():
-                        #         if key in call_company_map:
-                        #             service_amount += call_company_map[key]['amount']
-                        #             service_cost += call_company_map[key]['cost']
-                        #             thead.append([
-                        #                 value,
-                        #                 f"R$ {make_price_adm(call_company_map[key]['price'])}",
-                        #                 str(call_company_map[key]['amount']),
-                        #                 f"R$ {make_price_adm(call_company_map[key]['cost'])}"])
+                            size = (self._width - 50) / 5
+                            tbl = Table(
+                                 thead,
+                                 colWidths=[size * 2, size, size, size],
+                                 rowHeights=[20 for x in range(len(thead))])
+                            tbl.setStyle(tblstyle)
+                            self._story.append(tbl)
 
-                        #     size = (self._width - 50) / 5
-                        #     tbl = Table(
-                        #         thead,
-                        #         colWidths=[size * 2, size, size, size],
-                        #         rowHeights=[20 for x in range(len(thead))])
-                        #     tbl.setStyle(tblstyle)
-                        #     self._story.append(tbl)
-
-                        #     # ### Parte 12 - Total dos Serviços de Comunicação ###
-                        #     array_tblstyle = [
-                        #         ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                        #         ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
-                        #         ('ALIGN', (2, 0), (2, -1), 'RIGHT'),   # 1 column
-                        #         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                        #         ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                        #         ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                        #         ('BACKGROUND', (0, 0), (-1, -1), HexColor('#dedede')),
-                        #         ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
-                        #         ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                        #     tblstyle = TableStyle(array_tblstyle)
-                        #     thead = [[
-                        #         'TOTAL DOS SERVIÇOS BASICOS',
-                        #         str(service_amount),
-                        #         f"R$ {make_price_adm(service_cost)}"]]
-                        #     size = (self._width - 50) / 5
-                        #     tbl = Table(
-                        #         thead,
-                        #         colWidths=[size * 3, size, size],
-                        #         rowHeights=[20 for x in range(len(thead))])
-                        #     tbl.setStyle(tblstyle)
-                        #     self._story.append(tbl)
-                        #     self.space_between_tables()
+                             # ### Parte 12 - Total dos Serviços de Comunicação ###
+                            array_tblstyle = [
+                                 ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
+                                 ('ALIGN', (1, 0), (1, -1), 'CENTER'),   # 1 column
+                                 ('ALIGN', (2, 0), (2, -1), 'RIGHT'),   # 1 column
+                                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                                 ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
+                                 ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                                 ('BACKGROUND', (0, 0), (-1, -1), HexColor('#dedede')),
+                                 ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
+                                 ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+                            tblstyle = TableStyle(array_tblstyle)
+                            thead = [[
+                                 'TOTAL DOS SERVIÇOS BASICOS',
+                                 str(service_amount),
+                                 f"R$ {make_price_adm(service_cost)}"]]
+                            size = (self._width - 50) / 5
+                            tbl = Table(
+                                 thead,
+                                 colWidths=[size * 3, size, size],
+                                 rowHeights=[20 for x in range(len(thead))])
+                            tbl.setStyle(tblstyle)
+                            self._story.append(tbl)
+                            self.space_between_tables()
 
                         # ### Parte 1 - Título Serviços de Comunicação ###
                         array_tblstyle = [
@@ -1554,7 +1556,7 @@ class SystemReportAdministrador(object):
                             ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
                             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                         tblstyle = TableStyle(array_tblstyle)
-                        minutes = call_company_map['billedtime_sum'] * 60
+                        minutes = call_company_map['billedtime_sum']
                         thead = [[
                             'TOTAL DOS SERVIÇOS DE COMUNICAÇÃO',
                             str(call_company_map['count']),

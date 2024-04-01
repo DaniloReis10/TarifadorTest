@@ -133,6 +133,6 @@ def get_values_proportionality(date_lt, date_gt, proportionality=False):
         multiplier = diff.days + 1
         divider = 30
     else:
-        multiplier = date_lt.month - date_gt.month + 1
+        multiplier = 12*(date_lt.year - date_gt.year) + date_lt.month - date_gt.month + 1
         divider = 1
     return multiplier, divider

@@ -42,17 +42,32 @@
 						</div>
 					</div>
 					<h5 class="ui header">Longa Distância Nacional</h5>
-					<div class="fields three">
+                    {% if is_PMF == true %}
                         <div class="field">
-							{% include "utils/form-field.html" with field=form.VC2_price %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.VC3_price %}
-						</div>
-						<div class="field">
 							{% include "utils/form-field.html" with field=form.LDN_price %}
 						</div>
-					</div>
+                        <h5 class="ui header">Ligações 0800</h5>
+                        <div class="fields two">
+                            <div class="field">
+							    {% include "utils/form-field.html" with field=form.VC2_PMF_price %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.VC3_PMF_price %}
+						    </div>
+                        </div>
+                    {% else %}
+					    <div class="fields three">
+                            <div class="field">
+							    {% include "utils/form-field.html" with field=form.VC2_price %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.VC3_price %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.LDN_price %}
+						    </div>
+					    </div>
+                    {% endif %}
           			<h5 class="ui header">Longa Distância Internacional</h5>
 					<div class="fields three">
 						<div class="field">

@@ -688,7 +688,8 @@ class SystemReportAdministrador(object):
 
 
                     for key, value in BASIC_SERVICE_MAP_NEW.items():
-                        if key != 'WIRELESS_ACCESS_SERVICE' and key in call_organization_map:
+                        #if key != 'WIRELESS_ACCESS_SERVICE' and key in call_organization_map:
+                        if key in call_organization_map:
                             service_amount += call_organization_map[key]['amount']
                             service_cost += call_organization_map[key]['cost']
                             thead.append([

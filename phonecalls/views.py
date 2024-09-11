@@ -33,6 +33,7 @@ from centers.models import Sector
 from centers.utils import get_center_choices
 from centers.utils import get_company_choices
 from centers.utils import get_sector_choices
+from charges.constants import PRICE_FIELDS_BASIC_SERVICE_MAP_PMF
 from charges.constants import BASIC_SERVICE_CHOICES
 from charges.constants import LEVEL_1_ACCESS_SERVICE
 from charges.constants import LEVEL_2_ACCESS_SERVICE
@@ -127,15 +128,20 @@ class BaseContextData():
         total_mobile_count = 0
         total_mobile_billedtime_sum = 0
         for phonecall in phonecall_data:
-            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+            #AGAIN THIS NEEDS TO BE SET RIGHT
+            if(phonecall['company__organization_id']==2 and phonecall['calltype'] in (VC2, VC3)):
+                price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                                   calltype=VC1).active().values('value')
+            else:
+                price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
                                                calltype=phonecall['calltype']).active().values('value')
             phonecall['price'] = price.first()['value']
-            if phonecall['company__is_new_contract'] and phonecall['calltype'] in (VC2, VC3):
+            if (phonecall['company__organization_id']==2 or phonecall['company__is_new_contract']) and phonecall['calltype'] in (VC2, VC3):
                 total_mobile_count += phonecall['count']
                 total_mobile_billedtime_sum += phonecall['billedtime_sum']
                 phonecall['count'] = 0
                 phonecall['billedtime_sum'] = 0
-            elif phonecall['company__is_new_contract'] and phonecall['calltype'] == VC1:
+            elif (phonecall['company__organization_id']==2 or phonecall['company__is_new_contract']) and phonecall['calltype'] == VC1:
                 phonecall['count'] += total_mobile_count
                 phonecall['billedtime_sum'] += total_mobile_billedtime_sum
             phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
@@ -411,6 +417,9 @@ class BaseCompanyPhonecallView(CompanyMixin,
         date_lt = self.date_lt.strftime('%d-%m-%Y')
         return f"{self.company.code}-{date_gt}-{date_lt}{'-resumo' if resume else ''}"
 
+    """
+        Someth
+        """
     def get_queryset(self):
         if self.request.GET.get('date_gt') is not None:
             self.date_gt = datetime.strptime( self.request.GET.get('date_gt'), '%Y-%m-%d').date()
@@ -544,7 +553,7 @@ class CompanyPhonecallResumeView(BaseCompanyPhonecallView, BaseContextData):  # 
             .annotate(count=Count('id'),
                       billedtime_sum=Sum('billedtime'),
                       cost_sum=Sum('billedamount')) \
-            .values( 'company__is_new_contract', 'calltype', 'price', 'company__call_pricetable',
+            .values( 'company__is_new_contract', 'calltype', 'price', 'company__call_pricetable', 'company__organization_id',
                     'count', 'billedtime_sum', 'cost_sum')\
             .order_by('-calltype')
         context_info = super().get_Company_Context(phonecall_data)
@@ -1001,7 +1010,7 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
             .annotate(count=Count('id'),
                       billedtime_sum=Sum('billedtime'),
                       cost_sum=Sum('billedamount') )\
-            .values('company__name', 'calltype', 'price', 'company__call_pricetable',
+            .values('company__name', 'calltype', 'price', 'company__call_pricetable', 'company__organization_id',
                     'count', 'billedtime_sum', 'cost_sum') \
             .order_by('company__name', 'calltype')
 
@@ -1092,8 +1101,13 @@ class OrgPhonecallResumeView(BaseOrgPhonecallView):  # ORG
                     elif company_info['company__name'] == company_name and phonecall['calltype'] in (VC2, VC3):
                         phonecall['count'] = 0
                         phonecall['billedtime_sum'] = 0
-            price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
-                                               calltype=phonecall['calltype']).active().values('value')
+            # AGAIN THIS NEEDS TO BE SET RIGHT
+            if (phonecall['company__organization_id'] == 2 and phonecall['calltype'] in (VC2, VC3)):
+                price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                                               calltype=VC1).active().values('value')
+            else:
+                price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
+                                                               calltype=phonecall['calltype']).active().values('value')
             phonecall['price'] = price.first()['value']
             phonecall['cost_sum'] = phonecall['billedtime_sum'] * phonecall['price'] / 60
             phonecall_map.setdefault(company_name, copy(TOTAL_DICT))
@@ -1747,7 +1761,7 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
             .annotate(count=Count('id'),
                       billedtime_sum=Sum('billedtime'),
                       cost_sum=Sum('billedamount')) \
-            .values('company__name', 'company__description', 'calltype',
+            .values('company__name', 'company__description', 'calltype', 'company__organization_id',
                     'price', 'count', 'billedtime_sum', 'cost_sum') \
             .order_by('company__name', 'calltype')
 
@@ -1763,7 +1777,12 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
             'billedtime_sum': 0}
 
         service_basic_total = {}
-        for key, value in BASIC_SERVICE_MAP.items():
+        phonecall = phonecall_data[0]
+        if phonecall['company__organization_id'] == 2:
+            basic_services = PRICE_FIELDS_BASIC_SERVICE_MAP_PMF
+        else:
+            basic_services = BASIC_SERVICE_MAP
+        for key, value in basic_services.items():
             service_basic_total.setdefault(value, {
                 'amount': 0,
                 'cost': 0})
@@ -1850,24 +1869,24 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
             service_basic_amount = 0
             service_basic_cost = 0
             for service in service_price_list:
-                if BASIC_SERVICE_MAP[service.basic_service] not in phonecall_map[company.name]:
+                if basic_services[service.basic_service] not in phonecall_map[company.name]:
                     service_cost = service.basic_service_amount * service.value
                     service_cost = (service_cost / divider) * multiplier
                     phonecall_map[company.name].setdefault(
-                        BASIC_SERVICE_MAP[service.basic_service], {
+                        basic_services[service.basic_service], {
                             'price': service.value,
                             'amount': service.basic_service_amount,
                             'cost': service_cost})
                     # Now for each level_6 service (DECT phone without a base) we need to add a base
-                    if BASIC_SERVICE_MAP[service.basic_service] == 'LEVEL_6_ACCESS_SERVICE' and company.is_new_contract == OLD_CONTRACT:
-                        service_basic_total[BASIC_SERVICE_MAP[WIRELESS_ACCESS_SERVICE]]['amount'] += \
+                    if basic_services[service.basic_service] == 'LEVEL_6_ACCESS_SERVICE' and company.is_new_contract == OLD_CONTRACT:
+                        service_basic_total[basic_services[WIRELESS_ACCESS_SERVICE]]['amount'] += \
                             service.basic_service_amount
-                        service_basic_total[BASIC_SERVICE_MAP[WIRELESS_ACCESS_SERVICE]]['cost'] += \
+                        service_basic_total[basic_services[WIRELESS_ACCESS_SERVICE]]['cost'] += \
                             service_cost
-                    elif BASIC_SERVICE_MAP[service.basic_service] != 'WIRELESS_ACCESS_SERVICE' or company.is_new_contract == NEW_CONTRACT:
-                        service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['amount'] += \
+                    elif basic_services[service.basic_service] != 'WIRELESS_ACCESS_SERVICE' or company.is_new_contract == NEW_CONTRACT:
+                        service_basic_total[basic_services[service.basic_service]]['amount'] += \
                             service.basic_service_amount
-                        service_basic_total[BASIC_SERVICE_MAP[service.basic_service]]['cost'] += \
+                        service_basic_total[basic_services[service.basic_service]]['cost'] += \
                             service_cost
                     service_basic_amount += service.basic_service_amount
                     service_basic_cost += service_cost
@@ -1879,6 +1898,8 @@ class OrgPhonecallResumePDFReportView(BaseOrgPhonecallView):  # ORG
 
         phonecall_map[SERVICE_BASIC] = service_basic_total
         phonecall_map[SERVICE] = service_data
+        phonecall_map['ORGANIZATION'] = self.organization.name
+        phonecall_map['ORGANIZATION_id'] = self.organization.id
         kwargs['phonecall_map'] = phonecall_map
         return super().get_context_data(**kwargs)
 
@@ -2515,7 +2536,7 @@ class AdmPhonecallResumeView(BaseAdmPhonecallView):  # SUPERUSER
             service_data['billedtime_sum'] += phonecall['billedtime_sum']
             #Fix VC1 = VC1+VC2+VC3
         for org_name in phonecall_map:
-
+            #NEED TO FIX: for some interval there is no VC2, VC3 and/or VC1
             phonecall_map[org_name][VC1]['count'] += phonecall_map[org_name][VC2]['count'] + phonecall_map[org_name][VC3]['count']
             phonecall_map[org_name][VC1]['billedtime_sum'] += phonecall_map[org_name][VC2]['billedtime_sum'] + \
                                                      phonecall_map[org_name][VC3]['billedtime_sum']

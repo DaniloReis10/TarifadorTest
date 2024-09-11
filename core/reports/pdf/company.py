@@ -84,7 +84,7 @@ class SystemReport(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" '
-                        'width="150" height="66" valign="top"/>',
+                        'width="550" height="86" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({
@@ -108,7 +108,7 @@ class SystemReport(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}"'
-                        'width="150" height="66" valign="top"/>',
+                        'width="550" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height-20})
         header_list.append({
@@ -273,7 +273,7 @@ class SystemReport(object):
                 'values':  []}
             for phonecall in phonecall_data['phonecall_list']:
                 calltype_title = CALLTYPE_MAP[phonecall['calltype']]
-                if self.company.slug == 'tj':
+                if self.company.slug == 'tj' or self.company.slug == 'sema':
                     calltype_title = get_tj_calltype_title(phonecall['calltype'])
 
                 data['values'].append([

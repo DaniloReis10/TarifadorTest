@@ -33,7 +33,9 @@
 
 					<h4 class="ui dividing header">Serviços Básicos</h4>
 					<h4 class="ui header">Serviços de Disponibilização de Acesso a Comunicação Voip</h4>
-                    {% if is_new_contract == new_contract %}
+                    {% if organization_id == 2 %}
+					    <h5 class="ui header">Serviço de Acesso Nivel 1P</h5>
+                    {% elif is_new_contract == new_contract %}
 					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 1</h5>
@@ -46,7 +48,9 @@
 							{% include "utils/form-field.html" with field=form.level_1_access_service_price %}
 						</div>
 					</div>
-                    {% if is_new_contract == new_contract %}
+                    {% if organization_id == 2 %}
+					    <h5 class="ui header">Serviço de Acesso com Equipamento DECT</h5>
+                    {% elif is_new_contract == new_contract %}
 					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 2 SIP e 100 MbE PoE</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso Nivel 2</h5>
@@ -59,58 +63,62 @@
 							{% include "utils/form-field.html" with field=form.level_2_access_service_price %}
 						</div>
 					</div>
-					{% if is_new_contract == new_contract%}
-                        <h5 class="ui header">Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função</h5>
-                    {% else %}
-                        <h5 class="ui header">Serviço de Acesso Nivel 3</h5>
-                    {%  endif %}
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_3_access_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_3_access_service_price %}
-						</div>
-					</div>
-                    {% if is_new_contract == new_contract %}
-					    <h5 class="ui header">Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função</h5>
-                    {% else %}
-                        <h5 class="ui header">Serviço de Acesso Nivel 4</h5>
-                    {%  endif %}
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_4_access_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_4_access_service_price %}
-						</div>
-					</div>
-                    {% if is_new_contract == new_contract%}
-					    <h5 class="ui header">Serviço de Acesso VoIP sem aparelho (aparelho contratante)</h5>
-                    {% else %}
-                        <h5 class="ui header">Serviço de Acesso Nivel 5</h5>
-                    {%  endif %}
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_5_access_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.level_5_access_service_price %}
-						</div>
-					</div>
-                <! –– The new contract does not have DECT phones without base -->
-                    {% if is_new_contract == old_contract %}
-                        <h5 class="ui header">Serviço de Acesso Nivel 6</h5>
+                    {% if organization_id != 2 %}
+					    {% if is_new_contract == new_contract%}
+                            <h5 class="ui header">Serviço de Acesso VoIP com aparelho 4 SIP, 1GbE e teclado função</h5>
+                        {% else %}
+                            <h5 class="ui header">Serviço de Acesso Nivel 3</h5>
+                        {%  endif %}
 					    <div class="two fields">
 						    <div class="field">
-							    {% include "utils/form-field.html" with field=form.level_6_access_service_amount %}
+							    {% include "utils/form-field.html" with field=form.level_3_access_service_amount %}
 						    </div>
 						    <div class="field">
-							    {% include "utils/form-field.html" with field=form.level_6_access_service_price %}
+							    {% include "utils/form-field.html" with field=form.level_3_access_service_price %}
 						    </div>
 					    </div>
-                    {% endif  %}
-                    {% if is_new_contract == new_contract%}
+                        {% if is_new_contract == new_contract %}
+					        <h5 class="ui header">Serviço de Acesso VoIP com aparelho 10 SIP, 1GbE e teclado função</h5>
+                        {% else %}
+                            <h5 class="ui header">Serviço de Acesso Nivel 4</h5>
+                        {%  endif %}
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_4_access_service_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_4_access_service_price %}
+						    </div>
+					    </div>
+                        {% if is_new_contract == new_contract%}
+					        <h5 class="ui header">Serviço de Acesso VoIP sem aparelho (aparelho contratante)</h5>
+                        {% else %}
+                            <h5 class="ui header">Serviço de Acesso Nivel 5</h5>
+                        {%  endif %}
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_5_access_service_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.level_5_access_service_price %}
+						    </div>
+					    </div>
+                        <! –– The new contract does not have DECT phones without base -->
+                        {% if is_new_contract == old_contract %}
+                            <h5 class="ui header">Serviço de Acesso Nivel 6</h5>
+					        <div class="two fields">
+                                <div class="field">
+							        {% include "utils/form-field.html" with field=form.level_6_access_service_amount %}
+						        </div>
+						        <div class="field">
+							        {% include "utils/form-field.html" with field=form.level_6_access_service_price %}
+						        </div>
+					        </div>
+                        {% endif  %}
+                    {% endif %}
+                    {% if organization_id == 2 %}
+                        <h5 class="ui header">Serviço de Acesso sem fio</h5>
+                    {% elif is_new_contract == new_contract%}
 					    <h5 class="ui header">Serviço de Acesso com aparelho sem fio com base 2 SIP, 100 MbE e DECT</h5>
                     {% else %}
                         <h5 class="ui header">Serviço de Acesso sem fio</h5>
@@ -123,8 +131,9 @@
 							{% include "utils/form-field.html" with field=form.wireless_access_service_price %}
 						</div>
 					</div>
-                <! ––# Only new contract has wi-fi -->
-                    {% if is_new_contract == new_contract%}
+                    {% if organization_id != 2 %}
+                        <! ––# Only new contract has wi-fi -->
+                        {% if is_new_contract == new_contract%}
                             <h5 class="ui header">Serviço de Acesso VoIP sem fio com aparelho 2 SIP sem fio WiFi</h5>
                             <div class="two fields">
 						        <div class="field">
@@ -134,26 +143,26 @@
 							        {% include "utils/form-field.html" with field=form.wifi_access_service_price %}
 						        </div>
 					        </div>
+                        {% endif %}
+					    <h5 class="ui header">Serviço de acesso via Software</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.software_access_service_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.software_access_service_price %}
+						    </div>
+					    </div>
+					    <h5 class="ui header">Serviço de Extensão via software</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.software_extension_service_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.software_extension_service_price %}
+						    </div>
+					    </div>
                     {% endif %}
-					<h5 class="ui header">Serviço de acesso via Software</h5>
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.software_access_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.software_access_service_price %}
-						</div>
-					</div>
-					<h5 class="ui header">Serviço de Extensão via software</h5>
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.software_extension_service_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.software_extension_service_price %}
-						</div>
-					</div>
-
 					<h4 class="ui header">Serviços de Contact Center</h4>
 					<h5 class="ui header">Gerência e Operação da Plataforma Básica de Contact Center</h5>
 					<div class="two fields">
@@ -173,7 +182,7 @@
 							{% include "utils/form-field.html" with field=form.mo_basic_recording_platform_price %}
 						</div>
 					</div>
-					<h5 class="ui header">Gerência e Operação de Posição de Atendimentos/h5>
+					<h5 class="ui header">Gerência e Operação de Posição de Atendimentos</h5>
 					<div class="two fields">
 						<div class="field">
 							{% include "utils/form-field.html" with field=form.mo_service_position_amount %}
@@ -218,16 +227,73 @@
 							{% include "utils/form-field.html" with field=form.mo_recording_position_price %}
 						</div>
 					</div>
-					<h5 class="ui header">Gerência e Operação de Supervisor de Gravação</h5>
-					<div class="two fields">
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.mo_recording_supervisor_amount %}
-						</div>
-						<div class="field">
-							{% include "utils/form-field.html" with field=form.mo_recording_supervisor_price %}
-						</div>
-					</div>
-
+                    {% if organization_id != 2 %}
+					    <h5 class="ui header">Gerência e Operação de Supervisor de Gravação</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_recording_supervisor_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_recording_supervisor_price %}
+						    </div>
+					    </div>
+                    {% else %}
+                        <h5 class="ui header">Gerência e Operação de Qualidade de Gravação</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_quality_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_quality_price %}
+						    </div>
+					    </div>
+                        <h5 class="ui header">Gerência e Operação de Detecção de Emoção</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_emotion_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_emotion_price %}
+						    </div>
+					    </div>
+                        <h5 class="ui header">Gerência e Operação de Tradução para Texto</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_translation_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_translation_price %}
+						    </div>
+					    </div>
+                        <h5 class="ui header">Gerência e Operação de Aprendizagem e Avaliação</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_learning_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.mo_learning_price %}
+						    </div>
+					    </div>
+                        <h4 class="ui header">Serviços de Chatbot</h4>
+					    <h5 class="ui header">Assistente Virtual Cognitivo</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.CHATBOT_LICENSE_SERVICE_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.CHATBOT_LICENSE_SERVICE_price %}
+						    </div>
+					    </div>
+                        <h5 class="ui header">Sustentação e Atualização da Solução de Chatbot</h5>
+					    <div class="two fields">
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.CHATBOT_MAINTENANCE_SERVICE_amount %}
+						    </div>
+						    <div class="field">
+							    {% include "utils/form-field.html" with field=form.CHATBOT_MAINTENANCE_SERVICE_price %}
+						    </div>
+					    </div>
+                        {% endif %}
 					<button class="ui blue button" type="submit">Salvar</button>
 				</form>
 			</div>

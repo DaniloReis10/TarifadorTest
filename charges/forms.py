@@ -146,6 +146,47 @@ class ServicePriceTableForm(forms.ModelForm):
 
     mo_recording_supervisor_amount = forms.IntegerField(
         label='Quantidade', required=False)
+    # Gerência e Operação de Qualidade de Gravação
+    mo_quality_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    mo_quality_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Gerência e Operação de Detecção de Emoção
+    mo_emotion_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    mo_emotion_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Gerência e Operação de Tradução para Texto
+    mo_translation_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    mo_translation_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Gerência e Operação de Aprendizagem e Avaliação
+    mo_learning_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    mo_learning_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Assistente Virtual Cognitivo
+    CHATBOT_LICENSE_SERVICE_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    CHATBOT_LICENSE_SERVICE_amount = forms.IntegerField(
+        label='Quantidade', required=False)
+
+    # Sustentação e Atualização da Solução de Chatbot
+    CHATBOT_MAINTENANCE_SERVICE_price = forms.DecimalField(
+        label='Valor', widget=forms.TextInput(attrs={'placeholder': 'R$'}), required=False)
+
+    CHATBOT_MAINTENANCE_SERVICE_amount = forms.IntegerField(
+        label='Quantidade', required=False)
 
     class Meta:
         model = PriceTable
@@ -155,7 +196,8 @@ class ServicePriceTableForm(forms.ModelForm):
 
 class ServicePriceTableCreateForm(ServicePriceTableForm):
 
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class ServicePriceTableUpdateForm(ServicePriceTableForm):
@@ -218,6 +260,14 @@ class CallPriceTableForm(forms.ModelForm):
         label='Ligações para celular em outra área (VC3)',
         widget=forms.TextInput(attrs={'placeholder': 'R$'}))
 
+    VC2_PMF_price = forms.DecimalField(
+        label='Ligações para 0800 de fixo',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
+
+    VC3_PMF_price = forms.DecimalField(
+        label='Ligações para 0800 de móvel',
+        widget=forms.TextInput(attrs={'placeholder': 'R$'}))
+
     LDN_price = forms.DecimalField(
         label='Ligações DDD para fixo',
         widget=forms.TextInput(attrs={'placeholder': 'R$'}))
@@ -233,8 +283,14 @@ class CallPriceTableForm(forms.ModelForm):
 
 
 class CallPriceTableCreateForm(CallPriceTableForm):
-
-    pass
+    def __init__(self, *args, **kwargs):
+        # first call parent's constructor
+        super(CallPriceTableCreateForm, self).__init__(*args, **kwargs)
+        # there's a `fields` property now
+        self.fields['VC2_price'].required = False
+        self.fields['VC3_price'].required = False
+        self.fields['VC2_PMF_price'].required = False
+        self.fields['VC3_PMF_price'].required = False
 
 
 class CallPriceTableUpdateForm(CallPriceTableForm):
@@ -251,7 +307,7 @@ class CallPriceTableUpdateForm(CallPriceTableForm):
             del self.fields['VC2_price']
             del self.fields['VC3_price']
         else:
-            call_service_map = PRICE_FIELDS_BASIC_SERVICE_MAP
+            call_service_map = PRICE_FIELDS_CALLTYPE_MAP
 
         for price in price_list:
             if price.calltype not in call_service_map:

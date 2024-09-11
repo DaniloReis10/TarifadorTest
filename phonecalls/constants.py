@@ -56,9 +56,13 @@ BOUND_CHOICES = [
     (INBOUND,          'Recebidas'),
     (ALL,              'Todas')
 ]
-
+# No caso da PMF VC1 = chamadas para celular
 VC1 = 1
+# No caso da PMF VC2 = chamadas para 0800 de fixo Mudei
+VC2_PMF = 10
 VC2 = 2
+# No caso da PMF VC3 = chamadas para 0800 de celular Mudei
+VC3_PMF = 11
 VC3 = 3
 LOCAL = 4
 LDN = 5

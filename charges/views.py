@@ -101,7 +101,10 @@ class CallPriceTableCreateView(OrganizationMixin,
         pricetable.servicetype = charges_constants.COMMUNICATION_SERVICE
         pricetable.save()
 
-        price_fields = charges_constants.PRICE_FIELDS_CALLTYPE_MAP.values()
+        if self.organization.id == 2: #NEEDS TO CHANGE TO CONSTANT
+            price_fields = charges_constants.PRICE_FIELDS_CALLTYPE_MAP_PMF.values()
+        else:
+            price_fields = charges_constants.PRICE_FIELDS_CALLTYPE_MAP.values()
         for price_field in price_fields:
             price = form.cleaned_data.get(f'{price_field}_price')
             if not price:
@@ -114,7 +117,12 @@ class CallPriceTableCreateView(OrganizationMixin,
         return reverse(
             'charges:call_pricetable_list', kwargs={'org_slug': self.organization.slug})
 
-
+    def get_context_data(self, **kwargs):
+        context = super(CallPriceTableCreateView, self).get_context_data(**kwargs)
+        context['isPMF'] = False
+        if context['organization'].id == 2:  # Change to constant PMF
+            context['isPMF'] = True
+        return context
 class CallPriceTableUpdateView(OrganizationMixin,
                                AdminRequiredMixin,
                                UpdateView):  # ORG
@@ -229,7 +237,10 @@ class ServicePriceTableCreateView(OrganizationMixin,
         pricetable.servicetype = charges_constants.BASIC_SERVICE
         pricetable.save()
 
-        price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP.values()
+        if self.organization.id == 2: #NEEDS TO CHANGE TO CONSTANT
+            price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP_PMF.values()
+        else:
+            price_fields = charges_constants.PRICE_FIELDS_BASIC_SERVICE_MAP.values()
         for price_field in price_fields:
             amount = form.cleaned_data.get(f'{price_field}_amount')
             price = form.cleaned_data.get(f'{price_field}_price')
@@ -244,6 +255,12 @@ class ServicePriceTableCreateView(OrganizationMixin,
         return reverse(
             'charges:service_pricetable_list', kwargs={'org_slug': self.organization.slug})
 
+    def get_context_data(self, **kwargs):
+        context = super(ServicePriceTableCreateView, self).get_context_data(**kwargs)
+        context['isPMF'] = False
+        if context['organization'].id == 2:  #Change to constant PMF
+            context['isPMF'] = True
+        return context
 
 class ServicePriceTableUpdateView(OrganizationMixin,
                                   AdminRequiredMixin,
@@ -298,6 +315,10 @@ class ServicePriceTableUpdateView(OrganizationMixin,
             context['is_new_contract'] = NEW_CONTRACT
         else:
             context['is_new_contract'] = context['pricetable'].service_company_set.first().is_new_contract
+        context['isPMF'] = False
+        if context['organization'].id == 2:  # Change to constant PMF
+            context['isPMF'] = 1
+        context['organization_id'] = context['organization'].id
         context['new_contract'] = NEW_CONTRACT
         context['old_contract'] = OLD_CONTRACT
         return context

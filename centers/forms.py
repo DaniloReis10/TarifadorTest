@@ -23,7 +23,7 @@ class CompanyCreateForm(forms.ModelForm):
 
     call_pricetable = forms.ModelChoiceField(
         PriceTable.objects.active().filter(servicetype=COMMUNICATION_SERVICE),
-        label='Tabela de Preço', required=True)
+        label='Tabela de Preço', required=False)
 
     def __init__(self, request, organization, *args, **kwargs):
         self.request = request
@@ -44,7 +44,8 @@ class CompanyCreateForm(forms.ModelForm):
             'users',
             'status',
             'activate_date',
-            'deactivate_date']
+            'deactivate_date',
+            'is_new_contract']
 
     def save(self,  **kwargs):
         company = super().save(commit=False)

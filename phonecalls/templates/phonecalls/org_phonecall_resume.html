@@ -52,6 +52,12 @@
             <span style="float: left;">Proporcionalidade de Tempo</span>
           </label>
         </div>
+        <div class="ui checkbox">
+          <input type="checkbox" name="showcompanies" value="true" {% if request.GET.showcompanies %}checked{% endif %}>
+          <label>
+            <span style="float: left;">Exibir Clientes</span>
+          </label>
+        </div>
       </div>
     </div>
     <button class="ui blue button" type="submit">Filtrar</button>

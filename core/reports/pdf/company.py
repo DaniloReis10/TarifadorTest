@@ -81,10 +81,14 @@ class SystemReport(object):
     def header(self, canvas, doc):
         header_list = []
 
+        if self.org.id ==2:
+            width = 200
+        else:
+            width = 550
         if self._orgLogo:
             header_list.append({
-                'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" '
-                        'width="550" height="86" valign="top"/>',
+                'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" width = "{width}"'
+                        'height="86" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({

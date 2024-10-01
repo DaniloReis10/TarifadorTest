@@ -194,6 +194,8 @@ class SystemReportAdministrador(object):
         value_service_basic_total = 0
         value_service_comunication_total = 0
         for organization, call_organization_map in context.items():
+            if organization != 'Prefeitura Municipal de Fortaleza':
+                continue
             service_amount = 0
             service_cost = 0
             if organization == 'SERVIÇOS DE COMUNICAÇÃO':

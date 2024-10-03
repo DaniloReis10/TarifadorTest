@@ -45,5 +45,5 @@ def make_price_adm(value):
             9999.9 -> 9.999,90
             200000 -> 200.000,00
     """
-    value = f'{float(value):,.4f}'
+    value = f'{float(value):,.2f}'
     return value.replace(',', 'v').replace('.', ',').replace('v', '.')

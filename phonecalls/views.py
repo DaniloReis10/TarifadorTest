@@ -2536,12 +2536,15 @@ class AdmPhonecallResumeView(BaseAdmPhonecallView):  # SUPERUSER
             service_data['billedtime_sum'] += phonecall['billedtime_sum']
             #Fix VC1 = VC1+VC2+VC3
         for org_name in phonecall_map:
-            #NEED TO FIX: for some interval there is no VC2, VC3 and/or VC1
-            phonecall_map[org_name][VC1]['count'] += phonecall_map[org_name][VC2]['count'] + phonecall_map[org_name][VC3]['count']
-            phonecall_map[org_name][VC1]['billedtime_sum'] += phonecall_map[org_name][VC2]['billedtime_sum'] + \
-                                                     phonecall_map[org_name][VC3]['billedtime_sum']
-            phonecall_map[org_name][VC1]['cost_sum'] += phonecall_map[org_name][VC2]['cost_sum'] + \
-                                                          phonecall_map[org_name][VC3]['cost_sum']
+            #NEED TO FIX: for some interval there is no VC2, VC3 and/or VC1. Perhaps ok now
+            if VC2 in phonecall_map[org_name]:
+                phonecall_map[org_name][VC1]['count'] += phonecall_map[org_name][VC2]['count']
+                phonecall_map[org_name][VC1]['billedtime_sum'] += phonecall_map[org_name][VC2]['billedtime_sum']
+                phonecall_map[org_name][VC1]['cost_sum'] += phonecall_map[org_name][VC2]['cost_sum']
+            if VC3 in phonecall_map[org_name]:
+                phonecall_map[org_name][VC1]['count'] += phonecall_map[org_name][VC3]['count']
+                phonecall_map[org_name][VC1]['billedtime_sum'] += phonecall_map[org_name][VC3]['billedtime_sum']
+                phonecall_map[org_name][VC1]['cost_sum'] += phonecall_map[org_name][VC3]['cost_sum']
         phonecall_map[SERVICE] = service_data
         context['phonecall_map'] = phonecall_map
         return context
@@ -2980,15 +2983,17 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
                 if company_pricetable:
                     company_price_list = company_pricetable.price_set.active()
 # Not the value comes from the service_price_list
+
                 for company_service in company_price_list:
-                    #TODO: FIX the level services in the database At least level 1
-                    if company_service.basic_service == LEVEL_1_ACCESS_SERVICE:
-                        company_service.basic_service = LEVEL_2_ACCESS_SERVICE
-                    elif company_service.basic_service == LEVEL_6_ACCESS_SERVICE:
-                        company_service.basic_service = WIRELESS_ACCESS_SERVICE
-                    elif company_service.basic_service == WIRELESS_ACCESS_SERVICE:
-                        continue
-                #TODO: Deal with multiple values and doesnotexist
+                    if organization.id != 2 and company.is_new_contract == 0:
+                        #TODO: FIX the level services in the database At least level 1
+                        if company_service.basic_service == LEVEL_1_ACCESS_SERVICE:
+                            company_service.basic_service = LEVEL_2_ACCESS_SERVICE
+                        elif company_service.basic_service == LEVEL_6_ACCESS_SERVICE:
+                            company_service.basic_service = WIRELESS_ACCESS_SERVICE
+                        elif company_service.basic_service == WIRELESS_ACCESS_SERVICE:
+                            continue
+                    #TODO: Deal with multiple values and doesnotexist
                     service_cost = service_pricetable.price_set.active().get(basic_service=company_service.basic_service).value
                     cost = ((company_service.basic_service_amount * service_cost) / divider) * multiplier
                     #phonecall_map[org_name]['services'].setdefault(company_name, {})

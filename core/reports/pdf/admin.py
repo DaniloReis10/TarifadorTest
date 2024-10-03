@@ -26,7 +26,7 @@ from reportlab.rl_config import TTFSearchPath
 # project
 from centers.utils import make_price_adm
 from charges.constants import BASIC_SERVICE_ACCESS_MAP, BASIC_SERVICE_ACCESS_MAP_NEW
-from charges.constants import BASIC_SERVICE_MAP,  BASIC_SERVICE_MAP_NEW
+from charges.constants import BASIC_SERVICE_MAP,  BASIC_SERVICE_MAP_NEW, BASIC_SERVICE_MAP_PMF
 from charges.constants import BASIC_SERVICE_MO_MAP
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
@@ -194,7 +194,7 @@ class SystemReportAdministrador(object):
         value_service_basic_total = 0
         value_service_comunication_total = 0
         for organization, call_organization_map in context.items():
-            if organization != 'Prefeitura Municipal de Fortaleza':
+            if organization == 'Prefeitura Municipal de Fortaleza':
                 continue
             service_amount = 0
             service_cost = 0
@@ -287,6 +287,7 @@ class SystemReportAdministrador(object):
 #                        'type': VC3,  # VC3
 #                        'desc': 'Local Fixo-Móvel (VC3)'
 #                    }]"""
+
                 thead = []
                 for local in local_list:
                     if local['type'] in call_organization_map:
@@ -688,8 +689,11 @@ class SystemReportAdministrador(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = []
 
-
-                    for key, value in BASIC_SERVICE_MAP_NEW.items():
+                    if organization == 'Prefeitura Municipal de Fortaleza':
+                        serv_map = BASIC_SERVICE_MAP_PMF
+                    else:
+                        serv_map = BASIC_SERVICE_MAP_NEW
+                    for key, value in serv_map.items():
                         #if key != 'WIRELESS_ACCESS_SERVICE' and key in call_organization_map:
                         if key in call_organization_map:
                             service_amount += call_organization_map[key]['amount']
@@ -806,7 +810,7 @@ class SystemReportAdministrador(object):
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
                 #In this case I assume that the amount comes already coorected in VC1
-                local_list = [{
+                local_list_etice = [{
                         'type': LOCAL,  # LOCAL
                         'desc': 'Local Fixo-Fixo Extragrupo'
                     }, {
@@ -819,6 +823,18 @@ class SystemReportAdministrador(object):
 #                        'type': VC3,  # VC3
 #                        'desc': 'Local Fixo-Móvel (VC3)'
 #                    }]
+                local_list_pmf = [{
+                    'type': LOCAL,  # LOCAL
+                    'desc': 'Operação de acesso externo à rede para telefone fixo para ligações locais'
+                }, {
+                    'type': VC1,  # VC1
+                    'desc': 'Operação de acesso externo à rede para telefones móveis'
+                }]
+                #if organization == 'Prefeitura Municipal de Fortaleza':
+                #    local_list = local_list_pmf
+                #else:
+                #    local_list = local_list_etice
+                local_list = local_list_etice
                 thead = []
                 for local in local_list:
                     if local['type'] in call_organization_map:
@@ -905,19 +921,24 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
+                #if organization == 'Prefeitura Municipal de Fortaleza':
+                #    title = 'Operação de acesso externo à rede para ligações de longa distância Nacional para fixo'
+                #else:
+                #    title = 'LDN-fixo/fixo-D1/D2/D3/D4'
+                title = 'LDN-fixo/fixo-D1/D2/D3/D4'
                 if LDN in call_organization_map:
                     call_organization = call_organization_map[LDN]
                     if type(call_organization) is not dict:
                         call_organization = call_organization._asdict()
                     minutes = call_organization['billedtime_sum']
                     thead = [[
-                        'LDN-fixo/fixo-D1/D2/D3/D4',
+                        title,
                         f"R$ {make_price_adm(call_organization['org_price'])}",
                         str(call_organization['count']),
                         time_format(minutes),
                         f"R$ {make_price_adm(call_organization['cost_sum'])}"]]
                 else:
-                    thead = [['LDN-fixo/fixo-D1/D2/D3/D4', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                    thead = [[title, 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -993,19 +1014,25 @@ class SystemReportAdministrador(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
+                # Perhaps change later -> The name
+                #if organization == 'Prefeitura Municipal de Fortaleza':
+                #    title = 'Operação de acesso externo à rede para ligações internacionais'
+                #else:
+                #    title = 'Longa Distância Internacional'
+                title = 'Longa Distância Internacional'
                 if LDI in call_organization_map:
                     call_organization = call_organization_map[LDI]
                     if type(call_organization) is not dict:
                         call_organization = call_organization._asdict()
                     minutes = call_organization['billedtime_sum']
                     thead = [[
-                        'Longa Distância Internacional',
+                        title,
                         f"R$ {make_price_adm(call_organization['org_price'])}",
                         str(call_organization['count']),
                         time_format(minutes),
                         f"R$ {make_price_adm(call_organization['cost_sum'])}"]]
                 else:
-                    thead = [['Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                    thead = [[title, 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1186,8 +1213,14 @@ class SystemReportAdministrador(object):
                             thead = []
                             service_amount = 0
                             service_cost = 0
-                            for key, value in BASIC_SERVICE_MAP_NEW.items():
+                            flag = False
+                            if organization == 'Prefeitura Municipal de Fortaleza':
+                                serv_map = BASIC_SERVICE_MAP_PMF
+                            else:
+                                serv_map = BASIC_SERVICE_MAP_NEW
+                            for key, value in serv_map.items():
                                 if key in call_company_map['services']:
+                                     flag = True
                                      service_amount += call_company_map['services'][key]['amount']
                                      service_cost += call_company_map['services'][key]['cost']
                                      thead.append([
@@ -1195,7 +1228,13 @@ class SystemReportAdministrador(object):
                                          f"R$ {make_price_adm(call_company_map['services'][key]['price'])}",
                                          str(call_company_map['services'][key]['amount']),
                                          f"R$ {make_price_adm(call_company_map['services'][key]['cost'])}"])
-
+                            # This is for new branchs that has no service
+                            if not flag:
+                                thead.append([
+                                    'Serviços Básicos',
+                                    f"R$ {make_price_adm(0.0)}",
+                                    str(0),
+                                    f"R$ {make_price_adm(0.0)}"])
                             size = (self._width - 50) / 5
                             tbl = Table(
                                  thead,

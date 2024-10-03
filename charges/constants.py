@@ -184,9 +184,9 @@ BASIC_SERVICE_ACCESS_MAP_NEW = {
 }
 
 BASIC_SERVICE_ACCESS_MAP_PMF = {
-    'level_1_access_service': 'Serviço de Acesso Nivel 1',
-    'level_2_access_service': 'Serviço de Acesso sem fio',
-    'wireless_access_service': 'Serviço de Acesso com Equipamento DECT',
+    'LEVEL_1_ACCESS_SERVICE': 'Serviço de Acesso Nivel 1',
+    'LEVEL_2_ACCESS_SERVICE': 'Serviço de Acesso com Equipamento DECT',
+    'WIRELESS_ACCESS_SERVICE': 'Serviço de Acesso sem fio',
 }
 
 BASIC_SERVICE_MO = [

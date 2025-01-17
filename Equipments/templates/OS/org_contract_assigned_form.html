@@ -1,0 +1,44 @@
+{% extends "organizations/base.html" %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block title %}{{ organization.name }} - Serviços Básicos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extensions:org_extension_list' organization.slug %}">
+  <h2 class="ui inverted header">Serviços</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+    <h4 class="ui dividing header">Atribuir Serviços de um Contrato</h4>
+    <div class="three fields">
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.legacyID %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.contractID %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.description %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.org_price_table %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.org_price_value %}
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">OK</button>
+  </form>
+</div>
+
+
+{% endblock %}

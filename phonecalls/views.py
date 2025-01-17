@@ -2957,7 +2957,8 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
         for phonecall in phonecall_data:
             org_name = phonecall['organization__name']
             company_name = phonecall['company__name']
-
+            if not company_name :
+                continue
 
 
             # organization
@@ -3195,6 +3196,49 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
                 phonecall_map[org_name]['companies'][company_name][VC1]['cost_sum'] += \
                     phonecall_map[org_name]['companies'][company_name][VC2]['cost_sum'] + \
                     phonecall_map[org_name]['companies'][company_name][VC3]['cost_sum']
+
+
+#There was a problem that any company that did not generate a call would not be included
+        company_list = Company.objects.all()
+        for company in company_list:
+            if company.status != 1:
+                continue
+            company_pricetable = company.service_pricetable
+            company_price_list = {}
+            orga = company.organization
+            organizName = orga.name
+            service_pricetable = orga.settings.service_pricetable
+            phonecall_map[organizName]['companies'] \
+                .setdefault(company.name, copy(TOTAL_DICT))
+            phonecall_map[organizName]['companies'][company.name].setdefault('services', {})
+            if company_pricetable:
+                company_price_list = company_pricetable.price_set.active()
+            # Not the value comes from the service_price_list
+
+            for company_service in company_price_list:
+                if orga.id != 2 and company.is_new_contract == 0:
+                    # TODO: FIX the level services in the database At least level 1
+                    if company_service.basic_service == LEVEL_1_ACCESS_SERVICE:
+                        company_service.basic_service = LEVEL_2_ACCESS_SERVICE
+                    elif company_service.basic_service == LEVEL_6_ACCESS_SERVICE:
+                        company_service.basic_service = WIRELESS_ACCESS_SERVICE
+                    elif company_service.basic_service == WIRELESS_ACCESS_SERVICE:
+                        continue
+                # TODO: Deal with multiple values and doesnotexist
+                service_cost = service_pricetable.price_set.active().get(basic_service=company_service.basic_service).value
+                cost = ((company_service.basic_service_amount * service_cost) / divider) * multiplier
+                # phonecall_map[org_name]['services'].setdefault(company_name, {})
+                phonecall_map[organizName]['companies'][company.name]['services'].update({
+                    BASIC_SERVICE_MAP[company_service.basic_service]: {
+                        'price': service_cost,
+                        'amount': company_service.basic_service_amount,
+                        'cost': cost
+                    }
+                })
+
+
+
+
         phonecall_map[SERVICE] = service_data
         context['phonecall_map'] = phonecall_map
         context.update({

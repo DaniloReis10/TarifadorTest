@@ -1,0 +1,39 @@
+{% extends 'adm/base.html' %}
+
+{% load static  %}
+
+{% block title %}Criar um novo equipamento no sistema{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Equipamentos Atribuidos ao Sistema</h2>
+</a>
+<i class="right chevron icon divider"></i>
+<a class="section" href="#">
+  <h2 class="ui inverted header">Novo</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+    <h4 class="ui dividing header">Atribuir equipamento ao sistema</h4>
+    <div class="three fields">
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.servicetypeNameandContract %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.manufacturer %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.phoneModel %}
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Ok</button>
+  </form>
+</div>
+{% endblock %}

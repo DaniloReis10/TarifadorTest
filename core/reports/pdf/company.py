@@ -23,7 +23,7 @@ from reportlab.rl_config import TTFSearchPath
 
 # project
 from centers.utils import make_price
-from charges.constants import BASIC_SERVICE_MAP, BASIC_SERVICE_MAP_NEW
+from charges.constants import BASIC_SERVICE_MAP, BASIC_SERVICE_MAP_NEW, BASIC_SERVICE_MAP_PMF
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
 from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
@@ -82,7 +82,7 @@ class SystemReport(object):
         header_list = []
 
         if self.org.id ==2:
-            width = 200
+            width = 250
         else:
             width = 550
         if self._orgLogo:
@@ -109,10 +109,14 @@ class SystemReport(object):
     def header_resume(self, canvas, doc):
         header_list = []
 
+        if self.org.id ==2:
+            width = 250
+        else:
+            width = 550
         if self._orgLogo:
             header_list.append({
-                'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}"'
-                        'width="550" height="66" valign="top"/>',
+                'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" width = "{width}"'
+                        'height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height-20})
         header_list.append({
@@ -351,10 +355,13 @@ class SystemReport(object):
                 ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
             tblstyle = TableStyle(array_tblstyle)
             thead = []
-            if context['contract_version'] == NEW_CONTRACT:
-                basic_map = BASIC_SERVICE_MAP_NEW
+            if self.org.id == 2:
+                basic_map = BASIC_SERVICE_MAP_PMF
             else:
-                basic_map = BASIC_SERVICE_MAP
+                if context['contract_version'] == NEW_CONTRACT:
+                    basic_map = BASIC_SERVICE_MAP_NEW
+                else:
+                    basic_map = BASIC_SERVICE_MAP
             for key, value in basic_map.items():
                 if key in context['basic_service']:
                     service_amount += context['basic_service'][key]['amount']

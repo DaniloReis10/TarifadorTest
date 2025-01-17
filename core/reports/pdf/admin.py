@@ -834,7 +834,7 @@ class SystemReportAdministrador(object):
                 #    local_list = local_list_pmf
                 #else:
                 #    local_list = local_list_etice
-                local_list = local_list_etice
+                local_list = local_list_etice   #HERE TO CHANGE->No need. TOO big PMF
                 thead = []
                 for local in local_list:
                     if local['type'] in call_organization_map:
@@ -1149,6 +1149,8 @@ class SystemReportAdministrador(object):
                 self.space_between_tables2()
                 if self.showCompanies:
                     for company, call_company_map in call_organization_map['companies'].items():
+                        if not company :
+                            continue
                         try:
                             self.insert_title_table(
                                 title=f"Organização: {organization} - Cliente: {company} - "
@@ -1231,7 +1233,7 @@ class SystemReportAdministrador(object):
                             # This is for new branchs that has no service
                             if not flag:
                                 thead.append([
-                                    'Serviços Básicos',
+                                    'Habilitação do Serviço',
                                     f"R$ {make_price_adm(0.0)}",
                                     str(0),
                                     f"R$ {make_price_adm(0.0)}"])
@@ -1576,7 +1578,7 @@ class SystemReportAdministrador(object):
                                 'Total de Longa Distancia Internacional',
                                 '0',
                                 '00:00:00',
-                                'R$ 2,00']]
+                                'R$ 0,00']]
                         size = (self._width - 50) / 6
                         tbl = Table(
                             thead,

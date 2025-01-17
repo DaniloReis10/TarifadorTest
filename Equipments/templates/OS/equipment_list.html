@@ -1,0 +1,47 @@
+{% extends "organizations/base.html" %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block title %}{{ organization.name }} - Lista de Equipamentos Atribuidos ao Sistema{% endblock %}
+
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Equipamentos Atribuidos ao Sistema</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+<table class="ui selectable bottom attached compact table">
+        <thead>
+            <tr>
+              <th>Tipo do Serviço</th>
+              <th>Número do Contrato</th>
+              <th>Fabricante</th>
+              <th>Modelo</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for equipment in equipment_map %}
+              <tr>
+                <td>{{ equipment.servicetype__description}}</td>
+                <td>{{ equipment.servicetype__contractID }} </td>
+                <td>{{ equipment.manufacturer }} </td>
+                <td>{{ equipment.phoneModel }} </td>
+                <td class="collapsing">
+                    <div class="ui small buttons">
+                        {% if user.is_superuser or organization|is_admin:user %}
+                            <a class="ui basic blue button" href="{% url 'Equipments:org_equipment_edit' organization.slug equipment.pk %}">
+                                <i class="edit outline icon"></i> Editar
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+              </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

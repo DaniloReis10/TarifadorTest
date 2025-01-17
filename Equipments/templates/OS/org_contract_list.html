@@ -1,0 +1,69 @@
+{% extends "organizations/base.html" %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block title %}{{ organization.name }} - Serviços Básicos{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'Equipments:org_contract_list' organization.slug %}">
+  <h2 class="ui inverted header">Serviços</h2>
+</a>
+{% endblock %}
+
+{% block org-content %}
+
+
+<table class="ui selectable bottom attached compact table">
+  <thead>
+    <tr>
+      <th>ID Legado do Tipo de Serviço</th>
+      <th>ID do contrato</th>
+      <th>Descrição do Serviço</th>
+      <th>Tabela de Preços</th>
+      <th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for contract in contract_map %}
+      <tr>
+                <td>{{ contract.0}}</td>
+                <td>{{ contract.1 }} </td>
+                <td>{{ contract.2 }} </td>
+                <td>{{ contract.3 }} </td>
+                <td>{{ contract.4 }} </td>
+                <td class="collapsing">
+                    <div class="ui small buttons">
+                        {% if user.is_superuser or organization|is_admin:user %}
+                            <a class="ui basic blue button" href="{% url 'Equipments:org_contract_edit' organization.slug contract.5 %}">
+                                <i class="edit outline icon"></i> Editar
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="4">
+        {% if is_paginated %}
+          {% include "utils/pagination.html" with urlencode=urlencode page_obj=page_obj paginator=paginator page_range=page_range %}
+        {% endif %}
+      </th>
+      <th colspan="2">
+        <div class="ui grid">
+          <div class="right aligned right floated column">
+            <div class="ui label">
+              TOTAL
+              <div class="detail">{{ paginator.count }}</div>
+            </div>
+          </div>
+        </div>
+      </th>
+    </tr>
+  </tfoot>
+</table>
+{% endblock %}
+

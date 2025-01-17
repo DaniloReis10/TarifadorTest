@@ -1,0 +1,24 @@
+{% extends 'adm/base.html' %}
+
+{% load static %}
+
+{% block title %}Lista de OS Atribuidos ao Sistema{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Ordens de Serviço Atribuidos ao Sistema</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui huge celled list">
+  {% for equipment_assigned in equipment_list %}
+  <div class="item">
+    <div class="content">
+      <a>{{ equipment_assigned }}</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

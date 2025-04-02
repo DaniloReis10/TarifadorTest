@@ -1,0 +1,52 @@
+{% extends 'centers/base.html' %}
+
+{% load static %}
+
+{% block title %}Lista de OS Atribuidos ao Sistema{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'extension_list' %}">
+  <h2 class="ui inverted header">Ordens de Serviço Atribuidos ao Sistema</h2>
+</a>
+{% endblock %}
+
+{% block center-content %}
+<table class="ui selectable bottom attached compact table">
+        <thead>
+            <tr>
+              <th>Número da OS</th>
+              <th>Número do Contrato</th>
+              <th>Tipo do Serviço</th>
+              <th>Equipamento</th>
+              <th>Data de Instalação</th>
+              <th>Endereço MAC</th>
+              <th>Endereço IP</th>
+              <th>Ramal</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for os in os_map %}
+              <tr>
+                <td>{{ os.OSNumber}}</td>
+                <td>{{ os.contract__contractID}}</td>
+                <td>{{ os.contract__description }} </td>
+                <td>{{ os.equiptype__manufacturer}}    {{ os.equiptype__phoneModel }} </td>
+                <td>{{ os.Dateinstalled }} </td>
+                <td>{{ os.MACAdress }} </td>
+                <td>{{ os.IPAddress }} </td>
+                <td>{{ os.extensionNumber__extension }} </td>
+                <td class="collapsing">
+                    <div class="ui small buttons">
+                        {% if user.is_superuser %}
+                            <a class="ui basic blue button" href="{% url 'Equipments:company_os_edit' organization.slug company.slug os.pk %}">
+                                <i class="edit outline icon"></i> Editar
+                            </a>
+                        {% endif %}
+                    </div>
+                </td>
+              </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

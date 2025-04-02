@@ -4,6 +4,19 @@
 {% if company %}
   <div class="ui vertical following fluid accordion text menu">
     <div class="item active">
+      <a class="active title"><i class="dropdown icon"></i> <b>Ordens de Serviço</b></a>
+      <div class="active content menu">
+        <a class="item" href="{% url 'Equipments:company_os_list' organization.slug company.slug %}">
+          <i class="briefcase icon"></i> Lista de OS
+        </a>
+        {% if organization|is_admin:user or user.is_superuser %}
+          <a class="item" href="{% url 'Equipments:company_os_create' organization.slug company.slug %}">
+            <i class="plus icon"></i> Nova OS
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="item active">
       <a class="active title"><i class="dropdown icon"></i> <b>Clientes</b></a>
       <div class="active content menu">
         <a class="item" href="{% url 'centers:list' organization.slug %}">

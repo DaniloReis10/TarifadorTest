@@ -32,7 +32,49 @@ from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
 from .utils import get_tj_calltype_title
 from phonecalls.constants import OLD_CONTRACT,  NEW_CONTRACT
 
+
+from charges.constants import LEVEL_1_ACCESS_SERVICE
+from charges.constants import LEVEL_2_ACCESS_SERVICE
+from charges.constants import LEVEL_3_ACCESS_SERVICE
+from charges.constants import LEVEL_4_ACCESS_SERVICE
+from charges.constants import LEVEL_5_ACCESS_SERVICE
+from charges.constants import LEVEL_6_ACCESS_SERVICE
+from charges.constants import WIFI_ACCESS_SERVICE
+from charges.constants import MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES
+from charges.constants import MO_BASIC_CONTACT_CENTER_PLATFORM
+from charges.constants import MO_BASIC_RECORDING_PLATFORM
+from charges.constants import MO_REAL_TIME_TRACKING
+from charges.constants import MO_RECORDING_POSITION
+from charges.constants import MO_RECORDING_SUPERVISOR
+from charges.constants import MO_SERVICE_POSITION
+from charges.constants import MO_SUPERVISOR
+from charges.constants import SOFTWARE_ACCESS_SERVICE
+from charges.constants import SOFTWARE_EXTENSION_SERVICE
+from charges.constants import WIRELESS_ACCESS_SERVICE
+from Equipments.models import ContractBasicServices
+
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
+
+BASIC_SERVICE_MAP_MAPPING = {
+    LEVEL_1_ACCESS_SERVICE: 'LEVEL_1_ACCESS_SERVICE',
+    LEVEL_2_ACCESS_SERVICE: 'LEVEL_2_ACCESS_SERVICE',
+    LEVEL_3_ACCESS_SERVICE: 'LEVEL_3_ACCESS_SERVICE',
+    LEVEL_4_ACCESS_SERVICE: 'LEVEL_4_ACCESS_SERVICE',
+    LEVEL_5_ACCESS_SERVICE: 'LEVEL_5_ACCESS_SERVICE',
+    LEVEL_6_ACCESS_SERVICE: 'LEVEL_6_ACCESS_SERVICE',
+    WIRELESS_ACCESS_SERVICE: 'WIRELESS_ACCESS_SERVICE',
+    SOFTWARE_ACCESS_SERVICE: 'SOFTWARE_ACCESS_SERVICE',
+    SOFTWARE_EXTENSION_SERVICE: 'SOFTWARE_EXTENSION_SERVICE',
+    MO_BASIC_CONTACT_CENTER_PLATFORM: 'MO_BASIC_CONTACT_CENTER_PLATFORM',
+    MO_BASIC_RECORDING_PLATFORM: 'MO_BASIC_RECORDING_PLATFORM',
+    MO_SERVICE_POSITION: 'MO_SERVICE_POSITION',
+    MO_SUPERVISOR: 'MO_SUPERVISOR',
+    MO_REAL_TIME_TRACKING: 'MO_REAL_TIME_TRACKING',
+    MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES: 'MO_AUTO_ANSWER_CHANNEL_AND_MESSAGES',
+    MO_RECORDING_POSITION: 'MO_RECORDING_POSITION',
+    MO_RECORDING_SUPERVISOR: 'MO_RECORDING_SUPERVISOR',
+    WIFI_ACCESS_SERVICE: 'WIFI_ACCESS_SERVICE'
+}
 
 
 def escape(data):
@@ -88,7 +130,7 @@ class SystemReport(object):
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" width = "{width}"'
-                        'height="86" valign="top"/>',
+                        'height="80" valign="top"/>', #86
                 'width': 20,
                 'height': self._height - 20})
         header_list.append({
@@ -307,7 +349,8 @@ class SystemReport(object):
     def make_phonecall_resume_table(self, context):
         service_amount = 0
         service_cost = 0
-        if context['basic_service'] and len(context['basic_service']) > 0:
+        if (context['basic_service'] and len(context['basic_service']) > 0) or \
+            (context['prop'] and len(context['prop']) > 0):
             array_tblstyle = [
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
@@ -362,15 +405,49 @@ class SystemReport(object):
                     basic_map = BASIC_SERVICE_MAP_NEW
                 else:
                     basic_map = BASIC_SERVICE_MAP
-            for key, value in basic_map.items():
-                if key in context['basic_service']:
-                    service_amount += context['basic_service'][key]['amount']
-                    service_cost += context['basic_service'][key]['cost']
-                    thead.append([
-                        value,
-                        f"R$ {make_price(context['basic_service'][key]['price'])}",
-                        str(context['basic_service'][key]['amount']),
-                        f"R$ {make_price(context['basic_service'][key]['cost'])}"])
+
+    #---------------
+            service_amount = 0
+            service_cost = 0
+            call_company_map = context['basic_service']
+            call_prop_map = context['prop']
+            #deal with legacy
+            if self.org.id == 1 and context['contract_version'] == OLD_CONTRACT:
+                for key, value in basic_map.items():
+                            if key in context['basic_service']:
+                                service_amount += context['basic_service'][key]['amount']
+                                service_cost += context['basic_service'][key]['cost']
+                                thead.append([
+                                    value,
+                                    f"R$ {make_price(context['basic_service'][key]['price'])}",
+                                    str(context['basic_service'][key]['amount']),
+                                    f"R$ {make_price(context['basic_service'][key]['cost'])}"])
+            else:
+                #Here I may need to consider not only company but also contract number
+                contract_list = ContractBasicServices.objects.filter(organization=context['organization'])
+                for contract in contract_list:
+                    if contract.legacyID in call_company_map and call_company_map[contract.legacyID]['amount'] != 0:
+                        service_amount += call_company_map[contract.legacyID]['amount']
+                        service_cost += call_company_map[contract.legacyID]['cost']
+                        value_mask = make_price(call_company_map[contract.legacyID]['cost'])
+                        thead.append([
+                            contract.description,
+                            f"R$ {make_price(call_company_map[contract.legacyID]['price'])}",
+                            str(call_company_map[contract.legacyID]['amount']),
+                            f"R$ {value_mask}"])
+                    if contract.legacyID in call_prop_map and call_prop_map[contract.legacyID]['amount'] != 0:
+                        service_amount += call_prop_map[contract.legacyID]['amount']
+                        service_cost += call_prop_map[contract.legacyID]['cost']
+                        value_mask = make_price(call_prop_map[contract.legacyID]['cost'])
+                        thead.append([
+                            contract.description + '  PRORATA',
+                            f"R$ {make_price(call_prop_map[contract.legacyID]['price'])}",
+                            str(call_prop_map[contract.legacyID]['amount']),
+                            f"R$ {value_mask}"])
+#------------------------
+
+
+#
 
             size = (self._width - 50) / 5
             tbl = Table(
@@ -441,7 +518,7 @@ class SystemReport(object):
         price_vc1 = price_vc2 = price_vc3 = price_local = price_ldn = 0
         contract_version = OLD_CONTRACT
         for phonecall in context['phonecall_long_distance']:
-            if phonecall['company__is_new_contract']:
+            if phonecall['company__is_new_contract'] or phonecall['company__organization_id'] == 2:
                 contract_version = NEW_CONTRACT
             if phonecall['calltype'] == LDN:
                 cost_ldn = phonecall['cost_sum']
@@ -456,7 +533,7 @@ class SystemReport(object):
                 qnt_vc3 = phonecall['count']
                 price_vc3 = phonecall['price']
         for phonecall in context['phonecall_local']:
-            if phonecall['company__is_new_contract']:
+            if phonecall['company__is_new_contract'] or phonecall['company__organization_id'] == 2:
                 contract_version = NEW_CONTRACT
             if phonecall['calltype'] == LOCAL:
                 cost_local = phonecall['cost_sum']
@@ -610,7 +687,8 @@ class SystemReport(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
-        total_comunication = float(cost_total)-float(service_cost)
+        #total_comunication = float(cost_total)-float(service_cost)
+        total_comunication = float(cost_total)
         thead = [[
             'TOTAL DOS SERVIÇOS DE COMUNICAÇÃO',
             str(qnt_total),
@@ -649,8 +727,9 @@ class SystemReport(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
+        total_company = float(cost_total) + float(service_cost)
         thead = [
-            ['Total dos Serviços', f"R$ {make_price(cost_total)}"]
+            ['Total dos Serviços', f"R$ {make_price(total_company)}"]
         ]
         size = (self._width - 50) / 5
         tbl = Table(

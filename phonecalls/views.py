@@ -4,18 +4,21 @@ import urllib
 
 from copy import copy
 from datetime import date
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from dateutil.relativedelta import relativedelta
+from zipfile import ZipFile
+from io import BytesIO
 # django
 from django.conf import settings
 from django.db.models import Count, Sum
-from django.db.models import F, FloatField, ExpressionWrapper
+from django.db.models import F, FloatField, ExpressionWrapper, Q
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import StreamingHttpResponse
 from django.views.generic import ListView
 from django.views.generic.base import RedirectView
+from django.urls import reverse
 
 # third party
 from django_filters.views import BaseFilterView
@@ -64,9 +67,10 @@ from core.utils import get_range_date
 from core.utils import get_values_proportionality
 from core.utils import time_format
 from core.views import SuperuserRequiredMixin
+from Equipments.models import Equipment
 
 # local
-from .constants import CALLTYPE_CHOICES
+from .constants import CALLTYPE_CHOICES, REPORT_CALLTYPE_MAP
 from .constants import DDD_CHOICES
 from .constants import PABX_CHOICES
 from .constants import SERVICE_CHOICES
@@ -190,10 +194,13 @@ class BaseContextData():
             'phonecall_total': phonecall_total,
             'cost_total': cost_total,
             'basic_service': basicservice,
+            'prop': {},
             'duration_total': duration_total})
         return company_context
 
     def get_Org_Context(self):
+
+
         phonecall_data = self.object_list \
             .filter(company__isnull=False,
                     inbound=False,
@@ -202,13 +209,19 @@ class BaseContextData():
             .annotate(count=Count('id'),
                       billedtime_sum=Sum('billedtime'),
                       cost_sum=Sum('billedamount') )\
-            .values('company__name', 'calltype', 'price', 'company__call_pricetable',
+            .values('company__name', 'company__is_new_contract', 'calltype', 'price', 'company__call_pricetable', 'company__organization_id',
                     'count', 'billedtime_sum', 'cost_sum') \
-            .order_by('company__name', 'calltype')
+            .order_by('company__name', '-calltype')
         result_companies = {}
-        for company__name in phonecall_data:
-            sub_phonecall_data = self.get_Company_Context(phonecall_data.filter(company__name=company__name))
-            result_companies[company__name].update(sub_phonecall_data)
+        company_list = Company.objects.filter(organization=self.organization)
+        companies_phonedata = phonecall_data.values_list('company__name', flat=True)
+        for company in company_list:
+        #for company__name in phonecall_data:
+            if company.name in companies_phonedata:
+                self.company = company
+                sub_phonecall_data = self.get_Company_Context(phonecall_data.filter(company__name=company.name))
+                sub_phonecall_data.update({'contract_version': company.is_new_contract})
+                result_companies.update({company.name:sub_phonecall_data})
 
         # constants
         SERVICE = 'SERVIÇOS DE COMUNICAÇÃO'
@@ -368,7 +381,7 @@ class BaseContextData():
             service_basic_cost = 0
             for service in service_price_list:
                 service_cost = service.basic_service_amount * service.value
-                service_cost = (service_cost / divider) * multiplier
+                #service_cost = (service_cost / divider) * multiplier
 
                 phonecall_map[company.name].update({
                     BASIC_SERVICE_MAP[service.basic_service]: {
@@ -399,10 +412,14 @@ class BaseContextData():
         service_data[CALL_INTERNATIONAL]['cost_sum'] = service_data[LDI]['cost_sum']
         service_data['cost_sum'] = service_data[CALL_LOCAL]['cost_sum'] + service_data[CALL_NATIONAL]['cost_sum'] + service_data[LDI]['cost_sum']
         phonecall_map[SERVICE] = service_data
-        context['phonecall_map'] = phonecall_map
-        context['new_contract'] = NEW_CONTRACT
-        context['old_contract'] = OLD_CONTRACT
-        return context
+        org_context = {}
+        org_context.update({
+            'phonecall_map': phonecall_map,
+            'new_contract': NEW_CONTRACT,
+            'old_contract': OLD_CONTRACT,
+            'company': result_companies})
+
+        return org_context
 
 class BaseCompanyPhonecallView(CompanyMixin,
                                CompanyContextMixin,
@@ -487,6 +504,9 @@ class BaseAdmPhonecallView(SuperuserRequiredMixin,
         if self.request.GET.get('date_gt') is not None:
             self.date_gt = datetime.strptime( self.request.GET.get('date_gt'), '%Y-%m-%d').date()
             self.date_lt = datetime.strptime(self.request.GET.get('date_lt'), '%Y-%m-%d').date()
+        if self.request.POST.get('date_gt') is not None:
+            self.date_gt = datetime.strptime( self.request.POST.get('date_gt'), '%Y-%m-%d').date()
+            self.date_lt = datetime.strptime(self.request.POST.get('date_lt'), '%Y-%m-%d').date()
         queryset = super().get_queryset() \
             .select_related('extension') \
             .filter(startdate__gte=self.date_gt) \
@@ -728,11 +748,15 @@ class CompanyPhonecallPDFReportView(BaseCompanyPhonecallView):  # COMPANY
         phonecall_values = object_list \
             .filter(calltype__in=[LOCAL, VC1, VC2, VC3, LDN, LDI]) \
             .values('startdate', 'starttime', 'stopdate', 'stoptime', 'extension__extension',
-                    'chargednumber', 'dialednumber', 'calltype', 'duration', 'billedamount')
+                    'chargednumber', 'dialednumber', 'calltype', 'duration', 'billedtime', 'billedamount')
 
         phonecall_data = {}
         for phonecall in phonecall_values:
             extension = phonecall['extension__extension']
+            price = Price.objects.get(Q(status=1) & \
+                                      Q(table=self.company.call_pricetable) & \
+                                      Q(calltype=phonecall['calltype']))
+            phonecall['billedamount'] = phonecall['billedtime'] * price.value / 60
             phonecall_data.setdefault(extension, {
                 'phonecall_list': [],
                 'count': 0,
@@ -899,6 +923,7 @@ class CompanyPhonecallResumePDFReportView(BaseCompanyPhonecallView):  # COMPANY
         total_mobile_count = 0
         total_mobile_billedtime_sum = 0
         contract_version = OLD_CONTRACT
+        teste = list(phonecall_data)
         for phonecall in phonecall_data:
             price = Price.objects.all().filter(table_id=phonecall['company__call_pricetable'],
                                                calltype=phonecall['calltype']).active().values('value')
@@ -2924,7 +2949,7 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         phonecall_data = self.object_list \
-            .filter(organization__isnull=False,
+            .filter(organization__isnull=False, company__status=1,
                     inbound=False,
                     calltype__in=[VC1, VC2, VC3, LOCAL, LDN, LDI]) \
             .values('organization__name', 'company__name', 'calltype') \
@@ -2935,6 +2960,7 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
                     'count', 'billedtime_sum', 'cost_sum') \
             .order_by('organization__name', 'company__name', 'calltype')
 
+        test = list(phonecall_data)
         # constants
         SERVICE = 'SERVIÇOS DE COMUNICAÇÃO'
         CALL_LOCAL = 'local'
@@ -2952,8 +2978,10 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
             date_gt=self.date_gt,
             proportionality=context['proportionality'])
 
-
-
+        org_list = Organization.objects.all()
+        for org in org_list:
+            phonecall_map.setdefault(org.name, copy(TOTAL_DICT))
+            phonecall_map[org.name].setdefault('companies', {})
         for phonecall in phonecall_data:
             org_name = phonecall['organization__name']
             company_name = phonecall['company__name']
@@ -3544,3 +3572,533 @@ class AdmPhonecallUSTPDFReportView(BaseAdmPhonecallView):  # SUPERUSER
         phonecall_map[SERVICE] = service_data
         context['phonecall_map'] = phonecall_map
         return context
+
+
+class TotalReportPDFMasterOrg(AdmPhonecallResumePDFReportView):
+    template_name = 'phonecalls/master_phonecall_list.html'
+    http_method_names = ['get', 'post']
+
+    def get_success_url(self):
+        return reverse(
+            'accounts:organization_list',)
+
+    def get(self, request, *args, **kwargs):
+        if not request.GET:
+            return super(AdmPhonecallResumePDFReportView, self).get(request, *args, **kwargs)
+        else:
+    #def post(self, request, *args, **kwargs):
+        #self.date_lt = datetime.fromisoformat(request.POST.get('date_lt'))
+        #self.date_gt = datetime.fromisoformat(request.POST.get('date_gt'))
+            filterset_class = self.get_filterset_class()
+            self.filterset = self.get_filterset(filterset_class)
+            if not self.filterset.is_bound or self.filterset.is_valid() or not self.get_strict():
+                self.object_list = self.filterset.qs
+            else:
+                self.object_list = self.filterset.queryset.none()
+            context = self.get_context_data(filter=self.filterset, object_list=self.object_list)
+            organization_list = Organization.objects.all()
+
+            inMemoryOutputFile = BytesIO()
+            zipFile = ZipFile(inMemoryOutputFile, 'a')
+            filename = self.get_filename(resume=True)
+            for org in organization_list:
+                org_context = context['phonecall_map'][org.name]
+                org_context.update({
+                                       'organization': Organization.objects.get(name=org.name),
+                            })
+                report = SystemReportOrganization(
+                    dateBegin=self.date_gt.strftime('%d/%m/%Y'),
+                    dateEnd=self.date_lt.strftime('%d/%m/%Y'),
+                    reportTitle='Resumo Geral dos Serviços',
+                    context=org_context,
+                    showCompanies=True)
+                pdf = report.create_table_resume_services(org_context)
+                zipFile.writestr(filename + org.name+'.pdf', pdf)
+            zipFile.close()
+            response = HttpResponse(content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachement; filename={filename}.zip'
+            response.write(inMemoryOutputFile.getvalue())
+            return response
+
+
+    def get_context_data(self, **kwargs):
+        TOTAL_DICT = {
+        'count': 0,
+            'cost_sum': 0.0,
+            'billedtime_sum': 0}
+        context = super().get_context_data(**kwargs)
+        lastmonthdate = self.date_lt.replace(day=1)
+        # In fact I am not considering that the beggining has proportional. Should I???
+        basic_service_data_full = Equipment.objects\
+                                    .filter(Dateinstalled__lt=lastmonthdate, contract__org_price_table__price__status=1)\
+                                    .values('organization__name', 'company__name', 'contract__id')\
+                                    .annotate(amount_sum=Count('id'))\
+                                    .values('organization__name', 'company__name', \
+                                            'contract__id', 'contract__legacyID', 'amount_sum', \
+                                            'contract__org_price_table__price', 'contract__org_price_table__price__status', \
+                                           'contract__org_price_table__price__basic_service', 'contract__org_price_table__price__value')
+
+        org_list = Organization.objects.all()
+        for org in org_list:
+            company_list = Company.objects.filter(organization__name=org.name).active()
+            #Translate from legacy to new model
+            context['phonecall_map'][org.name].setdefault('basic_service', {})
+            for key, value in BASIC_SERVICE_MAP.items():
+                if value in context['phonecall_map'][org.name]:
+                    context['phonecall_map'][org.name]['basic_service'].update({
+                        key: {
+                            'price': context['phonecall_map'][org.name][value]['price'],
+                            'amount': context['phonecall_map'][org.name][value]['amount'],
+                            'cost': context['phonecall_map'][org.name][value]['cost'],
+                        }
+                    })
+        #    accumulated_basic_service = Price.objects.filter(table=org.settings.service_pricetable, status=1)
+   #         for b_service in accumulated_basic_service:
+   #             if b_service.basic_service:
+   #                 if b_service.basic_service in context['phonecall_map'][org.name]['basic_service']:
+   #                     old_amount = context['phonecall_map'][org.name]['basic_service'][b_service.basic_service]['amount']
+   #                     old_cost = context['phonecall_map'][org.name]['basic_service'][b_service.basic_service]['cost']
+   #                 else:
+   #                     old_amount = 0
+   #                    old_cost = 0
+   #                context['phonecall_map'][org.name]['basic_service'].update({
+   #                    b_service.basic_service: {
+   #                        'price': b_service.value,
+   #                        'amount': old_amount + b_service.basic_service_amount,
+   #                        'cost': b_service.value*(old_cost + b_service.basic_service_amount),
+   #                    }
+   #                })
+            for company in company_list:
+                if company.name in context['phonecall_map'][org.name]['companies']:
+                    context['phonecall_map'][org.name]['companies'][company.name].setdefault('basic_service', {})
+                    context['phonecall_map'][org.name]['companies'][company.name].setdefault('services', {})
+                    for key, value in BASIC_SERVICE_MAP.items():
+                        if value in context['phonecall_map'][org.name]['companies'][company.name]['services']:
+                            context['phonecall_map'][org.name]['companies'][company.name]['basic_service'].update({
+                                key: {
+                                    'price': context['phonecall_map'][org.name]['companies'][company.name]['services'][value]['price'],
+                                    'amount': context['phonecall_map'][org.name]['companies'][company.name]['services'][value]['amount'],
+                                    'cost': context['phonecall_map'][org.name]['companies'][company.name]['services'][value]['cost'],
+                                }
+                            })
+                service_data = basic_service_data_full.filter(organization__name=org.name,\
+                                                            company__name=company.name)
+                for service in service_data:
+                    if service['contract__org_price_table__price__basic_service'] != service['contract__legacyID']:
+                        continue
+                    if org.name in context['phonecall_map']:
+                        # Here I have to do with the legacy of the use of fized service_map
+                        if service['contract__legacyID'] in context['phonecall_map'][org.name]['basic_service']:
+                            old_amount = context['phonecall_map'][org.name]['basic_service'][service['contract__legacyID']]['amount']
+                        else:
+                            old_amount = 0
+                        new_amount = service['amount_sum'] + old_amount
+                        context['phonecall_map'][org.name]['basic_service'].update({
+                                   service['contract__legacyID']: {
+                                   'price': service['contract__org_price_table__price__value'],
+                                   'amount': new_amount,
+                                   'cost': service['contract__org_price_table__price__value']*new_amount,
+                                   }
+                        })
+                        cost = service['amount_sum'] * service['contract__org_price_table__price__value']
+                        if 'service_basic' in context['phonecall_map'][org.name]:
+                            old_amount = context['phonecall_map'][org.name]['service_basic']['amount']
+                            old_cost = context['phonecall_map'][org.name]['service_basic']['cost']
+                        else:
+                            old_amount = 0
+                            old_cost = 0
+                        new_amount = old_amount + service['amount_sum']
+                        new_cost = old_cost + cost
+                        context['phonecall_map'][org.name].update({
+                            'service_basic': {
+                                'amount': new_amount,
+                                'cost': new_cost
+                            }
+                        })
+                        context['phonecall_map'][org.name]['companies'] \
+                            .setdefault(company.name, copy(TOTAL_DICT))
+                        context['phonecall_map'][org.name]['companies'][company.name].setdefault('services', {})
+                        if service['contract__legacyID'] in context['phonecall_map'][org.name]['companies'][company.name]['basic_service']:
+                            old_amount = context['phonecall_map'][org.name]['companies'][company.name]['basic_service'][service['contract__legacyID']]['amount']
+                        else:
+                            old_amount = 0
+                        new_amount = service['amount_sum'] + old_amount
+                        context['phonecall_map'][org.name]['companies'][company.name]['basic_service'].update({
+                                service['contract__legacyID']: {
+                                    'price': service['contract__org_price_table__price__value'],
+                                    'unit_cost': service['contract__org_price_table__price__value'],
+                                    'amount': new_amount,
+                                    'cost': service['contract__org_price_table__price__value'] * new_amount,
+                                }
+                            })
+                        # Add dateinstalled!!!!!!
+        basic_service_data_prop = Equipment.objects \
+                                   .filter(Dateinstalled__gte = lastmonthdate, Dateinstalled__lte = self.date_lt, contract__org_price_table__price__status=1) \
+                                    .values('organization__name', 'company__name', 'contract__id') \
+                                    .annotate(amount_sum=Count('id')) \
+                                    .values('organization__name', 'company__name', \
+                                    'contract__id', 'contract__legacyID', 'amount_sum', \
+                                    'contract__org_price_table__price', 'Dateinstalled', \
+                                            'contract__org_price_table__price__status', \
+                                           'contract__org_price_table__price__basic_service', 'contract__org_price_table__price__value')
+        #Here I have filtered all the installation in the month that has installation date < date requested
+        if self.date_lt.month == self.date_gt.month:
+            days = self.date_lt.day - self.date_gt.day + 1
+        else:
+            days = self.date_lt
+        #temp = (self.date_lt.replace(day=1) + relativedelta(month=+1))
+        #last_day_month = ((self.date_lt.replace(day=1) + relativedelta(month=+1)) - timedelta(days=1)).day
+        for org in org_list:
+            if org.name in context['phonecall_map']:
+                context['phonecall_map'][org.name].setdefault('prop', {})
+            company_list = Company.objects.filter(organization__name=org.name)
+            for company in company_list:
+                service_data = basic_service_data_prop.filter(organization__name=org.name,\
+                                                            company__name=company.name)
+                for service in service_data:
+                    if service['contract__org_price_table__price__basic_service'] != service['contract__legacyID']:
+                        continue
+                    if self.date_gt > service['Dateinstalled'] or self.date_gt.month != service['Dateinstalled'].month:
+                        days_installed = days
+                    else:
+                        days_installed = self.date_lt.day - service['Dateinstalled'].day  + 1
+                    prop = Decimal(days_installed)/Decimal(days)
+                    if org.name in context['phonecall_map']:
+                        #context['phonecall_map'][org.name].setdefault('prop', {})
+                        if service['contract__legacyID'] in context['phonecall_map'][org.name]['prop']:
+                            old_amount = context['phonecall_map'][org.name]['prop'][service['contract__legacyID']]['amount']
+                            old_cost = context['phonecall_map'][org.name]['prop'][service['contract__legacyID']]['cost']
+                        else:
+                            old_amount = 0
+                            old_cost = Decimal(0)
+                        new_amount = service['amount_sum'] + old_amount
+                        new_cost = prop * service['amount_sum'] * service['contract__org_price_table__price__value'] + old_cost
+                        context['phonecall_map'][org.name]['prop'].update({
+                                   service['contract__legacyID']: {
+                                   'price': service['contract__org_price_table__price__value'],
+                                   'amount': new_amount,
+                                   'cost': new_cost,
+                                   }
+                        })
+                        context['phonecall_map'][org.name]['companies'] \
+                            .setdefault(company.name, copy(TOTAL_DICT))
+                        context['phonecall_map'][org.name]['companies'][company.name].setdefault('prop', {})
+                        if service['contract__legacyID'] in context['phonecall_map'][org.name]['companies'][company.name]['prop']:
+                            old_amount = context['phonecall_map'][org.name]['companies'][company.name]['prop'][service['contract__legacyID']]['amount']
+                            old_cost = \
+                            context['phonecall_map'][org.name]['companies'][company.name]['prop'][service['contract__legacyID']][
+                                'cost']
+                        else:
+                            old_amount = 0
+                            old_cost = Decimal(0)
+                        new_amount = service['amount_sum'] + old_amount
+                        new_cost = prop*service['amount_sum']*service['contract__org_price_table__price__value'] + old_cost
+                        #NEED TO add something for multiple OS in the same month
+                        context['phonecall_map'][org.name]['companies'][company.name]['prop'].update({
+                                service['contract__legacyID']: {
+                                    'price': service['contract__org_price_table__price__value'],
+                                    'amount': new_amount,
+                                    'cost': new_cost,
+                                }
+                            })
+        return context
+
+class TotalReportPDFCompany(OrgPhonecallResumePDFReportView, BaseContextData):
+        template_name = 'phonecalls/master_phonecall_list.html'
+        http_method_names = ['get', 'post']
+
+        def get_success_url(self):
+            return reverse(
+                'accounts:organization_list', )
+
+
+        def get(self, request, *args, **kwargs):
+            if not request.GET:
+                return super(OrgPhonecallResumePDFReportView, self).get(request, *args, **kwargs)
+            else:
+                # def post(self, request, *args, **kwargs):
+                # self.date_lt = datetime.fromisoformat(request.POST.get('date_lt'))
+                # self.date_gt = datetime.fromisoformat(request.POST.get('date_gt'))
+                filterset_class = self.get_filterset_class()
+                self.filterset = self.get_filterset(filterset_class)
+                if not self.filterset.is_bound or self.filterset.is_valid() or not self.get_strict():
+                    self.object_list = self.filterset.qs
+                else:
+                    self.object_list = self.filterset.queryset.none()
+                company_list = Company.objects.filter(organization__name=self.organization.name)
+                inMemoryOutputFile = BytesIO()
+                zipFile = ZipFile(inMemoryOutputFile, 'a')
+                filename = self.get_filename(resume=True)
+                context = self.get_context_data(filter=self.filterset, object_list=self.object_list)
+                for company in company_list:
+                    self.company = company
+                    if company.name not in context['company']:
+                        continue
+                    company_context = context['company'][company.name]
+                    company_context.update({'organization':self.organization})
+                    report = SystemReport(
+                        dateBegin=self.date_gt.strftime('%d/%m/%Y'),
+                        dateEnd=self.date_lt.strftime('%d/%m/%Y'),
+                        reportTitle='Resumo dos Serviços',
+                        company=self.company)
+                    pdf = report.make_phonecall_resume_table(company_context)
+                    zipFile.writestr(filename + company.name + '.pdf', pdf)
+                zipFile.close()
+                response = HttpResponse(content_type='application/octet-stream')
+                response['Content-Disposition'] = f'attachement; filename={filename}.zip'
+                response.write(inMemoryOutputFile.getvalue())
+                return response
+
+        def get_context_data(self, **kwargs):
+            #context = super().get_context_data(**kwargs)
+            context = super().get_Org_Context()
+
+            lastmonthdate = self.date_lt.replace(day=1)
+                    # In fact I am not considering that the beggining has proportional. Should I???
+            basic_service_data_full = Equipment.objects \
+                        .filter(organization = self.organization ,Dateinstalled__lt=lastmonthdate, contract__org_price_table__price__status=1) \
+                        .values( 'company__name', 'contract__id') \
+                        .annotate(amount_sum=Count('id')) \
+                        .values( 'company__name', \
+                                'contract__id', 'contract__legacyID', 'amount_sum', \
+                                'contract__org_price_table__price', 'contract__org_price_table__price__status', \
+                                'contract__org_price_table__price__basic_service', 'contract__org_price_table__price__value')
+            company_list = Company.objects.filter(organization=self.organization)
+
+            for company in company_list:
+                if company.name in context['company']:
+                    context['company'][company.name].setdefault('basic_service', {})
+                    context['company'][company.name].setdefault('services', {})
+
+                    for key, value in BASIC_SERVICE_MAP.items():
+                        if value in context['company'][company.name]['basic_service']:
+                            context['company'][company.name]['basic_service'].update({
+                                key: {
+                                    'price': context['company'][company.name]['basic_service'][value]['price'],
+                                    'amount': context['company'][company.name]['basic_service'][value]['amount'],
+                                    'cost': context['company'][company.name]['basic_service'][value]['cost'],
+                                }
+                            })
+
+
+                service_data = basic_service_data_full.filter(company__name=company.name)
+                service_pricetable = company.service_pricetable
+                service_price_list = {}
+                if service_pricetable:
+                    service_price_list = service_pricetable.price_set.active()
+                for service in service_data:
+                    if service['contract__org_price_table__price__basic_service'] != service['contract__legacyID']:
+                        continue
+                    if company.name not in context['company']:
+                        context['company'].setdefault(company.name, {})
+                    if 'prop' not in context['company'][company.name]:
+                        context['company'][company.name].setdefault('prop', {})
+                    if 'basic_service' not in context['company'][company.name]:
+                        context['company'][company.name].setdefault('basic_service', {})
+                    if service['contract__legacyID'] in context['company'][company.name]['basic_service']:
+                        old_amount = context['company'][company.name]['basic_service'][service['contract__legacyID']]['amount']
+                    else:
+                        old_amount = 0
+                    new_amount = service['amount_sum'] + old_amount
+                    if self.organization.id ==1:
+                        try:
+                            price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                        except Exception as e:
+                            # If cannot find in the company's table go to default
+                            defaultcompany = Company.objects.get(name='SOP')
+                            service_pricetable = defaultcompany.service_pricetable
+                            service_price_list = {}
+                            if service_pricetable:
+                                service_price_list = service_pricetable.price_set.active()
+                            try:
+                                price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                            except Exception as e:
+                                price = 0
+                    elif self.organization.id ==2:
+                        price = service['contract__org_price_table__price__value']
+                    elif self.organization.id ==3:
+                        defaultcompany = Company.objects.get(name='SAP')
+                        service_pricetable = defaultcompany.service_pricetable
+                        service_price_list = {}
+                        if service_pricetable:
+                            service_price_list = service_pricetable.price_set.active()
+                        price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                    else:
+                        price = 0
+                    context['company'][company.name]['basic_service'].update({
+                        service['contract__legacyID']: {
+                            # later I will have to think if I create a contract for each of Etice's client
+                            #'price': service['contract__org_price_table__price__value'], #check unit_cost if use
+                            'price': price,
+                            'amount': new_amount,
+                            #here too
+                            #'cost': service['contract__org_price_table__price__value'] * new_amount,
+                            'cost': price * new_amount,
+                        }
+                    })
+                    #cost = service['amount_sum'] * service['contract__org_price_table__price__value']
+                    cost = service['amount_sum'] * price
+                    if 'service_basic' in context['company'][company.name]:
+                        old_amount = context['company'][company.name]['service_basic']['amount']
+                        old_cost = context['company'][company.name]['service_basic']['cost']
+                    else:
+                        old_amount = 0
+                        old_cost = 0
+                    new_amount = old_amount + service['amount_sum']
+                    new_cost = old_cost + cost
+                    context['company'][company.name].update({
+                        'service_basic': {
+                            'amount': new_amount,
+                            'cost': new_cost
+                        }
+                    })
+
+
+                            # Add dateinstalled!!!!!!
+                basic_service_data_prop = Equipment.objects \
+                    .filter(Dateinstalled__gte=lastmonthdate, Dateinstalled__lte=self.date_lt,
+                            contract__org_price_table__price__status=1, company=company) \
+                    .values('organization__name', 'company__name', 'contract__id') \
+                    .annotate(amount_sum=Count('id')) \
+                    .values('organization__name', 'company__name', \
+                            'contract__id', 'contract__legacyID', 'amount_sum', \
+                            'contract__org_price_table__price', 'Dateinstalled', \
+                            'contract__org_price_table__price__status', \
+                            'contract__org_price_table__price__basic_service', 'contract__org_price_table__price__value')
+                if self.date_lt.month == self.date_gt.month:
+                    days = self.date_lt.day - self.date_gt.day + 1
+                else:
+                    days = self.date_lt
+                #last_day_month = ((self.date_lt.replace(day=1) + relativedelta(month=+1)) - timedelta(days=1)).day
+                service_data = basic_service_data_prop.filter(company__name=company.name)
+
+                for service in service_data:
+                    if service['contract__org_price_table__price__basic_service'] != service['contract__legacyID']:
+                        continue
+                    if self.date_gt > service['Dateinstalled'] or self.date_gt.month != service['Dateinstalled'].month:
+                        days_installed = days
+                    else:
+                        days_installed = self.date_lt.day - service['Dateinstalled'].day  + 1
+                    prop = Decimal(days_installed) / Decimal(days)
+                    #prop = (last_day_month - service['Dateinstalled'].day + 1) / Decimal(last_day_month)
+                    if company.name in context['company']:
+                        context['company'][company.name].setdefault('prop', {})
+                    else:
+                        context['company'].setdefault(company.name, {})
+                        context['company'][company.name].setdefault('prop', {})
+                    if service['contract__legacyID'] in context['company'][company.name]['prop']:
+                        old_amount = context['company'][company.name]['prop'][service['contract__legacyID']]['amount']
+                        old_cost = context['company'][company.name]['prop'][service['contract__legacyID']]['cost']
+                    else:
+                        old_amount = 0
+                        old_cost = Decimal(0)
+                    new_amount = service['amount_sum'] + old_amount
+                    #new_cost = prop * service['amount_sum'] * service['contract__org_price_table__price__value'] + old_cost
+                    if self.organization.id ==1:
+                        try:
+                            price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                        except Exception as e:
+                            # If cannot find in the company's table go to default
+                            defaultcompany = Company.objects.get(name='SOP')
+                            service_pricetable = defaultcompany.service_pricetable
+                            service_price_list = {}
+                            if service_pricetable:
+                                service_price_list = service_pricetable.price_set.active()
+                            price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                    elif self.organization.id ==2:
+                        price = service['contract__org_price_table__price__value']
+                    elif self.organization.id ==3:
+                        defaultcompany = Company.objects.get(name='SAP')
+                        service_pricetable = defaultcompany.service_pricetable
+                        service_price_list = {}
+                        if service_pricetable:
+                            service_price_list = service_pricetable.price_set.active()
+                        price = service_price_list.get(basic_service=service['contract__legacyID']).value
+                    else:
+                        price = 0
+                    new_cost = prop * service['amount_sum']* price + old_cost
+
+
+                    context['company'][company.name]['prop'].update({
+                        service['contract__legacyID']: {
+                            #'price': service['contract__org_price_table__price__value'],
+                            'price': price,
+                            'amount': new_amount,
+                            'cost': new_cost,
+                        }
+                    })
+            return context
+
+class TotalReportPDFXLSCompany(OrgPhonecallXLSXReportView, BaseContextData):
+            template_name = 'phonecalls/master_phonecall_list.html'
+            http_method_names = ['get', 'post']
+
+            def get_success_url(self):
+                return reverse(
+                    'accounts:organization_list', )
+
+            def get(self, request, *args, **kwargs):
+                if not request.GET:
+                    return super(OrgPhonecallXLSXReportView, self).get(request, *args, **kwargs)
+                else:
+                    # def post(self, request, *args, **kwargs):
+                    # self.date_lt = datetime.fromisoformat(request.POST.get('date_lt'))
+                    # self.date_gt = datetime.fromisoformat(request.POST.get('date_gt'))
+                    filterset_class = self.get_filterset_class()
+                    self.filterset = self.get_filterset(filterset_class)
+                    if not self.filterset.is_bound or self.filterset.is_valid() or not self.get_strict():
+                        self.object_list = self.filterset.qs
+                    else:
+                        self.object_list = self.filterset.queryset.none()
+                    company_list = Company.objects.filter(organization__name=self.organization.name)
+                    inMemoryOutputFile = BytesIO()
+                    zipFile = ZipFile(inMemoryOutputFile, 'a')
+                    filename = self.get_filename(resume=False)
+                    context = self.get_context_data(filter=self.filterset, object_list=self.object_list)
+
+                    for company in company_list:
+                        self.company = company
+                        company_tag = f'{company.name.upper()} - {company.description}' if company.description else company.name.upper()
+                        if company_tag not in context['phonecall_data']:
+                            continue
+                        company_context ={}
+                        company_context.update({'phonecall_data': {}})
+                        company_context['phonecall_data'] = context['phonecall_data'][company_tag]
+                        company_context.update({'organization': self.organization})
+                        report = XLSXCompanyReport(
+                            date_start=self.date_gt.strftime('%d/%m/%Y'),
+                            date_stop=self.date_lt.strftime('%d/%m/%Y'),
+                            title='Relatório de Ligações por Ramal',
+                            company=company)
+                        report.build_detail_report(company_context)
+                        val = report.get_file()
+                        zipFile.writestr(filename + company.name + '.xlsx', val.getvalue())
+                        report = SystemReport(
+                            dateBegin=self.date_gt.strftime('%d/%m/%Y'),
+                            dateEnd=self.date_lt.strftime('%d/%m/%Y'),
+                            reportTitle='Relatório de Ligações por Ramal',
+                            company=self.company,
+                            formatPage=2)
+                        pdf = report.make_phonecall_table(company_context)
+                        zipFile.writestr(filename + company.name + '.pdf',pdf)
+                    zipFile.close()
+                    response = HttpResponse(content_type='application/octet-stream')
+                    response['Content-Disposition'] = f'attachement; filename={filename}.zip'
+                    response.write(inMemoryOutputFile.getvalue())
+                    return response
+
+            def get_context_data(self, **kwargs):
+                context = super().get_context_data(**kwargs)
+                for client, client_phonedata in context['phonecall_data'].items():
+                    for ramal, phonedata in client_phonedata.items():
+                        count = 0
+                        bill_sum =0
+                        cost_sum = 0.0
+                        for ramal_data in phonedata['phonecall_list']:
+                            count += 1
+                            bill_sum += ramal_data['duration']
+                            cost_sum += float(ramal_data['billedamount'])
+                        phonedata.setdefault('count', count)
+                        phonedata.setdefault('billedtime_sum', bill_sum)
+                        phonedata.setdefault('cost_sum', cost_sum)
+                return context

@@ -4,7 +4,17 @@
 {% if organization %}
   <div class="ui vertical following fluid accordion text menu">
     <div class="item active">
-    <a class="active title"><i class="dropdown icon"></i> <b>Contratos</b></a>
+       <a class="active title"><i class="dropdown icon"></i> <b>Equipamentos</b></a>
+      <div class="active content menu">
+        <a class="item" href="{% url 'Equipments:org_equipment_list' organization.slug %}">
+          <i class="briefcase icon"></i> Lista de Equipamentos
+        </a>
+        {% if organization|is_admin:user or user.is_superuser %}
+          <a class="item" href="{% url 'Equipments:org_equipment_create' organization.slug %}">
+            <i class="plus icon"></i> Novo Equipamento
+          </a>
+        {% endif %}
+        <a class="active title"><i class="dropdown icon"></i> <b>Contratos</b></a>
       <div class="active content menu">
         <a class="item" href="{% url 'Equipments:org_contract_list' organization.slug %}">
           <i class="briefcase icon"></i> Lista de Contratos

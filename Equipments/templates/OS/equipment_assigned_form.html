@@ -1,4 +1,4 @@
-{% extends 'adm/base.html' %}
+{% extends "organizations/base.html" %}
 
 {% load static  %}
 
@@ -15,7 +15,7 @@
 </a>
 {% endblock %}
 
-{% block adm-content %}
+{% block org-content %}
 <div class="ui container">
   {% include "utils/form-error-messages.html" %}
 

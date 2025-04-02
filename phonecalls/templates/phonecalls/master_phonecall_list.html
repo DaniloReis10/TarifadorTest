@@ -1,0 +1,45 @@
+{% extends 'adm/base.html' %}
+
+{% load static %}
+{% load datetime_format %}
+{% load phonecall_tags %}
+
+{% block title %}Admin - Chamadas{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'adm_phonecall_list' %}">
+  <h2 class="ui inverted header">Lista de Chamadas</h2>
+</a>
+{% endblock %}
+
+{% block adm-content %}
+<div class="ui bottom attached segment t-filter-bar" id="t-filter-bar">
+  <form class="ui form" method="get">{% csrf_token %}
+    <input name="search" type="hidden" value="{{ request.GET.search }}">
+    <h4 class="ui dividing header">Filtros</h4>
+    <div class="two fields">
+      <div class="field">
+        <label>Data Inicial</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_gt" placeholder="Data Inicial" type="date" value="{{ date_gt }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Data Final</label>
+        <div class="ui calendar" id="rangeend">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="date_lt" placeholder="Data Final" type="date" value="{{ date_lt }}">
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">Filtrar</button>
+  </form>
+</div>
+{% endblock %}
+

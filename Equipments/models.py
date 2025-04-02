@@ -12,7 +12,7 @@ from organizations.models import Organization
 
 from charges.constants import BASIC_SERVICE_CHOICES
 from extensions.models import ExtensionLine
-from centers.models import Company
+from centers.models import Company, Center, Sector
 from phonecalls.models import PriceTable
 
 # Class to support multiple contracts
@@ -30,19 +30,25 @@ class ContractBasicServices(TimeStampedModel, ActivatorModel):
         verbose_name='ID Legado do Tipo de Serviço')
     contractID = models.IntegerField(
         verbose_name='ID do contrato')
+    item_number = models.IntegerField(
+        verbose_name='Item #')
     description = models.CharField(
         verbose_name='Descrição do Serviço', max_length=255)
     org_price_table = models.ForeignKey(
         PriceTable, related_name='org_contract',
         verbose_name='Tabela de Valores para Organização',
         on_delete=models.SET_NULL, blank=True, null=True)
+    is_subcontract = models.BooleanField()
 
-    def __unicode__(self):
-        return u'%s' % (self.description)
+ #   def __unicode__(self):
+ #       return u'%s' % (self.description)
 
 class typeofphone(TimeStampedModel, ActivatorModel):
-    servicetype = models.ForeignKey(
-        ContractBasicServices, verbose_name='Organização', on_delete=models.SET_NULL, blank=True, null=True)
+    # One contract/Legacy ID(comes from the bidding) can use different types of phone
+    # One type of phone can be used by different contracts but, although possible, it may not be used by different LegacyID in one contract
+    # There is no on_delete so I may need to manually set whatever is necessary
+    servicetype = models.ManyToManyField(
+        ContractBasicServices, verbose_name='Organização', blank=True, null=True)
     manufacturer = models.CharField(
         verbose_name='Fabricante', max_length=255)
     phoneModel = models.CharField(
@@ -51,6 +57,8 @@ class typeofphone(TimeStampedModel, ActivatorModel):
         Organization, verbose_name='Organização', on_delete=models.SET_NULL, blank=True, null=True)
 
 class Equipment(TimeStampedModel, ActivatorModel):
+    contract = models.ForeignKey(
+        ContractBasicServices, verbose_name='Contrato', on_delete=models.CASCADE, null=True, blank=True)
     equiptype = models.ForeignKey(
         typeofphone, verbose_name='Tipo do Equipamento', on_delete=models.CASCADE, null=True, blank=True)
     extensionNumber = models.ForeignKey(
@@ -70,3 +78,7 @@ class Equipment(TimeStampedModel, ActivatorModel):
         Organization, verbose_name='Organização', on_delete=models.SET_NULL, blank=True, null=True)
     company = models.ForeignKey(
         Company, verbose_name='Empresa', on_delete=models.CASCADE, blank=True, null=True)
+    center = models.ForeignKey(
+        Center, verbose_name='Centro de Custo', on_delete=models.SET_NULL, blank=True, null=True)
+    sector = models.ForeignKey(
+        Sector, verbose_name='Setor', on_delete=models.SET_NULL, blank=True, null=True)

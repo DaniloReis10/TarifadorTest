@@ -6,6 +6,10 @@ from . import views
 
 
 urlpatterns = [
+    path('phonecalls/resume/monthlyreport/',
+        views.TotalReportPDFCompany.as_view(),name='TotalReportPDFCompany'),
+path('phonecalls/monthlyreport/',
+        views.TotalReportPDFXLSCompany.as_view(),name='TotalReportPDFXLSCompany'),
     path('phonecalls/',
          views.OrgPhonecallListView.as_view(), name='org_phonecall_list'),
 

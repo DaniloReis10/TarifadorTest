@@ -4,7 +4,7 @@ import django_filters
 # project
 
 from organizations.models import Organization
-from .models import ContractBasicServices
+from .models import ContractBasicServices, typeofphone
 
 class ContractFilter(django_filters.FilterSet):
 
@@ -14,4 +14,5 @@ class ContractFilter(django_filters.FilterSet):
     class Meta:
         model = ContractBasicServices
         fields = [
-            'legacyID']
+            'contractID']
+

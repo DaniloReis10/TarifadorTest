@@ -1,7 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
+
 {% load static  %}
 
 <html lang="pt">
+
 <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -10,12 +12,14 @@
     <title>{% block title %}{% endblock %} - Tarifador VoIP</title>
 
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}" />
-
     <link rel="stylesheet" type="text/css" href="{% static 'semantic/dist/semantic.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'node_modules/semantic-ui-calendar/dist/calendar.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
     {% block styles %}{% endblock %}
+
+
 </head>
+
 <body>
   {% block body %}
     <div icon="labeled" class="ui overlay left wide sidebar">
@@ -39,7 +43,10 @@
   <script src="{% static 'js/jquery-3.1.1.min.js' %}"></script>
   <script src="{% static 'semantic/dist/semantic.min.js' %}"></script>
   <script src="{% static 'node_modules/semantic-ui-calendar/dist/calendar.min.js' %}"></script>
-  <script>
+
+
+
+    <script>
     $(document).ready(() => {
       $('#t-header-item-sidebar')
         .click(() => {
@@ -50,6 +57,9 @@
 
       $('#t-header-user-dropdown')
         .dropdown()
+
+      $('.ui.dropdown')
+          .dropdown();
 
       $('.ui.accordion')
         .accordion()
@@ -72,6 +82,7 @@
         })
     })
   </script>
-  {% block scripts %}{% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
+
 </html>

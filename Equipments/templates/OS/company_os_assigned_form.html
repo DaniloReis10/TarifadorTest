@@ -1,0 +1,154 @@
+{% extends 'centers/base.html' %}
+
+{% load org_tags %}
+{% load static %}
+
+{% block title %}{{ organization.name }} - Ordem de Serviço{% endblock %}
+
+{% block breadcrumb %}
+<i class="right chevron icon divider"></i>
+<a class="section" href="{% url 'Equipments:company_os_list' organization.slug company.slug %}">
+  <h2 class="ui inverted header">Ordem de Serviço</h2>
+</a>
+{% endblock %}
+
+{% block center-content %}
+<div class="ui container">
+  {% include "utils/form-error-messages.html" %}
+
+  <form class="ui form" method="post">
+    {% csrf_token %}
+    <input id="filter-org" type="hidden" name="organization" value="{{ organization.slug }}">
+    <h4 class="ui dividing header">Atribuir Serviços de um Contrato</h4>
+    <div class="four fields">
+      <div class="field">
+        <label>Contrato</label>
+        <div class="ui selection search dropdown" id="center-dropdown">
+          <input id="filter-contract" type="hidden" name="contractident" value="-----">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% include "utils/form-field.html" with field=form.contract_number %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.OSNumber %}
+      </div>
+      <div class="field">
+        <label>Tipo de Serviço</label>
+        <div class="ui selection search dropdown" id="Basic_Service_dropdown">
+          <input id="filter-type" type="hidden" name="typeofservice" value="-----">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in sector_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tipo de Equipamento</label>
+        <div class="ui selection search dropdown" id="Equipment_dropdown">
+          <input id="filter-equip" type="hidden" name="equipservice" value="-----">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">----</div>
+            {% for key, value in sector_choices %}
+              <div class="item" data-value="{{ key }}">{{ value }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="four fields">
+      <div class="field">
+        <label>Data da Instalação</label>
+        <div class="ui calendar" id="rangestart">
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input name="install_date" placeholder="Data da Instalação" type="date" value="{{ install_date }}">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.TagNumber %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.MACAdress %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.IPAddress %}
+      </div>
+    </div>
+    <div class="four fields">
+        <div class="field">
+        {% include "utils/form-field.html" with field=form.extensionNumber %}
+      </div>
+      <div class="field">
+        {% include "utils/form-field.html" with field=form.center %}
+      </div>
+    </div>
+    <button class="ui blue button" type="submit">OK</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    $(document).ready(() => {
+        $("#filter-contract").change(function() {
+            var contractId = $(this).val()
+            var orgSlug = $("#filter-org").val()
+            var menu_options = `<div class="item" data-value="">----</div>\n`
+
+            $("#Basic_Service_dropdown .menu").html(menu_options)
+            $('.ui.dropdown').dropdown({fullTextSearch: true})
+
+            if (contractId) {
+                $.ajax({
+                    url: `/${orgSlug}/contracts/filter`,
+                    data: {
+                        "contractID": contractId
+                    },
+                    success: ({options}) => {
+                        options.forEach(({value, text}) => {
+                            menu_options += `<div class="item" data-value="${value}">${text}</div>\n`
+                        })
+                        $("#Basic_Service_dropdown .menu").html(menu_options)
+                        $("#Basic_Service_dropdown").dropdown()
+                    }
+                })
+            }
+        })
+        $("#filter-type").change(function() {
+            var contractId = $(this).val()
+            var orgSlug = $("#filter-org").val()
+            var menu_options = `<div class="item" data-value="">----</div>\n`
+
+            $("#Equipment_dropdown .menu").html(menu_options)
+            $('.ui.dropdown').dropdown({fullTextSearch: true})
+
+            if (contractId) {
+                $.ajax({
+                    url: `/${orgSlug}/equipments/filter`,
+                    data: {
+                        "contractID": contractId
+                    },
+                    success: ({options}) => {
+                        options.forEach(({value, text}) => {
+                            menu_options += `<div class="item" data-value="${value}">${text}</div>\n`
+                        })
+                        $("#Equipment_dropdown .menu").html(menu_options)
+                        $("#Equipment_dropdown").dropdown()
+                    }
+                })
+            }
+        })
+      })
+</script>
+
+{% endblock %}

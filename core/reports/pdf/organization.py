@@ -33,8 +33,9 @@ from charges.constants import BASIC_SERVICE_MAP_PMF
 from charges.constants import BASIC_SERVICE_MO_MAP
 from core.utils import time_format
 from phonecalls.constants import CALLTYPE_CHOICES
-from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN
+from phonecalls.constants import VC1, VC2, VC3, LOCAL, LDN, LDI
 from phonecalls.constants import NEW_CONTRACT, OLD_CONTRACT
+from Equipments.models import ContractBasicServices
 
 CALLTYPE_MAP = dict(CALLTYPE_CHOICES)
 
@@ -46,9 +47,7 @@ class SystemReportOrganization(object):
         self._dateEnd = dateEnd
         self._issueDate = datetime.now().strftime('%d/%m/%Y')
         self._reportTitle = reportTitle
-        self._orgLogo = \
-            context['organization'].settings.logo.name \
-            if context['organization'].settings.logo else None
+        self._orgLogo = static('img/Logo.jpg')
         self._buffer = io.BytesIO()
         self._doc = SimpleDocTemplate(
             self._buffer,
@@ -73,7 +72,7 @@ class SystemReportOrganization(object):
 
         if self._orgLogo:
             header_list.append({
-                'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}"'
+                'text': f'<img src="{settings.BASE_DIR}{self._orgLogo}"'
                         'width="150" height="66" valign="top"/>',
                 'width': 20,
                 'height': self._height - 20})
@@ -219,8 +218,8 @@ class SystemReportOrganization(object):
         self._buffer.getvalue()
 
     def create_table_resume_services(self, context):
-        self.insert_title_table(title=f"Organização: {context['ORGANIZATION']}")
-        org_id = context['ORGANIZATION_id']
+        self.insert_title_table(title=f"Organização: {context['organization'].name}")
+        org_id = context['organization'].id
         # ### Parte 2 - Título Serviços de Comunicação ###
         array_tblstyle = [
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # 1 column
@@ -241,6 +240,7 @@ class SystemReportOrganization(object):
         self._story.append(tbl)
 
         # ### Parte 1 - Cabeçalho da tabela ###
+
         array_tblstyle = [
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # 1 column
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
@@ -250,53 +250,101 @@ class SystemReportOrganization(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
-        thead = [['SERVIÇO', 'QUANTIDADE', 'VALOR PERÍODO']]
-        size = (self._width - 50) / 5
-        tbl = Table(
-            thead,
-            colWidths=[size * 3, size, size],
-            rowHeights=[20 for x in range(len(thead))])
+        #ADDIng ITEM per request of Vera
+        if context['organization'].id != 2:
+            thead = [['ITEM', 'SERVIÇO', 'QUANTIDADE', 'VALOR PERÍODO']]
+            size = (self._width - 50) / 6
+            tbl = Table(
+                thead,
+                colWidths=[size/2, size * 3.5, size, size],
+                rowHeights=[20 for x in range(len(thead))])
+        else:
+            thead = [['SERVIÇO', 'QUANTIDADE', 'VALOR PERÍODO']]
+            size = (self._width - 50) / 5
+            tbl = Table(
+                thead,
+                colWidths=[size * 3, size, size],
+                rowHeights=[20 for x in range(len(thead))])
         tbl.setStyle(tblstyle)
         self._story.append(tbl)
 
         # ### Parte 4 - Chamadas de Discagem Local ###
-        array_tblstyle = [
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),  # 1 column
-            ('ALIGN', (1, 0), (1, -1), 'CENTER'),  # 1 column
-            ('ALIGN', (2, 0), (2, -1), 'RIGHT'),  # 1 column
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-            ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-            ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-            ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f1f1f1')),
-            ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
-            ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+        if context['organization'].id != 2:
+            array_tblstyle = [
+                ('ALIGN', (0, 0), (0, -1), 'CENTER'),  # 1 column
+                ('ALIGN', (1, 0), (1, -1), 'LEFT'),  # 1 column
+                ('ALIGN', (2, 0), (2, -1), 'CENTER'),  # 1 column
+                ('ALIGN', (3, 0), (3, -1), 'RIGHT'),  # 1 column
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
+                ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f1f1f1')),
+                ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
+                ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
+        else:
+            array_tblstyle = [
+                ('ALIGN', (0, 0), (0, -1), 'LEFT'),  # 1 column
+                ('ALIGN', (1, 0), (1, -1), 'CENTER'),  # 1 column
+                ('ALIGN', (2, 0), (2, -1), 'RIGHT'),  # 1 column
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
+                ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
+                ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
+                ('BACKGROUND', (0, 0), (-1, -1), HexColor('#f1f1f1')),
+                ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
+                ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
         thead = []
 
         service_amount = 0
         service_cost = 0
-        call_company_map = context['SERVIÇOS BÁSICOS']
-        if org_id == 2:
-            basic_service = BASIC_SERVICE_MAP_PMF
-        elif call_company_map['contract_version'] == NEW_CONTRACT:
-            basic_service = BASIC_SERVICE_MAP_NEW
-        else:
-            basic_service = BASIC_SERVICE_MAP
-        for key, value in basic_service.items():
-            if key in call_company_map:
-                service_amount += call_company_map[key]['amount']
-                service_cost += call_company_map[key]['cost']
-                value_mask = make_price(call_company_map[key]['cost'])
-                thead.append([
-                    value,
-                    str(call_company_map[key]['amount']),
-                    f"R$ {value_mask}"])
+        call_company_map = context['basic_service']
+        call_prop_map = context['prop']
+        contract_list = ContractBasicServices.objects.filter(organization=context['organization']).order_by('item_number')
+        for contract in contract_list:
+            if contract.legacyID in call_company_map and call_company_map[contract.legacyID]['amount'] != 0:
+                service_amount += call_company_map[contract.legacyID]['amount']
+                service_cost += call_company_map[contract.legacyID]['cost']
+                value_mask = make_price(call_company_map[contract.legacyID]['cost'])
+                if context['organization'].id != 2:
+                    thead.append([
+                        str(contract.item_number),
+                        contract.description,
+                        str(call_company_map[contract.legacyID]['amount']),
+                        f"R$ {value_mask}"])
+                else:
+                    thead.append([
+                        contract.description,
+                        str(call_company_map[contract.legacyID]['amount']),
+                        f"R$ {value_mask}"])
+            if contract.legacyID in call_prop_map and call_prop_map[contract.legacyID]['amount'] != 0:
+                service_amount += call_prop_map[contract.legacyID]['amount']
+                service_cost += call_prop_map[contract.legacyID]['cost']
+                value_mask = make_price(call_prop_map[contract.legacyID]['cost'])
+                if context['organization'].id != 2:
+                    thead.append([
+                        str(contract.item_number),
+                        contract.description + '  PRORATA',
+                        str(call_prop_map[contract.legacyID]['amount']),
+                        f"R$ {value_mask}"])
+                else:
+                    thead.append([
+                        contract.description + '  PRORATA',
+                        str(call_prop_map[contract.legacyID]['amount']),
+                        f"R$ {value_mask}"])
 
-        size = (self._width - 50) / 5
-        tbl = Table(
-            thead,
-            colWidths=[size * 3, size, size],
-            rowHeights=[20 for x in range(len(thead))])
+
+        if context['organization'].id != 2:
+            size = (self._width - 50) / 6
+            tbl = Table(
+                thead,
+                colWidths=[size/2,size * 3.5, size, size],
+                rowHeights=[20 for x in range(len(thead))])
+        else:
+            size = (self._width - 50) / 5
+            tbl = Table(
+                thead,
+                colWidths=[size * 3, size, size],
+                rowHeights=[20 for x in range(len(thead))])
         tbl.setStyle(tblstyle)
         self._story.append(tbl)
 
@@ -405,13 +453,13 @@ class SystemReportOrganization(object):
         }, {
             'type': VC1,  # VC1
             'desc': 'Local Fixo-Móvel (VC1)'
-        }, {
-            'type': VC2,  # VC2
-            'desc': 'Local Fixo-Móvel (VC2)'
-        }, {
-            'type': VC3,  # VC3
-            'desc': 'Local Fixo-Móvel (VC3)'
-        }]
+        }]#, {
+           # 'type': VC2,  # VC2
+           # 'desc': 'Local Fixo-Móvel (VC2)'
+        #}, {
+           # 'type': VC3,  # VC3
+           # 'desc': 'Local Fixo-Móvel (VC3)'
+        #}]
         thead = []
         local_call_number = 0
         local_minutes = 0
@@ -420,38 +468,20 @@ class SystemReportOrganization(object):
         mobile_minutes = 0
         mobile_cost = 0
 
-        call_company_map = context['SERVIÇOS DE COMUNICAÇÃO']
+        call_company_map = context
         for local in local_list:
             if local['type'] in call_company_map:
-                call_company = call_company_map[local['type']]
-                if type(call_company) is not dict:
-                    call_company = call_company._asdict()
-                if local['type'] == LOCAL:
-                    local_call_number = call_company['count']
-                    local_minutes = call_company['billedtime_sum']
-                    local_cost = call_company['cost_sum']
-                else:
-                    mobile_call_number += call_company['count']
-                    mobile_minutes += call_company['billedtime_sum']
-                    mobile_cost += call_company['cost_sum']
-            # minutes = call_company['billedtime_sum']
-            #  thead.append([
-            #      local['desc'],
-            #      str(call_company['count']),
-            #      time_format(minutes),
-            #      f"R$ {make_price(call_company['cost_sum'])}"])
-            # else:
-            #    thead.append([local['desc'], '0', '00:00:00', 'R$ 0,00'])
-        thead.append([
-            'Local Fixo-Fixo Extragrupo',
-            str(local_call_number),
-            time_format(local_minutes),
-            f"R$ {make_price(local_cost)}"])
-        thead.append([
-            'Local Fixo-Móvel',
-            str(mobile_call_number),
-            time_format(mobile_minutes),
-            f"R$ {make_price(mobile_cost)}"])
+                call_organization = call_company_map[local['type']]
+                if type(call_organization) is not dict:
+                    call_organization = call_organization._asdict()
+                minutes = call_organization['billedtime_sum']
+                thead.append([
+                    local['desc'],
+                    str(call_organization['count']),
+                    time_format(minutes),
+                    f"R$ {make_price_adm(call_organization['cost_sum'])}"])
+            else:
+                thead.append([local['desc'], '0', '00:00:00', 'R$ 0,00'])
         size = (self._width - 50) / 5
         tbl = Table(
             thead,
@@ -608,7 +638,19 @@ class SystemReportOrganization(object):
             ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
             ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
         tblstyle = TableStyle(array_tblstyle)
-        thead = [['Longa Distância Internacional', '0', '00:00:00', 'R$ 0,00']]
+        if 'international' in call_company_map:
+            minutes = call_company_map['international']['billedtime_sum']
+            thead = [[
+                'Longa Distancia Internacional',
+                str(call_company_map['international']['count']),
+                time_format(minutes),
+                f"R$ {make_price(call_company_map['international']['cost_sum'])}"]]
+        else:
+            thead = [[
+                'Longa Distancia Internacional',
+                '0',
+                '00:00:00',
+                'R$ 0,00']]
         size = (self._width - 50) / 5
         tbl = Table(
             thead,
@@ -731,18 +773,20 @@ class SystemReportOrganization(object):
         #CHANGED THIS
         #value_service_basic_total = 0
         value_service_comunication_total = 0
-        for company, call_company_map in context.items():
+        for company, call_company_map in context['companies'].items():
             service_amount = 0
             service_cost = 0
 
             if company not in ('ORGANIZATION', 'ORGANIZATION_id', 'SERVIÇOS BÁSICOS', 'SERVIÇOS DE COMUNICAÇÃO'):
-                if call_company_map['desc']:
+                try:
                     self.insert_title_table(
-                        title=f"Cliente: {company} - {call_company_map['desc']}")
-                else:
-                    self.insert_title_table(title=f"Cliente: {company}")
+                        title=f"Cliente: {company} - "
+                              f"{call_company_map['desc']}")
+                except KeyError:
+                    self.insert_title_table(
+                        title=f"Cliente: {company}")
 
-                if 'service_basic' in call_company_map:
+                if 'services' in call_company_map:
                     # ### Parte 2 - Título Serviços de Comunicação ###
                     array_tblstyle = [
                         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
@@ -797,20 +841,40 @@ class SystemReportOrganization(object):
                     tblstyle = TableStyle(array_tblstyle)
                     thead = []
 
-                    #NEED TO FIX LATER
-                    if call_company_map['contract_version'] == NEW_CONTRACT:
-                        service_map = BASIC_SERVICE_MAP_NEW
-                    else:
-                        service_map = BASIC_SERVICE_MAP
-                    for key, value in basic_service.items():
-                        if key in call_company_map:
-                            service_amount += call_company_map[key]['amount']
-                            service_cost += call_company_map[key]['cost']
+                    contract_list = ContractBasicServices.objects.filter(organization=context['organization'])
+                    try:
+                        call_prop_map = call_company_map['prop']
+                    except KeyError:
+                        call_prop_map = {}
+                    mark = 0
+                    for contract in contract_list:
+                        mark += 1
+                        if not call_company_map['basic_service'] and not call_prop_map:
                             thead.append([
-                                value,
-                                f"R$ {make_price(call_company_map[key]['price'])}",
-                                str(call_company_map[key]['amount']),
-                                f"R$ {make_price(call_company_map[key]['cost'])}"])
+                                "Órgão não implementado nas datas consideradas",
+                                f"R$ 0.00",
+                                f"R$ 0.00",
+                                f"R$ 0.00"])
+                        if contract.legacyID in call_company_map['basic_service']:
+                            service_amount += call_company_map['basic_service'][contract.legacyID]['amount']
+                            service_cost += call_company_map['basic_service'][contract.legacyID]['cost']
+                            value_mask = make_price(call_company_map['basic_service'][contract.legacyID]['cost'])
+                            value_mask_unit = make_price(call_company_map['basic_service'][contract.legacyID]['price'])
+                            thead.append([
+                                contract.description,
+                                f"R$ {value_mask_unit}",
+                                str(call_company_map['basic_service'][contract.legacyID]['amount']),
+                                f"R$ {value_mask}"])
+                        if contract.legacyID in call_prop_map:
+                            service_amount += call_prop_map[contract.legacyID]['amount']
+                            service_cost += call_prop_map[contract.legacyID]['cost']
+                            value_mask = make_price(call_prop_map[contract.legacyID]['cost'])
+                            value_mask_unit = make_price(call_prop_map[contract.legacyID]['price'])
+                            thead.append([
+                                contract.description + '  PRORATA',
+                                f"R$ {value_mask_unit}",
+                                str(call_prop_map[contract.legacyID]['amount']),
+                                f"R$ {value_mask}"])
 
                     size = (self._width - 50) / 5
                     tbl = Table(
@@ -923,61 +987,28 @@ class SystemReportOrganization(object):
                     }, {
                         'type': VC1,  # VC1
                         'desc': 'Local Fixo-Móvel (VC1)'
-                    }, {
-                        'type': VC2,  # VC2
-                        'desc': 'Local Fixo-Móvel (VC2)'
-                    }, {
-                        'type': VC3,  # VC3
-                        'desc': 'Local Fixo-Móvel (VC3)'
-                    }]
+                    }] #, {
+                       # 'type': VC2,  # VC2
+                       # 'desc': 'Local Fixo-Móvel (VC2)'
+                    #}, {
+                       # 'type': VC3,  # VC3
+                       # 'desc': 'Local Fixo-Móvel (VC3)'
+                    #}]
                 thead = []
-                local_call_number = 0
-                local_minutes = 0
-                local_cost = 0
-                mobile_call_number = 0
-                mobile_minutes = 0
-                mobile_cost = 0
                 for local in local_list:
                     if local['type'] in call_company_map:
                         call_company = call_company_map[local['type']]
                         if type(call_company) is not dict:
                             call_company = call_company._asdict()
-                        if call_company_map['contract_version'] == NEW_CONTRACT or org_id == 2:
-                            if local['type'] == LOCAL:
-                                local_call_number = call_company['count']
-                                local_minutes = call_company['billedtime_sum']
-                                local_cost = call_company['cost_sum']
-                                local_price = call_company['price']
-                            else:
-                                mobile_call_number += call_company['count']
-                                mobile_minutes += call_company['billedtime_sum']
-                                mobile_cost += call_company['cost_sum']
-                                if local['type'] == VC1:
-                                    mobile_price = call_company['price']
-                        else:
-                            minutes = call_company['billedtime_sum']
-                            thead.append([
-                                local['desc'],
-                                f"R$ {make_price(call_company['price'])}",
-                                str(call_company['count']),
-                                time_format(minutes),
-                                f"R$ {make_price(call_company['cost_sum'])}"])
+                        minutes = call_company['billedtime_sum']
+                        thead.append([
+                            local['desc'],
+                            f"R$ {make_price_adm(call_company['org_price'])}",
+                            str(call_company['count']),
+                            time_format(minutes),
+                            f"R$ {make_price_adm(call_company['cost_sum'])}"])
                     else:
-                        if call_company_map['contract_version'] == OLD_CONTRACT and org_id != 2:
-                            thead.append([local['desc'], 'R$ 0,00', '0', '00:00:00', 'R$ 0,00'])
-                if call_company_map['contract_version'] == NEW_CONTRACT or org_id == 2:
-                    thead.append([
-                        'Local Fixo-Fixo Extragrupo',
-                        f"R$ {make_price(local_price)}",
-                        str(local_call_number),
-                        time_format(local_minutes),
-                        f"R$ {make_price(local_cost)}"])
-                    thead.append([
-                        'Local Fixo-Móvel',
-                        f"R$ {make_price(mobile_price)}",
-                        str(mobile_call_number),
-                        time_format(mobile_minutes),
-                        f"R$ {make_price(mobile_cost)}"])
+                        thead.append([local['desc'], 'R$ 0,00', '0', '00:00:00', 'R$ 0,00'])
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1005,7 +1036,7 @@ class SystemReportOrganization(object):
                         'Total de Discagem Local',
                         str(call_company_map['local']['count']),
                         time_format(minutes),
-                        f"R$ {make_price(call_company_map['local']['cost_sum'])}"]]
+                        f"R$ {make_price_adm(call_company_map['local']['cost_sum'])}"]]
                 else:
                     thead = [['Total de Discagem Local', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
@@ -1056,12 +1087,13 @@ class SystemReportOrganization(object):
                     minutes = call_company['billedtime_sum']
                     thead = [[
                         'LDN-fixo/fixo-D1/D2/D3/D4',
-                        f"R$ {make_price(call_company['price'])}",
+                        f"R$ {make_price_adm(call_company['org_price'])}",
                         str(call_company['count']),
                         time_format(minutes),
-                        f"R$ {make_price(call_company['cost_sum'])}"]]
+                        f"R$ {make_price_adm(call_company['cost_sum'])}"]]
                 else:
-                    thead = [['LDN-fixo/fixo-D1/D2/D3/D4', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                    thead = [[
+                        'LDN-fixo/fixo-D1/D2/D3/D4', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1089,7 +1121,7 @@ class SystemReportOrganization(object):
                         'Total de Longa Distancia Nacional',
                         str(call_company_map['national']['count']),
                         time_format(minutes),
-                        f"R$ {make_price(call_company_map['national']['cost_sum'])}"]]
+                        f"R$ {make_price_adm(call_company_map['national']['cost_sum'])}"]]
                 else:
                     thead = [[
                         'Total de Longa Distancia Nacional',
@@ -1137,7 +1169,20 @@ class SystemReportOrganization(object):
                     ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
                     ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
                 tblstyle = TableStyle(array_tblstyle)
-                thead = [['Longa Distância Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
+                if LDI in call_company_map:
+                    call_company = call_company_map[LDI]
+                    if type(call_company) is not dict:
+                        call_company = call_company._asdict()
+                    minutes = call_company['billedtime_sum']
+                    thead = [[
+                        'Longa Distancia Internacional',
+                        f"R$ {make_price_adm(call_company['org_price'])}",
+                        str(call_company['count']),
+                        time_format(minutes),
+                        f"R$ {make_price_adm(call_company['cost_sum'])}"]]
+                else:
+                    thead = [[
+                        'Longa Distancia Internacional', 'R$ 0,00', '0', '00:00:00', 'R$ 0,00']]
                 size = (self._width - 50) / 6
                 tbl = Table(
                     thead,
@@ -1161,11 +1206,12 @@ class SystemReportOrganization(object):
                 tblstyle = TableStyle(array_tblstyle)
                 if 'international' in call_company_map:
                     minutes = call_company_map['international']['billedtime_sum']
+                    cost = make_price_adm(call_company_map['international']['cost_sum'])
                     thead = [[
                         'Total de Longa Distancia Internacional',
                         str(call_company_map['international']['count']),
                         time_format(minutes),
-                        f"R$ {make_price(call_company_map['international']['cost_sum'])}"]]
+                        f"R$ {cost}"]]
                 else:
                     thead = [[
                         'Total de Longa Distancia Internacional',
@@ -1209,50 +1255,11 @@ class SystemReportOrganization(object):
                 self._story.append(tbl)
                 self.space_between_tables()
 
-                array_tblstyle = [
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                    ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                    ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.50, colors.white),
-                    ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                tblstyle = TableStyle(array_tblstyle)
-                thead = [['TOTAL']]
-                size = self._width - 50
-                tbl = Table(
-                    thead,
-                    colWidths=[size],
-                    rowHeights=[20 for x in range(len(thead))])
-                tbl.setStyle(tblstyle)
-                self._story.append(tbl)
 
-                value_total = float(service_cost) + float(call_company_map['cost_sum'])
-
-                array_tblstyle = [
-                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column
-                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),   # 1 column
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # middle column
-                    ('FONTSIZE', (0, 0), (-1, -1), 9),  # middle column
-                    ('FONTNAME', (0, 0), (-1, -1), 'Sans'),
-                    ('BACKGROUND', (0, 0), (-1, -1), HexColor('#c3c3c3')),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.70, colors.white),
-                    ('BOX', (0, 0), (-1, -1), 0.50, colors.white)]
-                tblstyle = TableStyle(array_tblstyle)
-                thead = [[
-                    'TOTAL DOS SERVIÇOS',
-                    f"R$ {make_price(value_total)}"]]
-                size = (self._width - 50) / 6
-                tbl = Table(
-                    thead,
-                    colWidths=[size * 5, size],
-                    rowHeights=[20 for x in range(len(thead))])
-                tbl.setStyle(tblstyle)
-                self._story.append(tbl)
                 self.space_between_tables()
                 self.space_between_tables2()
                 #-----
-                if self.showCompanies:
+                if False:
                     for company, call_company_map in call_organization_map['companies'].items():
                         try:
                             self.insert_title_table(

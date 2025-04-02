@@ -1,9 +1,11 @@
+from django.http import JsonResponse
 from django.urls import reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
 from django.db.models import Q
+
 
 # third party
 from django_filters.views import BaseFilterView
@@ -18,11 +20,15 @@ from centers.mixins import CompanyMembershipRequiredMixin
 from centers.mixins import CompanyMixin
 from core.views import SuperuserRequiredMixin
 from phonecalls.models import Price
+from centers.models import Company
 
 from .models import Equipment, typeofphone, ContractBasicServices
 from .forms import typeofphoneAssigned, OSAssignedForm, contractAssigned
 from .filters import ContractFilter
 from charges.constants import BASIC_SERVICE_CHOICES
+
+#def is_ajax(request):
+#    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
 class OSListView(SuperuserRequiredMixin, ListView):  # SUPERUSER
     """
@@ -33,7 +39,7 @@ class OSListView(SuperuserRequiredMixin, ListView):  # SUPERUSER
     context_object_name = 'equipment_list'
     http_method_names = ['get']
     model = Equipment
-    template_name = 'OS/os_list.html'
+    template_name = 'OS/company_os_list.html'
 
 
 class OSCreateView(SuperuserRequiredMixin, CreateView):  # SUPERUSER
@@ -46,7 +52,7 @@ class OSCreateView(SuperuserRequiredMixin, CreateView):  # SUPERUSER
     http_method_names = ['get', 'post']
     model = Equipment
     success_url = reverse_lazy('equipment_list')
-    template_name = 'OS/os_assigned_form.html'
+    template_name = 'OS/company_os_assigned_form.html'
 
 class EquipmentListView(SuperuserRequiredMixin, ListView):  # SUPERUSER
     """
@@ -275,3 +281,173 @@ class OrgEquipmentUpdateView(OrganizationMixin, AdminRequiredMixin, UpdateView):
                 pass
 #            kwargs['IsUpdate'] = True
             return kwargs
+
+class CompanyOSListView(CompanyMixin,
+                               CompanyContextMixin,
+                               BaseFilterView,
+                               ListView):  # COMPANY
+    """
+    Lista de equipments atribuidos ao sistema
+    Permissão: Super usuário
+    """
+
+    context_object_name = 'os_list'
+    http_method_names = ['get']
+    model = Equipment
+    template_name = 'OS/company_os_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        os_data = self.object_list \
+            .filter(organization=self.organization, company=self.company) \
+            .values('pk', 'contract__description', 'contract__contractID', 'equiptype__manufacturer', \
+                    'equiptype__phoneModel', 'extensionNumber__extension', 'Dateinstalled', 'OSNumber',\
+                    'TagNumber', 'MACAdress', 'IPAddress')
+        context['os_map'] = os_data
+        return context
+
+class CompanyOSCreateView(CompanyMixin,
+                               CompanyContextMixin,
+                                        CreateView):  # COMPANY
+    """
+    Lista de solicitações de faixa de ramais
+    Permissão: Administrador da organização
+    """
+
+    form_class = OSAssignedForm
+    http_method_names = ['get',  'post']
+    model = Equipment
+    template_name = 'OS/company_os_assigned_form.html'
+
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.organization = self.organization
+        instance.company = self.company
+        instance.contract = form.cleaned_data['contract']
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            'Equipments:company_os_list',
+            kwargs={'org_slug': self.organization.slug,
+                    'company_slug': self.company.slug})
+
+    def get_form_kwargs(self):
+        kwargs = super(CompanyOSCreateView, self).get_form_kwargs()
+        tempslg = self.kwargs['org_slug']
+        try:
+            kwargs['organization'] = Organization.objects.get(slug=tempslg)
+        except Organization.DoesNotExist:
+            # We have no object! Do something...
+            pass
+        tempslg = self.company.slug
+        try:
+            kwargs['company']= Company.objects.get(slug=tempslg)
+        except Company.DoesNotExist:
+            # We have no object! Do something...
+            pass
+        return kwargs
+
+class CompanyOSUpdateView(CompanyMixin,
+                               CompanyContextMixin, UpdateView):  # ORG
+        """
+        Formulário de atualização da empresa (cliente)
+        Permissão: Administrador da organização
+        """
+
+        form_class = OSAssignedForm
+        http_method_names = ['get', 'post']
+        model = Equipment
+        template_name = 'OS/company_os_assigned_form.html'
+        query_pk_and_slug = True
+
+        def get_success_url(self):
+            return reverse(
+                'Equipments:company_os_list',
+                kwargs={'org_slug': self.organization.slug})
+
+        def get_form_kwargs(self):
+            kwargs = super(CompanyOSUpdateView, self).get_form_kwargs()
+            tempslg = self.kwargs['org_slug']
+            try:
+                kwargs['organization'] = Organization.objects.get(slug=tempslg)
+            except Organization.DoesNotExist:
+                # We have no object! Do something...
+                pass
+            tempslg = self.company.slug
+            try:
+                kwargs['company'] = Company.objects.get(slug=tempslg)
+            except Company.DoesNotExist:
+                # We have no object! Do something...
+                pass
+            #            kwargs['IsUpdate'] = True
+            return kwargs
+
+
+class OrgContractFilterListView(OrganizationMixin,
+                               AdminRequiredMixin,
+                               OrganizationContextMixin,
+                               BaseFilterView,
+                               ListView):  # ORG
+    """
+    Lista de setores
+    Permissão: Membro da empresa
+    """
+
+    context_object_name = 'contract_list'
+    filterset_class = ContractFilter
+    http_method_names = ['get']
+    model = ContractBasicServices
+    ordering = ['legacyID']
+    paginate_by = 15
+
+    def get_queryset(self):
+        return super().get_queryset().filter(organization=self.organization)
+
+    def get(self, request, *args, **kwargs):
+        ajax_val = request.META.get('HTTP_X_REQUESTED_WITH')
+        if ajax_val == 'XMLHttpRequest':
+            filterset_class = self.get_filterset_class()
+            self.filterset = self.get_filterset(filterset_class)
+
+            if not self.filterset.is_bound or self.filterset.is_valid() or not self.get_strict():
+                self.object_list = self.filterset.qs
+            else:
+                self.object_list = self.filterset.queryset.none()
+
+            options = []
+            for contract in self.object_list:
+                options.append({'text': contract.description, 'value': contract.id})
+            return JsonResponse({'options': options})
+        return super().get(request, *args, **kwargs)
+
+class OrgEquipmentFilterListView(OrganizationMixin,
+                                    AdminRequiredMixin,
+                                    OrganizationContextMixin,
+                                    BaseFilterView,
+                                    ListView):  # ORG
+        """
+        Lista de setores
+        Permissão: Membro da empresa
+        """
+
+        context_object_name = 'contract_list'
+        http_method_names = ['get']
+        model = typeofphone
+        ordering = ['legacyID']
+        paginate_by = 15
+
+        def get_queryset(self):
+            return super().get_queryset().filter(organization=self.organization)
+
+        def get(self, request, *args, **kwargs):
+            ajax_val = request.META.get('HTTP_X_REQUESTED_WITH')
+            if ajax_val == 'XMLHttpRequest':
+                phonelist = typeofphone.objects.filter(Q(organization=self.organization) &
+                                           Q(servicetype__id=request.GET['contractID']))
+                options = []
+                for phone in phonelist:
+                    options.append({'text': phone.manufacturer + '  ' + phone.phoneModel, 'value': phone.id})
+                return JsonResponse({'options': options})
+            return super().get(request, *args, **kwargs)

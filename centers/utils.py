@@ -29,12 +29,15 @@ def get_sector_choices(center):
 
 def make_price(value):
     """
-        Função para formatar preço no formato: 999.999,99
+        Função para formatar preço no formato: 999.999,99  Changed to 4 decimal places
         Ex.:
             9999.9 -> 9.999,90
             200000 -> 200.000,00
     """
-    value = f'{float(value):,.2f}'
+    #if flag:
+    #    value = f'{float(value):,.4f}'
+    #else:
+    value = f'{float(value):,.4f}'
     return value.replace(',', 'v').replace('.', ',').replace('v', '.')
 
 
@@ -45,5 +48,8 @@ def make_price_adm(value):
             9999.9 -> 9.999,90
             200000 -> 200.000,00
     """
-    value = f'{float(value):,.2f}'
+    #if flag:
+        #value = f'{float(value):,.4f}'
+    #else:
+    value = f'{float(value):,.4f}'
     return value.replace(',', 'v').replace('.', ',').replace('v', '.')

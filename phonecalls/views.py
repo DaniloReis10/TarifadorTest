@@ -213,11 +213,12 @@ class BaseContextData():
                     'count', 'billedtime_sum', 'cost_sum') \
             .order_by('company__name', '-calltype')
         result_companies = {}
-        company_list = Company.objects.filter(organization=self.organization)
+        company_list = Company.objects.filter(organization=self.organization).active()
         companies_phonedata = phonecall_data.values_list('company__name', flat=True)
         for company in company_list:
         #for company__name in phonecall_data:
-            if company.name in companies_phonedata:
+            #if company.name in companies_phonedata:
+            #if company.active():
                 self.company = company
                 sub_phonecall_data = self.get_Company_Context(phonecall_data.filter(company__name=company.name))
                 sub_phonecall_data.update({'contract_version': company.is_new_contract})
@@ -3614,6 +3615,15 @@ class TotalReportPDFMasterOrg(AdmPhonecallResumePDFReportView):
                     showCompanies=True)
                 pdf = report.create_table_resume_services(org_context)
                 zipFile.writestr(filename + org.name+'.pdf', pdf)
+                if org.id != 2:
+                    report2 = SystemReportOrganization(
+                        dateBegin=self.date_gt.strftime('%d/%m/%Y'),
+                        dateEnd=self.date_lt.strftime('%d/%m/%Y'),
+                        reportTitle='Resumo Geral dos Serviços',
+                        context=org_context,
+                        showCompanies=True)
+                    pdf = report2.create_table_resume_services(org_context, True)
+                    zipFile.writestr(filename + org.name + 'mew.pdf', pdf)
             zipFile.close()
             response = HttpResponse(content_type='application/octet-stream')
             response['Content-Disposition'] = f'attachement; filename={filename}.zip'
@@ -3825,7 +3835,7 @@ class TotalReportPDFCompany(OrgPhonecallResumePDFReportView, BaseContextData):
                     self.object_list = self.filterset.qs
                 else:
                     self.object_list = self.filterset.queryset.none()
-                company_list = Company.objects.filter(organization__name=self.organization.name)
+                company_list = Company.objects.filter(organization__name=self.organization.name).active()
                 inMemoryOutputFile = BytesIO()
                 zipFile = ZipFile(inMemoryOutputFile, 'a')
                 filename = self.get_filename(resume=True)

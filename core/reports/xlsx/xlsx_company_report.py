@@ -52,7 +52,7 @@ class XLSXCompanyReport(object):
         # format data
         self.date_format = self.workbook.add_format({'num_format': 'dd/mm/yy', **center})
         self.time_format = self.workbook.add_format({'num_format': '[hh]:mm:ss', **center})
-        self.price_format = self.workbook.add_format({'num_format': '[$R$-416] #,##0.00', **right})
+        self.price_format = self.workbook.add_format({'num_format': '[$R$-416] #,##0.00', **right}) #changed format here
 
     def write_row(self, row_data=[]):
         for col, data in enumerate(row_data):

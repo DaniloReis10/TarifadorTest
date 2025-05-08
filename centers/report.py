@@ -377,6 +377,9 @@ class SystemReport(object):
         return self.close()
 
     def make_phonecall_resume_table(self, context):
+        #flag = True
+        #if self.org.id == 2:
+            #flag = False
         if context['basic_service'] and len(context['basic_service']) > 0:
             array_tblstyle = [
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),   # 1 column

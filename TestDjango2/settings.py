@@ -123,7 +123,8 @@ DATABASES = {
         'NAME': 'NewTarifador',
         'USER': 'tarifador',
         'PASSWORD': 'tarifador',
-        'HOST': '192.168.0.169',
+        #'HOST': '192.168.0.169',
+        'HOST': '172.18.185.53',
         'PORT': 5432,
     }
 }

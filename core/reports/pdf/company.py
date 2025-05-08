@@ -20,6 +20,7 @@ from reportlab.platypus import SimpleDocTemplate
 from reportlab.platypus import Table
 from reportlab.platypus import TableStyle
 from reportlab.rl_config import TTFSearchPath
+from reportlab.lib.styles import getSampleStyleSheet
 
 # project
 from centers.utils import make_price
@@ -126,12 +127,12 @@ class SystemReport(object):
         if self.org.id ==2:
             width = 250
         else:
-            width = 550
+            width = 350   #550
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" width = "{width}"'
-                        'height="80" valign="top"/>', #86
-                'width': 20,
+                        'height="66" valign="top"/>', #86
+                'width': 100,  #20
                 'height': self._height - 20})
         header_list.append({
             'text': f'<font size=8><b>Período: { self._dateBegin }'
@@ -154,12 +155,12 @@ class SystemReport(object):
         if self.org.id ==2:
             width = 250
         else:
-            width = 550
+            width = 350 #550
         if self._orgLogo:
             header_list.append({
                 'text': f'<img src="{settings.MEDIA_ROOT}{self._orgLogo}" width = "{width}"'
                         'height="66" valign="top"/>',
-                'width': 20,
+                'width': 100, #20
                 'height': self._height-20})
         header_list.append({
             'text': f'<font size=10><b>Período: { self._dateBegin }'
@@ -412,7 +413,7 @@ class SystemReport(object):
             call_company_map = context['basic_service']
             call_prop_map = context['prop']
             #deal with legacy
-            if self.org.id == 1 and context['contract_version'] == OLD_CONTRACT:
+            if self.org.id == 1 and context['contract_version'] == OLD_CONTRACT: #OLD_CONTRACT DOES NOT HAVE PROP!!!!
                 for key, value in basic_map.items():
                             if key in context['basic_service']:
                                 service_amount += context['basic_service'][key]['amount']
@@ -425,13 +426,16 @@ class SystemReport(object):
             else:
                 #Here I may need to consider not only company but also contract number
                 contract_list = ContractBasicServices.objects.filter(organization=context['organization'])
+                styles = getSampleStyleSheet()
+                styleN = styles['Normal']
+                styleN.wordWrap = 'CJK'
                 for contract in contract_list:
                     if contract.legacyID in call_company_map and call_company_map[contract.legacyID]['amount'] != 0:
                         service_amount += call_company_map[contract.legacyID]['amount']
                         service_cost += call_company_map[contract.legacyID]['cost']
                         value_mask = make_price(call_company_map[contract.legacyID]['cost'])
                         thead.append([
-                            contract.description,
+                            Paragraph(contract.description, styleN),
                             f"R$ {make_price(call_company_map[contract.legacyID]['price'])}",
                             str(call_company_map[contract.legacyID]['amount']),
                             f"R$ {value_mask}"])
@@ -440,7 +444,7 @@ class SystemReport(object):
                         service_cost += call_prop_map[contract.legacyID]['cost']
                         value_mask = make_price(call_prop_map[contract.legacyID]['cost'])
                         thead.append([
-                            contract.description + '  PRORATA',
+                            Paragraph(contract.description + '  PRORATA', styleN),
                             f"R$ {make_price(call_prop_map[contract.legacyID]['price'])}",
                             str(call_prop_map[contract.legacyID]['amount']),
                             f"R$ {value_mask}"])
@@ -453,7 +457,7 @@ class SystemReport(object):
             tbl = Table(
                 thead,
                 colWidths=[size * 2, size, size, size],
-                rowHeights=[20 for x in range(len(thead))])
+                rowHeights=[30 for x in range(len(thead))])
             tbl.setStyle(tblstyle)
             self._story.append(tbl)
 

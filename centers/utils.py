@@ -37,7 +37,7 @@ def make_price(value):
     #if flag:
     #    value = f'{float(value):,.4f}'
     #else:
-    value = f'{float(value):,.4f}'
+    value = f'{float(value):,.2f}'
     return value.replace(',', 'v').replace('.', ',').replace('v', '.')
 
 
@@ -51,5 +51,5 @@ def make_price_adm(value):
     #if flag:
         #value = f'{float(value):,.4f}'
     #else:
-    value = f'{float(value):,.4f}'
+    value = f'{float(value):,.2f}'
     return value.replace(',', 'v').replace('.', ',').replace('v', '.')

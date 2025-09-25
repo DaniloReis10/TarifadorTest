@@ -3006,7 +3006,11 @@ class AdmPhonecallResumePDFReportView(BaseAdmPhonecallView):  # SUPERUSER
                 service_price_list = service_pricetable.price_set.active()
 
             if company_name is not None:
-                company = Company.objects.get(name=company_name)
+                try:
+                    company = Company.objects.get(name=company_name)
+                except Exception as e:
+                    # Catch any exception and print its details
+                    print(f"An unexpected error occurred: {e}")
                 company_pricetable = company.service_pricetable
                 company_price_list = {}
                 phonecall_map[org_name]['companies'][company_name].setdefault('services', {})
@@ -3824,11 +3828,13 @@ class TotalReportPDFCompany(OrgPhonecallResumePDFReportView, BaseContextData):
 
         def get(self, request, *args, **kwargs):
             if not request.GET:
+                self.IsFirst = True
                 return super(OrgPhonecallResumePDFReportView, self).get(request, *args, **kwargs)
             else:
                 # def post(self, request, *args, **kwargs):
                 # self.date_lt = datetime.fromisoformat(request.POST.get('date_lt'))
                 # self.date_gt = datetime.fromisoformat(request.POST.get('date_gt'))
+                self.IsFirst = False
                 filterset_class = self.get_filterset_class()
                 self.filterset = self.get_filterset(filterset_class)
                 if not self.filterset.is_bound or self.filterset.is_valid() or not self.get_strict():
@@ -3862,7 +3868,8 @@ class TotalReportPDFCompany(OrgPhonecallResumePDFReportView, BaseContextData):
         def get_context_data(self, **kwargs):
             #context = super().get_context_data(**kwargs)
             context = super().get_Org_Context()
-
+            if self.IsFirst:
+                return context
             lastmonthdate = self.date_lt.replace(day=1)
                     # In fact I am not considering that the beggining has proportional. Should I???
             basic_service_data_full = Equipment.objects \

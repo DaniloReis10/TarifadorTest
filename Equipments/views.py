@@ -451,3 +451,41 @@ class OrgEquipmentFilterListView(OrganizationMixin,
                     options.append({'text': phone.manufacturer + '  ' + phone.phoneModel, 'value': phone.id})
                 return JsonResponse({'options': options})
             return super().get(request, *args, **kwargs)
+
+
+class CsvUploadView(FormView):
+    template_name = "uploader/upload.html"
+    form_class = UploadFileForm
+    success_url = reverse_lazy("upload_file")
+
+    def form_valid(self, form):
+        csv_file = self.request.FILES["file"]
+
+        if not csv_file.name.endswith(".csv"):
+            form.add_error("file", "O arquivo deve ser CSV")
+            return self.form_invalid(form)
+
+        decoded_file = csv_file.read().decode("utf-8")
+        io_string = io.StringIO(decoded_file)
+        reader = csv.reader(io_string, delimiter=",")
+        header = next(reader)  # pula cabeçalho
+
+        count = 0
+        for row in reader:
+            if len(row) >= 3:
+                Person.objects.create(
+                    name=row[0],
+                    email=row[1],
+                    age=int(row[2]) if row[2].isdigit() else None
+                )
+                count += 1
+
+        # salva uma mensagem na sessão para exibir depois
+        self.request.session["message"] = f"Inseridos {count} registros no PostgreSQL!"
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["people"] = Person.objects.all()
+        context["message"] = self.request.session.pop("message", None)
+        return context

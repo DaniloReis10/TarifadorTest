@@ -452,14 +452,14 @@ class SystemReport(object):
 
 
 #
-
-            size = (self._width - 50) / 5
-            tbl = Table(
-                thead,
-                colWidths=[size * 2, size, size, size],
-                rowHeights=[30 for x in range(len(thead))])
-            tbl.setStyle(tblstyle)
-            self._story.append(tbl)
+            if thead:
+                size = (self._width - 50) / 5
+                tbl = Table(
+                    thead,
+                    colWidths=[size * 2, size, size, size],
+                    rowHeights=[30 for x in range(len(thead))])
+                tbl.setStyle(tblstyle)
+                self._story.append(tbl)
 
             array_tblstyle = [
                 ('ALIGN', (0, 0), (0, -1), 'LEFT'),   # 1 column

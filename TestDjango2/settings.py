@@ -120,11 +120,12 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #        'ENGINE': 'django.db.backends.postgresql',
        	#'NAME': 'test_db',
-        'NAME': 'NewTarifador',
+        'NAME': 'newtarifador',
         'USER': 'tarifador',
         'PASSWORD': 'tarifador',
         #'HOST': '192.168.0.169',
-        'HOST': '172.18.185.53',
+        #'HOST': '172.18.185.82',
+        'HOST': '172.20.25.34',
         'PORT': 5432,
     }
 }

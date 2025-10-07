@@ -6,9 +6,7 @@ O script conecta-se diretamente a duas bases de dados:
 * lê os registros do syslog armazenados em uma tabela PostgreSQL
   (``syslog_events``);
 * grava os dados tarifados diretamente na tabela ``phonecalls_phonecall``
-  do banco de dados SQLite utilizado pelo Tarifador;
-* gera uma planilha Excel por empresa com o detalhamento e a tarifação das
-  ligações importadas.
+  do banco de dados SQLite utilizado pelo Tarifador.
 
 Assim, é possível processar os eventos que o SBC entregou para o
 PostgreSQL e aplicar as mesmas regras de cálculo de tarifação utilizadas
@@ -26,8 +24,7 @@ import re
 from pathlib import Path
 import sqlite3
 import sys
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
-import zipfile
+from typing import Dict, Iterable, Iterator, Optional, Sequence, Tuple
 from zoneinfo import ZoneInfo
 import zlib
 
@@ -80,20 +77,6 @@ CALLTYPE_LABEL_MAP: Dict[str, int] = {
     "ADDVAL": ADDEDVALUE,
     "ADDEDVALUE": ADDEDVALUE,
     "MOBILE": VC3,
-}
-
-# Conversão inversa para exibição em planilhas: traduze o código inteiro de
-# ``calltype`` de volta para um rótulo amigável.
-CALLTYPE_DISPLAY: Dict[int, str] = {
-    VC1: "VC1",
-    VC2: "VC2",
-    VC3: "VC3",
-    LOCAL: "LOCAL",
-    LDN: "LDN",
-    LDI: "LDI",
-    FREE: "FREE",
-    UNKNOWN: "UNKNOWN",
-    ADDEDVALUE: "ADDEDVALUE",
 }
 
 # Os registros podem vir com ou sem o identificador de fuso horário. Guardamos
@@ -185,154 +168,12 @@ class ImportStats:
         )
 
 
-@dataclass
-class ExcelReportRow:
-    """Linha com os dados que serão exportados para a planilha."""
-
-    company_id: Optional[int]
-    company_name: str
-    extension_number: str
-    remote_number: str
-    dialed_number: str
-    direction: str
-    calltype_label: str
-    start: datetime
-    end: datetime
-    duration: int
-    billedtime: int
-    price: Decimal
-    billedamount: Decimal
-    org_price: Decimal
-    org_billedamount: Decimal
-    description: str
-    release_info: str
-    call_id: str
-
-
 # --- Funções utilitárias ---------------------------------------------------
 
 
 def normalize_digits(number: str) -> str:
     """Remove qualquer caractere não numérico do valor informado."""
     return "".join(ch for ch in (number or "") if ch.isdigit())
-
-
-def sanitize_filename(value: str) -> str:
-    """Converte um texto livre em um nome de arquivo seguro."""
-
-    value = (value or "").strip()
-    if not value:
-        return "empresa"
-    safe = re.sub(r"[^0-9A-Za-z._-]+", "_", value)
-    return safe.strip("._") or "empresa"
-
-
-def column_letter(index: int) -> str:
-    """Converte o índice da coluna (1-based) para a notação Excel (A, B...)."""
-
-    if index <= 0:
-        raise ValueError("O índice de coluna deve ser positivo.")
-    letters = []
-    while index:
-        index, remainder = divmod(index - 1, 26)
-        letters.append(chr(65 + remainder))
-    return "".join(reversed(letters))
-
-
-def xlsx_escape(value: str) -> str:
-    """Escapa caracteres especiais para inclusão nos XMLs do Excel."""
-
-    value = value.replace("\r", "")
-    value = value.replace("&", "&amp;")
-    value = value.replace("<", "&lt;")
-    value = value.replace(">", "&gt;")
-    value = value.replace('"', "&quot;")
-    value = value.replace("'", "&apos;")
-    value = value.replace("\n", "&#10;")
-    return value
-
-
-def build_sheet_xml(rows: Sequence[Sequence[str]]) -> str:
-    """Cria o conteúdo XML da planilha com as linhas fornecidas."""
-
-    xml_rows: List[str] = []
-    for row_index, row in enumerate(rows, start=1):
-        cells: List[str] = []
-        for column_index, value in enumerate(row, start=1):
-            ref = f"{column_letter(column_index)}{row_index}"
-            text = xlsx_escape(value)
-            cell_xml = (
-                f'<c r="{ref}" t="inlineStr">'
-                f"<is><t xml:space='preserve'>{text}</t></is>"
-                "</c>"
-            )
-            cells.append(cell_xml)
-        xml_rows.append(f"<row r='{row_index}'>{''.join(cells)}</row>")
-
-    body = "".join(xml_rows)
-    return (
-        "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-        "<worksheet xmlns='http://schemas.openxmlformats.org/spreadsheetml/2006/main'>"
-        f"<sheetData>{body}</sheetData>"
-        "</worksheet>"
-    )
-
-
-def write_basic_xlsx(path: Path, rows: Sequence[Sequence[str]], sheet_name: str = "Chamadas") -> None:
-    """Escreve um arquivo XLSX mínimo com uma única planilha."""
-
-    sheet_xml = build_sheet_xml(rows)
-
-    safe_sheet_name = re.sub(r"[\\/:*?\[\]]", "_", sheet_name).strip() or "Planilha"
-    safe_sheet_name = safe_sheet_name[:31]
-    sheet_name_attr = xlsx_escape(safe_sheet_name)
-
-    workbook_xml = (
-        "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-        "<workbook xmlns='http://schemas.openxmlformats.org/spreadsheetml/2006/main' "
-        "xmlns:r='http://schemas.openxmlformats.org/officeDocument/2006/relationships'>"
-        "<sheets>"
-        f"<sheet name='{sheet_name_attr}' sheetId='1' r:id='rId1'/>"
-        "</sheets>"
-        "</workbook>"
-    )
-
-    root_rels = (
-        "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-        "<Relationships xmlns='http://schemas.openxmlformats.org/package/2006/relationships'>"
-        "<Relationship Id='rId1' "
-        "Type='http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument' "
-        "Target='xl/workbook.xml'/>"
-        "</Relationships>"
-    )
-
-    workbook_rels = (
-        "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-        "<Relationships xmlns='http://schemas.openxmlformats.org/package/2006/relationships'>"
-        "<Relationship Id='rId1' "
-        "Type='http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet' "
-        "Target='worksheets/sheet1.xml'/>"
-        "</Relationships>"
-    )
-
-    content_types = (
-        "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"
-        "<Types xmlns='http://schemas.openxmlformats.org/package/2006/content-types'>"
-        "<Default Extension='rels' ContentType='application/vnd.openxmlformats-package.relationships+xml'/>"
-        "<Default Extension='xml' ContentType='application/xml'/>"
-        "<Override PartName='/xl/workbook.xml' "
-        "ContentType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'/>"
-        "<Override PartName='/xl/worksheets/sheet1.xml' "
-        "ContentType='application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml'/>"
-        "</Types>"
-    )
-
-    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr("[Content_Types].xml", content_types)
-        zf.writestr("_rels/.rels", root_rels)
-        zf.writestr("xl/workbook.xml", workbook_xml)
-        zf.writestr("xl/_rels/workbook.xml.rels", workbook_rels)
-        zf.writestr("xl/worksheets/sheet1.xml", sheet_xml)
 
 
 def extract_user(uri: str) -> str:
@@ -471,12 +312,6 @@ def compute_billed_amount(price: Decimal, billedtime: int) -> Decimal:
         return Decimal("0")
     amount = (price / Decimal(60)) * Decimal(billedtime)
     return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-
-def format_currency(value: Decimal) -> str:
-    """Formata valores monetários com duas casas decimais."""
-
-    return str(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 # --- Integração com PostgreSQL --------------------------------------------
@@ -650,22 +485,6 @@ def load_price_index(conn: sqlite3.Connection) -> Dict[Tuple[int, int], Decimal]
     return prices
 
 
-def load_company_names(conn: sqlite3.Connection) -> Dict[Optional[int], str]:
-    """Retorna um dicionário ``empresa_id -> nome`` para rótulos das planilhas."""
-
-    cur = conn.cursor()
-    cur.execute("SELECT id, name FROM centers_company")
-    mapping: Dict[Optional[int], str] = {}
-    for company_id, name in cur.fetchall():
-        label = (name or "").strip() or f"Empresa {company_id}"
-        mapping[company_id] = label
-
-    # Também adicionamos uma chave para chamadas sem empresa associada, a fim de
-    # agrupar corretamente eventuais ramais órfãos.
-    mapping.setdefault(None, "Sem Empresa")
-    return mapping
-
-
 class ExtensionResolver:
     """Resolve números de telefone para um ramal conhecido."""
 
@@ -733,7 +552,6 @@ class SyslogImporter:
         self.extensions = load_extension_info(conn)
         self.resolver = ExtensionResolver(self.extensions, default_ddd)
         self.price_index = load_price_index(conn)
-        self.company_names = load_company_names(conn)
 
     # -- Métodos públicos -------------------------------------------------
 
@@ -742,11 +560,10 @@ class SyslogImporter:
         lines: Iterable[str],
         target_leg: str,
         dry_run: bool,
-    ) -> Tuple[ImportStats, List[ExcelReportRow]]:
+    ) -> ImportStats:
         stats = ImportStats()
         seen_call_ids = set()
         cursor = self.conn.cursor()
-        report_rows: List[ExcelReportRow] = []
 
         for line in lines:
             # Converte a linha em um ``SbcCallRecord``; se não for CALL_END,
@@ -785,8 +602,6 @@ class SyslogImporter:
                 stats.duplicates += 1
                 continue
 
-            report_rows.append(self._build_report_row(record, phonecall_data))
-
             if dry_run:
                 stats.created += 1
                 continue
@@ -797,7 +612,7 @@ class SyslogImporter:
 
         if not dry_run:
             self.conn.commit()
-        return stats, report_rows
+        return stats
 
     # -- Métodos auxiliares ------------------------------------------------
 
@@ -996,46 +811,6 @@ class SyslogImporter:
             ),
         )
 
-    def _build_report_row(
-        self,
-        record: SbcCallRecord,
-        phonecall: "PhonecallData",
-    ) -> ExcelReportRow:
-        """Monta a linha com os dados exibidos na planilha da empresa."""
-
-        start_local = phonecall.start.astimezone(self.tz)
-        end_local = phonecall.end.astimezone(self.tz)
-        company_name = self.company_names.get(
-            phonecall.company_id,
-            self.company_names.get(None, "Sem Empresa"),
-        )
-        release_parts = [record.release_cause.strip(), record.release_text.strip()]
-        release_info = " - ".join(filter(None, release_parts)) or "-"
-
-        return ExcelReportRow(
-            company_id=phonecall.company_id,
-            company_name=company_name,
-            extension_number=phonecall.chargednumber,
-            remote_number=phonecall.connectednumber,
-            dialed_number=phonecall.dialednumber,
-            direction="Entrada" if phonecall.inbound else "Saída",
-            calltype_label=CALLTYPE_DISPLAY.get(
-                phonecall.calltype,
-                (record.calltype_label or "DESCONHECIDO") or "DESCONHECIDO",
-            ),
-            start=start_local,
-            end=end_local,
-            duration=phonecall.duration,
-            billedtime=phonecall.billedtime,
-            price=phonecall.price,
-            billedamount=phonecall.billedamount,
-            org_price=phonecall.org_price,
-            org_billedamount=phonecall.org_billedamount,
-            description=phonecall.description,
-            release_info=release_info,
-            call_id=record.call_id,
-        )
-
 
 @dataclass
 class PhonecallData:
@@ -1069,89 +844,6 @@ class PhonecallData:
 
 
 # --- Interface de linha de comando ----------------------------------------
-
-
-def export_company_workbooks(
-    rows: Sequence[ExcelReportRow],
-    output_dir: Path,
-    dry_run: bool,
-) -> List[Path]:
-    """Gera uma planilha ``.xlsx`` com o detalhamento por empresa."""
-
-    if not rows:
-        return []
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    grouped: Dict[Optional[int], List[ExcelReportRow]] = {}
-    for row in rows:
-        grouped.setdefault(row.company_id, []).append(row)
-
-    saved_files: List[Path] = []
-    headers = [
-        "Ramal",
-        "Número remoto",
-        "Número discado",
-        "Sentido",
-        "Tipo",
-        "Início",
-        "Fim",
-        "Duração (s)",
-        "Tempo faturado (s)",
-        "Tarifa empresa",
-        "Valor empresa",
-        "Tarifa organização",
-        "Valor organização",
-        "Descrição",
-        "Motivo liberação",
-        "Call-ID",
-    ]
-
-    for company_id, company_rows in grouped.items():
-        # Ordenamos as linhas pelo horário de início e Call-ID para facilitar a leitura.
-        ordered_rows = sorted(company_rows, key=lambda item: (item.start, item.call_id))
-        company_label = ordered_rows[0].company_name
-        id_suffix = company_id if company_id is not None else "sem_empresa"
-        filename = f"{sanitize_filename(company_label)}_{id_suffix}.xlsx"
-        workbook_path = output_dir / filename
-
-        table: List[List[str]] = [headers]
-        for entry in ordered_rows:
-            start_str = entry.start.strftime("%Y-%m-%d %H:%M:%S")
-            end_str = entry.end.strftime("%Y-%m-%d %H:%M:%S")
-            table.append(
-                [
-                    entry.extension_number or "",
-                    entry.remote_number or "",
-                    entry.dialed_number or "",
-                    entry.direction,
-                    entry.calltype_label,
-                    start_str,
-                    end_str,
-                    str(entry.duration),
-                    str(entry.billedtime),
-                    format_currency(entry.price),
-                    format_currency(entry.billedamount),
-                    format_currency(entry.org_price),
-                    format_currency(entry.org_billedamount),
-                    entry.description or "",
-                    entry.release_info or "",
-                    entry.call_id,
-                ]
-            )
-
-        write_basic_xlsx(workbook_path, table)
-        saved_files.append(workbook_path)
-
-    if dry_run:
-        # Em modo dry-run informamos explicitamente onde as planilhas foram gravadas,
-        # já que nenhuma alteração foi persistida no SQLite.
-        print(
-            "Planilhas geradas apenas para conferência (dry-run):",
-            ", ".join(str(path) for path in saved_files),
-        )
-
-    return saved_files
 
 
 def iter_lines_from_path(path: Path, encoding: str) -> Iterator[str]:
@@ -1247,11 +939,6 @@ def build_argument_parser() -> argparse.ArgumentParser:
         help="Limita a quantidade máxima de linhas lidas do PostgreSQL.",
     )
     parser.add_argument(
-        "--excel-dir",
-        default="relatorios_excel",
-        help="Diretório onde as planilhas por empresa serão salvas.",
-    )
-    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Executa a leitura sem gravar no banco de dados.",
@@ -1270,8 +957,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     conn = sqlite3.connect(str(database_path))
     pg_conn = None
-    generated_files: List[Path] = []
-    stats = ImportStats()
     try:
         importer = SyslogImporter(conn, args.default_ddd, args.timezone)
 
@@ -1295,23 +980,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 limit=args.pg_limit,
             )
 
-        stats, report_rows = importer.import_lines(lines, args.leg.upper(), args.dry_run)
-        generated_files = export_company_workbooks(
-            report_rows,
-            Path(args.excel_dir),
-            args.dry_run,
-        )
+        stats = importer.import_lines(lines, args.leg.upper(), args.dry_run)
     finally:
         if pg_conn is not None:
             pg_conn.close()
         conn.close()
 
     print(stats.as_message())
-    if generated_files:
-        print(
-            "Planilhas geradas:",
-            ", ".join(str(path) for path in generated_files),
-        )
     if args.dry_run:
         print("Nenhum registro foi gravado (modo dry-run).")
     return 0

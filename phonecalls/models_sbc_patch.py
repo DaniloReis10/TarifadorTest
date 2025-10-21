@@ -21,6 +21,7 @@ class SbcPhonecall(models.Model):
     callid = models.CharField(max_length=24, blank=True, null=True)
     callidass1 = models.CharField(max_length=24, blank=True, null=True)
     callidass2 = models.CharField(max_length=24, blank=True, null=True)
+    event_type = models.CharField(max_length=64, blank=True, null=True)
 
     class Meta:
         managed = False

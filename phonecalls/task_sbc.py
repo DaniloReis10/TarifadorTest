@@ -77,6 +77,7 @@ from .tasks import (
 
 BATCH_SIZE = 20000
 NEGATE = True  # usa ids negativos no Phonecall.md_phonecall_id para SBC
+CALL_END_EVENT_TYPE = "CALL_END"
 
 
 def _phonecall_from_sbc(sbc: SbcPhonecall) -> Phonecall:
@@ -225,20 +226,21 @@ def _sbc_extension_calltype_analysis(sbc_qs, phonecall_map=None, reanalysis=Fals
 
 
 def _pending_sbc_qs():
+    base_qs = SbcPhonecall.objects.filter(event_type=CALL_END_EVENT_TYPE)
     if NEGATE:
         existing = set(
             Phonecall.objects.filter(md_phonecall_id__lt=0).values_list(
                 "md_phonecall_id", flat=True
             )
         )
-        pending_qs = SbcPhonecall.objects.exclude(id__in=[-x for x in existing])
+        pending_qs = base_qs.exclude(id__in=[-x for x in existing])
     else:
         existing = set(
             Phonecall.objects.filter(md_phonecall_id__gte=0).values_list(
                 "md_phonecall_id", flat=True
             )
         )
-        pending_qs = SbcPhonecall.objects.exclude(id__in=list(existing))
+        pending_qs = base_qs.exclude(id__in=list(existing))
     return pending_qs
 
 
@@ -262,7 +264,9 @@ def sbc_extension_analysis():
 def run_sbc_extension_analysis_with_date(liststartdate: Iterable) -> str:
     """Processa ligações SBC filtradas pelas datas informadas."""
     for startdate in liststartdate:
-        day_qs = SbcPhonecall.objects.filter(startdate=startdate)
+        day_qs = SbcPhonecall.objects.filter(
+            startdate=startdate, event_type=CALL_END_EVENT_TYPE
+        )
         if NEGATE:
             done = set(
                 Phonecall.objects.filter(md_phonecall_id__lt=0).values_list(
@@ -301,7 +305,9 @@ def run_sbc_extension_reanalysis() -> str:
         sbc_ids = [-mid for mid in phonecall_map.keys()] if NEGATE else list(
             phonecall_map.keys()
         )
-        sbc_qs = SbcPhonecall.objects.filter(id__in=sbc_ids)
+        sbc_qs = SbcPhonecall.objects.filter(
+            id__in=sbc_ids, event_type=CALL_END_EVENT_TYPE
+        )
         _sbc_extension_calltype_analysis(
             sbc_qs, phonecall_map=phonecall_map, reanalysis=True
         )

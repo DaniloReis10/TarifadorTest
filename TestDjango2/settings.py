@@ -125,7 +125,8 @@ DATABASES = {
         'PASSWORD': 'tarifador',
         #'HOST': '192.168.0.169',
         #'HOST': '172.18.185.82',
-        'HOST': '172.20.25.34',
+        # era Este'HOST': '172.20.25.34',
+        'HOST':'localhost'
         'PORT': 5432,
     }
 }

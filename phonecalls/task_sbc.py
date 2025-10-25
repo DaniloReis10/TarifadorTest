@@ -27,7 +27,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from django.db import connection  # >>> NOVO: para consultas diretas
+try:
+    from django.db import connection  # >>> NOVO: para consultas diretas
+except ModuleNotFoundError as exc:  # pragma: no cover - falha visível só em runtime manual
+    raise ModuleNotFoundError(
+        "Django não está instalado. Ative o ambiente virtual do projeto e "
+        "execute 'pip install -r requirements.txt' antes de rodar task_sbc.py."
+    ) from exc
 from core.utils import batch_qs
 from voip.models import Phonecall
 from .models import SbcPhonecall

@@ -27,7 +27,7 @@ def make_dsn(prefix: str = "SRC") -> str:
     prefix=SRC (origem) ou DST (destino). Se não houver, tenta PG*.
     """
     host = os.getenv(f"{prefix}_PGHOST", os.getenv("PGHOST", "127.0.0.1"))
-    port = os.getenv(f"{prefix}_PGPORT", os.getenv("PGPORT", "5432"))
+    port = os.getenv(f"{prefix}_PGPORT", os.getenv("PGPORT", "15432"))
     db   = os.getenv(f"{prefix}_PGDATABASE", os.getenv("PGDATABASE", "syslogdb" if prefix=="SRC" else "syslogdb"))
     usr  = os.getenv(f"{prefix}_PGUSER", os.getenv("PGUSER", "sysloguser"))
     pwd  = os.getenv(f"{prefix}_PGPASSWORD", os.getenv("PGPASSWORD", "syslogpass"))
@@ -277,6 +277,12 @@ def upsert_call(conn, row: Dict[str, Any]):
 def insert_reject(conn, rej: Dict[str, Any]):
     with conn.cursor() as cur:
         cur.execute(INSERT_REJECT, rej)
+        
+def rm_all_leading_plus(s: Optional[str]) -> Optional[str]:
+    if s is None:
+        return None
+    s = s.strip()
+    return s.lstrip('+')
 
 def run_etl(src_dsn: str, dst_dsn: str, src_table: str, limit: Optional[int], debug: bool, ensure: bool, since_id: Optional[int]):
     src_conn = psycopg2.connect(src_dsn)
@@ -303,9 +309,8 @@ def run_etl(src_dsn: str, dst_dsn: str, src_table: str, limit: Optional[int], de
 
             c = parse_call_end_raw(raw)
             # montar registro de destino
-            dialed_user    = c.get("dialednumber")
-            connected_user = c.get("connectednumber")
-
+            dialed_user    = rm_all_leading_plus(c.get("dialednumber"))
+            connected_user = rm_all_leading_plus(c.get("connectednumber"))
             # validações
             reasons = []
             # checagem numérica
@@ -394,11 +399,11 @@ def main():
     if args.debug:
         print(f"[origem]  db={os.getenv('SRC_PGDATABASE', os.getenv('PGDATABASE','syslogdb'))} "
               f"host={os.getenv('SRC_PGHOST', os.getenv('PGHOST','127.0.0.1'))} "
-              f"port={os.getenv('SRC_PGPORT', os.getenv('PGPORT','5432'))} "
+              f"port={os.getenv('SRC_PGPORT', os.getenv('PGPORT','15432'))} "
               f"user={os.getenv('SRC_PGUSER', os.getenv('PGUSER','sysloguser'))}")
         print(f"[destino] db={os.getenv('DST_PGDATABASE', os.getenv('PGDATABASE','syslogdb'))} "
               f"host={os.getenv('DST_PGHOST', os.getenv('PGHOST','127.0.0.1'))} "
-              f"port={os.getenv('DST_PGPORT', os.getenv('PGPORT','5432'))} "
+              f"port={os.getenv('DST_PGPORT', os.getenv('PGPORT','15432'))} "
               f"user={os.getenv('DST_PGUSER', os.getenv('PGUSER','sysloguser'))}")
 
     run_etl(src_dsn, dst_dsn, args.table, limit=limit, debug=args.debug, ensure=True, since_id=args.since_id)

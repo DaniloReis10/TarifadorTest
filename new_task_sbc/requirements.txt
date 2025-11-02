@@ -1,0 +1,5 @@
+
+psycopg2-binary==2.9.9
+python-dotenv==0.21.1
+phonenumbers==8.13.55
+Pillow==9.5.0

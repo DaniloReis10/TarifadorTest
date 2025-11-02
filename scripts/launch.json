@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug: ETL",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/etl_sbc_syslog_to_db.py",
+      "cwd": "${workspaceFolder}/scripts",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}
+

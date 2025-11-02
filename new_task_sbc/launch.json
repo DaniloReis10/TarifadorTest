@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Standalone: analysis",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/task_sbc_standalone.py",
+      "args": [
+        "--dsn",
+        "host=${env:DB_HOST} port=${env:DB_PORT} dbname=${env:DB_NAME} user=${env:DB_USER} password=${env:DB_PASS}",
+        "--ranges-only",
+        "--quiet-missing-clients",
+        "--log-file",
+        "sbc_debug.log",
+        "--log-sql-level",
+        "INFO",
+        "analysis"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Standalone: analysis-with-date",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/task_sbc_standalone.py",
+      "args": [
+        "--dsn",
+        "host=${env:DB_HOST} port=${env:DB_PORT} dbname=${env:DB_NAME} user=${env:DB_USER} password=${env:DB_PASS}",
+        "--ranges-only",
+        "--quiet-missing-clients",
+        "--log-file",
+        "sbc_debug.log",
+        "--log-sql-level",
+        "INFO",
+        "analysis-with-date",
+        "2025-10-24",
+        "2025-10-25"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

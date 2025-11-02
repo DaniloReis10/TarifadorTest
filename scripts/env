@@ -1,0 +1,14 @@
+# Database connections for the ETL
+# Source DB (can be the same as destination)
+SRC_PGHOST=127.0.0.1
+SRC_PGPORT=15432
+SRC_PGDATABASE=syslogdb
+SRC_PGUSER=sysloguser
+SRC_PGPASSWORD=1234
+
+# Destination DB
+DST_PGHOST=127.0.0.1
+DST_PGPORT=15432
+DST_PGDATABASE=test_db
+DST_PGUSER=sysloguser
+DST_PGPASSWORD=1234
